@@ -4,7 +4,7 @@ const DB_NAME = "kit-withdrawal-db";
 const STORE_NAME = "entries";
 
 // Para persistencia real entre acessos e aparelhos, publique o Apps Script e cole a URL abaixo.
-const GOOGLE_SCRIPT_URL = "https://docs.google.com/spreadsheets/d/1UPUcdgrGJqwpuHwMYUZKktJ0PcbrhbpA2LdRbPStaiU/edit?usp=sharing";
+const GOOGLE_SCRIPT_URL = "";
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
@@ -86,7 +86,7 @@ async function initializeApp() {
   const indexedDbEntries = await loadEntriesFromIndexedDB();
   let mergedEntries = mergeEntries(localEntries, indexedDbEntries);
 
-  if (GOOGLE_SCRIPT_URL) {
+  if (isGoogleScriptConfigured()) {
     const remoteEntries = await loadEntriesFromGoogleSheets();
     mergedEntries = mergeEntries(mergedEntries, remoteEntries);
   }
@@ -97,7 +97,7 @@ async function initializeApp() {
 
   if (entries.length) {
     showMessage(
-      GOOGLE_SCRIPT_URL
+      isGoogleScriptConfigured()
         ? "Cadastros carregados com sucesso."
         : getLocalStorageHint()
     );
@@ -105,7 +105,7 @@ async function initializeApp() {
   }
 
   showMessage(
-    GOOGLE_SCRIPT_URL
+    isGoogleScriptConfigured()
       ? "Sistema pronto para receber cadastros."
       : getLocalStorageHint()
   );
@@ -120,7 +120,11 @@ function getSubmitMessage(syncStatus) {
     return "Cadastro salvo no navegador. O envio para o Google Sheets foi feito em modo simples.";
   }
 
-  if (GOOGLE_SCRIPT_URL) {
+  if (looksLikeSpreadsheetUrl(GOOGLE_SCRIPT_URL)) {
+    return "A URL informada e da planilha, nao do Apps Script publicado. Use o link do tipo script.google.com/macros/s/.../exec.";
+  }
+
+  if (isGoogleScriptConfigured()) {
     return "Cadastro salvo no navegador. Confira a URL do Google Sheets para manter tudo sincronizado.";
   }
 
@@ -230,6 +234,10 @@ async function openDatabase() {
 }
 
 async function loadEntriesFromGoogleSheets() {
+  if (!isGoogleScriptConfigured()) {
+    return [];
+  }
+
   try {
     const separator = GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
     const response = await fetch(`${GOOGLE_SCRIPT_URL}${separator}action=list&ts=${Date.now()}`);
@@ -247,7 +255,7 @@ async function loadEntriesFromGoogleSheets() {
 }
 
 async function syncWithGoogleSheets(entry) {
-  if (!GOOGLE_SCRIPT_URL) {
+  if (!isGoogleScriptConfigured()) {
     return "disabled";
   }
 
@@ -431,4 +439,12 @@ function createEntryId() {
   }
 
   return `entry-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function isGoogleScriptConfigured() {
+  return Boolean(GOOGLE_SCRIPT_URL) && !looksLikeSpreadsheetUrl(GOOGLE_SCRIPT_URL);
+}
+
+function looksLikeSpreadsheetUrl(url) {
+  return /docs\.google\.com\/spreadsheets/i.test(String(url || ""));
 }

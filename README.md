@@ -35,3 +35,8 @@ Se quiser receber tudo em uma planilha online:
 6. No arquivo `app.js`, preencha a constante `GOOGLE_SCRIPT_URL`.
 
 Assim, cada novo cadastro sera salvo na tela, enviado para a planilha e recarregado automaticamente ao abrir a pagina novamente.
+
+Importante:
+
+- URL errada: `https://docs.google.com/spreadsheets/...`
+- URL correta: `https://script.google.com/macros/s/.../exec`
