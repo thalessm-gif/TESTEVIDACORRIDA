@@ -2,7 +2,7 @@ const DISTANCE_ORDER = ["3km", "5km", "10km", "21km"];
 const STORAGE_KEY = "kit-withdrawal-entries";
 
 // Se quiser enviar automaticamente para Google Sheets, cole aqui a URL do Apps Script publicado.
-const GOOGLE_SCRIPT_URL = "";
+const GOOGLE_SCRIPT_URL = "https://docs.google.com/spreadsheets/d/1UPUcdgrGJqwpuHwMYUZKktJ0PcbrhbpA2LdRbPStaiU/edit?usp=sharing";
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
