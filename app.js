@@ -1,8 +1,10 @@
 const DISTANCE_ORDER = ["3km", "5km", "10km", "21km"];
 const STORAGE_KEY = "kit-withdrawal-entries";
+const DB_NAME = "kit-withdrawal-db";
+const STORE_NAME = "entries";
 
-// Se quiser enviar automaticamente para Google Sheets, cole aqui a URL do Apps Script publicado.
-const GOOGLE_SCRIPT_URL = "https://docs.google.com/spreadsheets/d/1UPUcdgrGJqwpuHwMYUZKktJ0PcbrhbpA2LdRbPStaiU/edit?usp=sharing";
+// Para persistencia real entre acessos e aparelhos, publique o Apps Script e cole a URL abaixo.
+const GOOGLE_SCRIPT_URL = "";
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
@@ -14,9 +16,10 @@ const tableBody = document.getElementById("entries-table-body");
 const totalCountElement = document.getElementById("total-count");
 const exportButton = document.getElementById("export-button");
 
-let entries = loadEntries();
+let entries = [];
 
 render();
+initializeApp();
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -38,21 +41,14 @@ form.addEventListener("submit", async (event) => {
     createdAt: new Date().toISOString()
   };
 
-  entries.push(newEntry);
-  entries = sortEntries(entries);
-  saveEntries(entries);
+  entries = sortEntries([...entries, newEntry]);
+  await persistEntries(entries);
   render();
   form.reset();
   fullNameInput.focus();
 
-  const synced = await syncWithGoogleSheets(newEntry);
-  showMessage(
-    synced
-      ? "Cadastro salvo e enviado para o Google Sheets."
-      : GOOGLE_SCRIPT_URL
-        ? "Cadastro salvo localmente. Nao foi possivel confirmar o envio para o Google Sheets."
-        : "Cadastro salvo com sucesso."
-  );
+  const syncStatus = await syncWithGoogleSheets(newEntry);
+  showMessage(getSubmitMessage(syncStatus));
 });
 
 exportButton.addEventListener("click", () => {
@@ -83,7 +79,63 @@ exportButton.addEventListener("click", () => {
   showMessage("Arquivo CSV exportado com sucesso.");
 });
 
-function loadEntries() {
+async function initializeApp() {
+  showMessage("Carregando cadastros salvos...");
+
+  const localEntries = loadEntriesFromLocalStorage();
+  const indexedDbEntries = await loadEntriesFromIndexedDB();
+  let mergedEntries = mergeEntries(localEntries, indexedDbEntries);
+
+  if (GOOGLE_SCRIPT_URL) {
+    const remoteEntries = await loadEntriesFromGoogleSheets();
+    mergedEntries = mergeEntries(mergedEntries, remoteEntries);
+  }
+
+  entries = sortEntries(mergedEntries);
+  await persistEntries(entries);
+  render();
+
+  if (entries.length) {
+    showMessage(
+      GOOGLE_SCRIPT_URL
+        ? "Cadastros carregados com sucesso."
+        : getLocalStorageHint()
+    );
+    return;
+  }
+
+  showMessage(
+    GOOGLE_SCRIPT_URL
+      ? "Sistema pronto para receber cadastros."
+      : getLocalStorageHint()
+  );
+}
+
+function getSubmitMessage(syncStatus) {
+  if (syncStatus === "synced") {
+    return "Cadastro salvo e enviado para o Google Sheets.";
+  }
+
+  if (syncStatus === "queued") {
+    return "Cadastro salvo no navegador. O envio para o Google Sheets foi feito em modo simples.";
+  }
+
+  if (GOOGLE_SCRIPT_URL) {
+    return "Cadastro salvo no navegador. Confira a URL do Google Sheets para manter tudo sincronizado.";
+  }
+
+  return getLocalStorageHint("Cadastro salvo no navegador.");
+}
+
+function getLocalStorageHint(prefix) {
+  const baseMessage = window.location.protocol === "file:"
+    ? "Para nao perder os dados ao reabrir em outros acessos, conecte o Google Sheets."
+    : "Os cadastros estao guardados neste navegador.";
+
+  return prefix ? `${prefix} ${baseMessage}` : baseMessage;
+}
+
+function loadEntriesFromLocalStorage() {
   try {
     const rawEntries = localStorage.getItem(STORAGE_KEY);
     if (!rawEntries) {
@@ -91,15 +143,187 @@ function loadEntries() {
     }
 
     const parsedEntries = JSON.parse(rawEntries);
-    return Array.isArray(parsedEntries) ? sortEntries(parsedEntries) : [];
+    return Array.isArray(parsedEntries) ? parsedEntries.map(normalizeEntry) : [];
   } catch (error) {
-    console.error("Erro ao carregar dados locais:", error);
+    console.error("Erro ao carregar dados do localStorage:", error);
     return [];
   }
 }
 
-function saveEntries(nextEntries) {
+function saveEntriesToLocalStorage(nextEntries) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(nextEntries));
+}
+
+async function loadEntriesFromIndexedDB() {
+  if (!window.indexedDB) {
+    return [];
+  }
+
+  try {
+    const database = await openDatabase();
+    if (!database) {
+      return [];
+    }
+
+    return await new Promise((resolve, reject) => {
+      const transaction = database.transaction(STORE_NAME, "readonly");
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.getAll();
+
+      request.onsuccess = () => resolve((request.result || []).map(normalizeEntry));
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar dados do IndexedDB:", error);
+    return [];
+  }
+}
+
+async function saveEntriesToIndexedDB(nextEntries) {
+  if (!window.indexedDB) {
+    return;
+  }
+
+  try {
+    const database = await openDatabase();
+    if (!database) {
+      return;
+    }
+
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction(STORE_NAME, "readwrite");
+      const store = transaction.objectStore(STORE_NAME);
+
+      store.clear();
+      nextEntries.forEach((entry) => {
+        store.put(normalizeEntry(entry));
+      });
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  } catch (error) {
+    console.error("Erro ao salvar dados no IndexedDB:", error);
+  }
+}
+
+async function persistEntries(nextEntries) {
+  const normalizedEntries = sortEntries(nextEntries.map(normalizeEntry));
+  saveEntriesToLocalStorage(normalizedEntries);
+  await saveEntriesToIndexedDB(normalizedEntries);
+}
+
+async function openDatabase() {
+  return await new Promise((resolve, reject) => {
+    const request = window.indexedDB.open(DB_NAME, 1);
+
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(STORE_NAME)) {
+        database.createObjectStore(STORE_NAME, { keyPath: "id" });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function loadEntriesFromGoogleSheets() {
+  try {
+    const separator = GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}${separator}action=list&ts=${Date.now()}`);
+
+    if (!response.ok) {
+      throw new Error(`Resposta inesperada: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data.entries) ? data.entries.map(normalizeEntry) : [];
+  } catch (error) {
+    console.error("Erro ao carregar dados do Google Sheets:", error);
+    return [];
+  }
+}
+
+async function syncWithGoogleSheets(entry) {
+  if (!GOOGLE_SCRIPT_URL) {
+    return "disabled";
+  }
+
+  const payload = JSON.stringify(normalizeEntry(entry));
+
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: payload
+    });
+
+    if (response.ok) {
+      return "synced";
+    }
+  } catch (error) {
+    console.error("Erro ao enviar para o Google Sheets:", error);
+  }
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: payload
+    });
+
+    return "queued";
+  } catch (error) {
+    console.error("Erro no envio simples para o Google Sheets:", error);
+    return "local_only";
+  }
+}
+
+function mergeEntries(...lists) {
+  const mergedMap = new Map();
+
+  lists
+    .flat()
+    .filter(Boolean)
+    .map(normalizeEntry)
+    .forEach((entry) => {
+      const key = entry.id || createEntryFingerprint(entry);
+      mergedMap.set(key, entry);
+    });
+
+  return [...mergedMap.values()];
+}
+
+function normalizeEntry(entry) {
+  const normalizedEntry = {
+    id: entry && entry.id ? String(entry.id) : "",
+    fullName: entry && entry.fullName ? String(entry.fullName).trim().replace(/\s+/g, " ") : "",
+    distance: entry && entry.distance ? String(entry.distance).trim() : "",
+    shirtSize: entry && entry.shirtSize ? String(entry.shirtSize).trim() : "",
+    createdAt: entry && entry.createdAt ? String(entry.createdAt) : new Date().toISOString()
+  };
+
+  if (!normalizedEntry.id) {
+    normalizedEntry.id = createEntryFingerprint(normalizedEntry);
+  }
+
+  return normalizedEntry;
+}
+
+function createEntryFingerprint(entry) {
+  return [
+    entry.fullName || "",
+    entry.distance || "",
+    entry.shirtSize || "",
+    entry.createdAt || ""
+  ].join("|");
 }
 
 function sortEntries(list) {
@@ -199,28 +423,6 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-async function syncWithGoogleSheets(entry) {
-  if (!GOOGLE_SCRIPT_URL) {
-    return false;
-  }
-
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(entry)
-    });
-
-    return true;
-  } catch (error) {
-    console.error("Erro ao enviar para o Google Sheets:", error);
-    return false;
-  }
 }
 
 function createEntryId() {
