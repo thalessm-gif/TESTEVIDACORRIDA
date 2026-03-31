@@ -1,11 +1,12 @@
 const DISTANCE_ORDER = ["3km", "5km", "10km", "21km"];
 const STORAGE_KEY = "kit-withdrawal-entries";
+const LEGACY_STORAGE_KEYS = ["kit-withdrawal-entries", "kitWithdrawalEntries"];
 const DB_NAME = "kit-withdrawal-db";
 const STORE_NAME = "entries";
 const GOOGLE_SHEETS_ONLY_MODE = true;
 
 // Para persistencia real entre acessos e aparelhos, publique o Apps Script e cole a URL abaixo.
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpnGjHiV8bDvK9Hia6Fk67evAgJLUdektoQpUIaJzFyjP1jZZIxszEntAdY3VbzfL6/exec";
+const GOOGLE_SCRIPT_URL = "";
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
@@ -248,12 +249,8 @@ async function persistEntries(nextEntries) {
 }
 
 async function clearBrowserEntries() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.error("Erro ao limpar localStorage:", error);
-  }
-
+  clearWebStorage();
+  await deleteIndexedDBDatabase();
   await clearIndexedDBEntries();
 }
 
@@ -294,6 +291,40 @@ async function clearIndexedDBEntries() {
     });
   } catch (error) {
     console.error("Erro ao limpar IndexedDB:", error);
+  }
+}
+
+function clearWebStorage() {
+  LEGACY_STORAGE_KEYS.forEach((key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Erro ao limpar localStorage (${key}):`, error);
+    }
+
+    try {
+      sessionStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Erro ao limpar sessionStorage (${key}):`, error);
+    }
+  });
+}
+
+async function deleteIndexedDBDatabase() {
+  if (!window.indexedDB) {
+    return;
+  }
+
+  try {
+    await new Promise((resolve, reject) => {
+      const request = window.indexedDB.deleteDatabase(DB_NAME);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      request.onblocked = () => resolve();
+    });
+  } catch (error) {
+    console.error("Erro ao excluir o banco IndexedDB:", error);
   }
 }
 
