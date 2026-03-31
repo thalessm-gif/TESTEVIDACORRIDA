@@ -239,34 +239,6 @@ select:focus {
   margin-bottom: 20px;
 }
 
-.overview-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.shirt-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.shirt-summary-footer {
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.shirt-summary-item {
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: #f7dcc8;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
 .count-badge {
   padding: 10px 14px;
   border-radius: 999px;
@@ -308,13 +280,25 @@ select:focus {
 }
 
 .names-list li {
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
   padding-bottom: 10px;
   border-bottom: 1px dashed rgba(31, 35, 33, 0.12);
 }
 
-.athlete-line {
+.athlete-name {
   font-weight: 600;
+}
+
+.shirt-tag {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.18);
+  color: #ffd8c2;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .empty-state {
@@ -379,10 +363,6 @@ tbody tr:hover {
   .actions {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .shirt-summary {
-    width: 100%;
   }
 
   .primary-button,

@@ -14,7 +14,6 @@ const distanceInput = document.getElementById("distance");
 const shirtSizeInput = document.getElementById("shirtSize");
 const messageElement = document.getElementById("form-message");
 const groupsContainer = document.getElementById("distance-groups");
-const shirtSummaryElement = document.getElementById("shirt-summary");
 const tableBody = document.getElementById("entries-table-body");
 const totalCountElement = document.getElementById("total-count");
 const exportButton = document.getElementById("export-button");
@@ -452,24 +451,11 @@ function groupEntriesByDistance(list) {
   }));
 }
 
-function getShirtSummary(list) {
-  const shirtOrder = ["PP", "P", "M", "G", "GG"];
-
-  return shirtOrder.map((size) => ({
-    size,
-    count: list.filter((entry) => entry.shirtSize === size).length
-  }));
-}
-
 function render() {
   const sortedEntries = sortEntries(entries);
   const groupedEntries = groupEntriesByDistance(sortedEntries);
-  const shirtSummary = getShirtSummary(sortedEntries);
 
   totalCountElement.textContent = `${sortedEntries.length} inscrito${sortedEntries.length === 1 ? "" : "s"}`;
-  shirtSummaryElement.innerHTML = shirtSummary
-    .map((item) => `<span class="shirt-summary-item">${item.size}: ${item.count}</span>`)
-    .join("");
 
   groupsContainer.innerHTML = groupedEntries
     .map((group) => {
@@ -487,7 +473,8 @@ function render() {
         .map(
           (entry) => `
             <li>
-              <span class="athlete-line">${escapeHtml(entry.fullName)} - ${escapeHtml(entry.shirtSize)}</span>
+              <span class="athlete-name">${escapeHtml(entry.fullName)}</span>
+              <span class="shirt-tag">Camiseta ${escapeHtml(entry.shirtSize)}</span>
             </li>
           `
         )
