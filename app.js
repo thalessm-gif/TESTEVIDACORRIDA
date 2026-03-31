@@ -6,7 +6,7 @@ const STORE_NAME = "entries";
 const GOOGLE_SHEETS_ONLY_MODE = true;
 
 // Para persistencia real entre acessos e aparelhos, publique o Apps Script e cole a URL abaixo.
-const GOOGLE_SCRIPT_URL = "";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpnGjHiV8bDvK9Hia6Fk67evAgJLUdektoQpUIaJzFyjP1jZZIxszEntAdY3VbzfL6/exec";
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
