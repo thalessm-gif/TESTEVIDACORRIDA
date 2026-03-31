@@ -2,9 +2,10 @@ const DISTANCE_ORDER = ["3km", "5km", "10km", "21km"];
 const STORAGE_KEY = "kit-withdrawal-entries";
 const DB_NAME = "kit-withdrawal-db";
 const STORE_NAME = "entries";
+const GOOGLE_SHEETS_ONLY_MODE = true;
 
 // Para persistencia real entre acessos e aparelhos, publique o Apps Script e cole a URL abaixo.
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpnGjHiV8bDvK9Hia6Fk67evAgJLUdektoQpUIaJzFyjP1jZZIxszEntAdY3VbzfL6/exec";
+const GOOGLE_SCRIPT_URL = "";
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
@@ -40,6 +41,23 @@ form.addEventListener("submit", async (event) => {
     shirtSize,
     createdAt: new Date().toISOString()
   };
+
+  if (shouldUseGoogleSheetsAsSingleSource()) {
+    const syncStatus = await syncWithGoogleSheets(newEntry);
+
+    if (syncStatus === "synced" || syncStatus === "queued") {
+      entries = sortEntries(await loadEntriesFromGoogleSheets());
+      await clearBrowserEntries();
+      render();
+      form.reset();
+      fullNameInput.focus();
+      showMessage(getSubmitMessage(syncStatus));
+      return;
+    }
+
+    showMessage("Nao foi possivel salvar no Google Sheets. Confira a URL do Apps Script publicado.", true);
+    return;
+  }
 
   entries = sortEntries([...entries, newEntry]);
   await persistEntries(entries);
@@ -81,6 +99,18 @@ exportButton.addEventListener("click", () => {
 
 async function initializeApp() {
   showMessage("Carregando cadastros salvos...");
+
+  if (shouldUseGoogleSheetsAsSingleSource()) {
+    await clearBrowserEntries();
+    entries = sortEntries(await loadEntriesFromGoogleSheets());
+    render();
+    showMessage(
+      entries.length
+        ? "Cadastros carregados do Google Sheets."
+        : "Sistema pronto. Os dados exibidos virao somente do Google Sheets."
+    );
+    return;
+  }
 
   const localEntries = loadEntriesFromLocalStorage();
   const indexedDbEntries = await loadEntriesFromIndexedDB();
@@ -217,6 +247,16 @@ async function persistEntries(nextEntries) {
   await saveEntriesToIndexedDB(normalizedEntries);
 }
 
+async function clearBrowserEntries() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.error("Erro ao limpar localStorage:", error);
+  }
+
+  await clearIndexedDBEntries();
+}
+
 async function openDatabase() {
   return await new Promise((resolve, reject) => {
     const request = window.indexedDB.open(DB_NAME, 1);
@@ -231,6 +271,30 @@ async function openDatabase() {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
+}
+
+async function clearIndexedDBEntries() {
+  if (!window.indexedDB) {
+    return;
+  }
+
+  try {
+    const database = await openDatabase();
+    if (!database) {
+      return;
+    }
+
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction(STORE_NAME, "readwrite");
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.clear();
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error("Erro ao limpar IndexedDB:", error);
+  }
 }
 
 async function loadEntriesFromGoogleSheets() {
@@ -447,4 +511,8 @@ function isGoogleScriptConfigured() {
 
 function looksLikeSpreadsheetUrl(url) {
   return /docs\.google\.com\/spreadsheets/i.test(String(url || ""));
+}
+
+function shouldUseGoogleSheetsAsSingleSource() {
+  return GOOGLE_SHEETS_ONLY_MODE && isGoogleScriptConfigured();
 }

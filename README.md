@@ -22,6 +22,7 @@ Aplicacao web simples para sua assessoria registrar atletas e organizar a retira
 
 - Sem Google Sheets: os cadastros ficam guardados no navegador atual. Se a pagina estiver sendo aberta diretamente como arquivo local, alguns navegadores podem limpar ou isolar esses dados.
 - Com Google Sheets: a lista passa a ser carregada novamente sempre que a pagina abrir, o que resolve a perda de dados entre acessos.
+- No modo `GOOGLE_SHEETS_ONLY_MODE`, o navegador limpa os dados locais ao entrar e mostra somente o que estiver salvo na planilha.
 
 ## Google Sheets opcional
 
@@ -40,3 +41,5 @@ Importante:
 
 - URL errada: `https://docs.google.com/spreadsheets/...`
 - URL correta: `https://script.google.com/macros/s/.../exec`
+
+Se quiser usar somente os dados da planilha, deixe `GOOGLE_SHEETS_ONLY_MODE = true` no arquivo `app.js`.
