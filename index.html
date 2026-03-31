@@ -11,13 +11,31 @@
 </head>
 <body>
   <main class="page">
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">Vida Corrida</p>
+          <p class="brand-subtitle">Assessoria esportiva e retirada de kits</p>
+        </div>
+      </div>
+    </section>
+
     <section class="hero">
-      <div>
-        <p class="eyebrow">VIDA CORRIDA ASSESSORIA</p>
-        <h1>Retirada de Kits</h1>
+      <div class="hero-copy">
+        <p class="eyebrow">Assessoria de Corrida</p>
+        <h1>Controle de Retirada de Kits</h1>
         <p class="hero-text">
-          Os kits serão entregues na tenda da VC no local da prova!
+          O atleta preenche os dados uma vez e o nome aparece automaticamente abaixo,
+          separado por distancia e em ordem alfabetica.
         </p>
+        <div class="hero-highlight">
+          <span class="highlight-label">Organizacao rapida</span>
+          <p>
+            Visualize os inscritos por prova, confira o tamanho da camiseta e exporte a
+            lista final para sua planilha.
+          </p>
+        </div>
       </div>
 
       <div class="panel form-panel">
@@ -25,12 +43,12 @@
 
         <form id="kit-form" novalidate>
           <label class="field">
-            <span>Nome Completo</span>
+            <span>Nome completo</span>
             <input id="fullName" name="fullName" type="text" placeholder="Digite o nome do atleta" required>
           </label>
 
           <label class="field">
-            <span>Distância</span>
+            <span>Distancia</span>
             <select id="distance" name="distance" required>
               <option value="">Selecione</option>
               <option value="3km">3km</option>
@@ -66,7 +84,7 @@
       <div class="overview-header">
         <div>
           <p class="eyebrow">Lista atual</p>
-          <h2>Atletas VC Cadastrados</h2>
+          <h2>Atletas cadastrados</h2>
         </div>
         <span id="total-count" class="count-badge">0 inscritos</span>
       </div>
@@ -78,7 +96,7 @@
       <div class="overview-header">
         <div>
           <p class="eyebrow">Tabela completa</p>
-          <h2>VIDA CORRIDA</h2>
+          <h2>Dados prontos para Excel</h2>
         </div>
       </div>
 
@@ -86,9 +104,9 @@
         <table>
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Distância</th>
-              <th>Camisa</th>
+              <th>Nome completo</th>
+              <th>Distancia</th>
+              <th>Tamanho da camisa</th>
             </tr>
           </thead>
           <tbody id="entries-table-body"></tbody>
