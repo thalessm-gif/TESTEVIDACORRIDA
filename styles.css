@@ -857,6 +857,20 @@ button:disabled {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
 }
 
+.athlete-avatar-button {
+  padding: 0;
+  cursor: zoom-in;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.athlete-avatar-button:hover,
+.athlete-avatar-button:focus-visible {
+  transform: translateY(-1px) scale(1.03);
+  border-color: rgba(255, 106, 0, 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+  outline: none;
+}
+
 .athlete-avatar-table {
   width: 40px;
   height: 40px;
@@ -884,6 +898,87 @@ button:disabled {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.avatar-preview-open {
+  overflow: hidden;
+}
+
+.avatar-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.avatar-preview-modal-hidden {
+  display: none;
+}
+
+.avatar-preview-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 10, 24, 0.76);
+  backdrop-filter: blur(8px);
+}
+
+.avatar-preview-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 520px);
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 28px;
+  background: rgba(6, 23, 51, 0.96);
+  box-shadow: 0 36px 80px rgba(0, 0, 0, 0.42);
+}
+
+.avatar-preview-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.avatar-preview-close:hover,
+.avatar-preview-close:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 106, 0, 0.42);
+  background: rgba(255, 106, 0, 0.14);
+  outline: none;
+}
+
+.avatar-preview-media {
+  overflow: hidden;
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(255, 106, 0, 0.24), rgba(255, 255, 255, 0.05)),
+    rgba(255, 255, 255, 0.04);
+}
+
+.avatar-preview-image {
+  display: block;
+  width: 100%;
+  max-height: min(72vh, 640px);
+  object-fit: cover;
+}
+
+.avatar-preview-name {
+  margin: 16px 6px 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .ranking-athlete-name {

@@ -9,6 +9,10 @@ const cardListElement = document.getElementById("ranking-card-list");
 const tableHeadingElement = document.getElementById("ranking-table-heading");
 const categoryButtonsContainer = document.getElementById("ranking-category-buttons");
 const distanceButtonsContainer = document.getElementById("ranking-distance-buttons");
+const avatarPreviewModalElement = document.getElementById("avatar-preview-modal");
+const avatarPreviewImageElement = document.getElementById("avatar-preview-image");
+const avatarPreviewNameElement = document.getElementById("avatar-preview-name");
+const avatarPreviewCloseButtonElement = avatarPreviewModalElement.querySelector(".avatar-preview-close");
 const viewButtons = [...document.querySelectorAll("[data-view]")];
 const genderButtons = [...document.querySelectorAll("[data-gender]")];
 
@@ -18,6 +22,7 @@ let selectedDistance = "all";
 let selectedCategory = "all";
 let rankingData = createEmptyRankingData();
 let expandedEntryIds = new Set();
+let lastAvatarTriggerElement = null;
 
 initializeRankingPage();
 
@@ -60,26 +65,23 @@ function initializeRankingPage() {
     renderRanking();
   });
 
-  tableBodyElement.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-entry-toggle]");
-    if (!button) {
-      return;
-    }
-
-    toggleExpandedEntry(button.dataset.entryToggle);
-  });
-
-  cardListElement.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-entry-toggle]");
-    if (!button) {
-      return;
-    }
-
-    toggleExpandedEntry(button.dataset.entryToggle);
-  });
+  tableBodyElement.addEventListener("click", handleRankingClick);
+  cardListElement.addEventListener("click", handleRankingClick);
 
   searchInputElement.addEventListener("input", () => {
     renderRanking();
+  });
+
+  avatarPreviewModalElement.addEventListener("click", (event) => {
+    if (event.target.closest("[data-avatar-close]")) {
+      closeAvatarPreview();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !avatarPreviewModalElement.classList.contains("avatar-preview-modal-hidden")) {
+      closeAvatarPreview();
+    }
   });
 
   updateToggleButtons(viewButtons, selectedView, "data-view");
@@ -468,6 +470,21 @@ function updateDistanceButtons() {
   });
 }
 
+function handleRankingClick(event) {
+  const avatarButton = event.target.closest("[data-avatar-preview]");
+  if (avatarButton) {
+    openAvatarPreview(avatarButton);
+    return;
+  }
+
+  const toggleButton = event.target.closest("[data-entry-toggle]");
+  if (!toggleButton) {
+    return;
+  }
+
+  toggleExpandedEntry(toggleButton.dataset.entryToggle);
+}
+
 function filterEntries(entries) {
   const normalizedSearch = normalizeHeader(searchInputElement.value || "");
 
@@ -514,12 +531,59 @@ function renderAthleteAvatar(entry, variant) {
     ? `<img src="${escapeHtmlAttribute(entry.avatar)}" alt="" class="athlete-avatar-image" loading="lazy" decoding="async" onerror="this.remove()">`
     : "";
 
+  if (entry.avatar) {
+    return `
+      <button
+        type="button"
+        class="athlete-avatar athlete-avatar-${variant} athlete-avatar-button"
+        data-avatar-preview="${escapeHtmlAttribute(entry.avatar)}"
+        data-avatar-name="${escapeHtmlAttribute(entry.athlete)}"
+        aria-label="Ampliar foto de ${escapeHtmlAttribute(entry.athlete)}"
+      >
+        <span class="athlete-avatar-fallback">${athleteInitials}</span>
+        ${avatarImage}
+      </button>
+    `;
+  }
+
   return `
     <span class="athlete-avatar athlete-avatar-${variant}" aria-hidden="true">
       <span class="athlete-avatar-fallback">${athleteInitials}</span>
       ${avatarImage}
     </span>
   `;
+}
+
+function openAvatarPreview(triggerElement) {
+  const avatarSource = String(triggerElement.dataset.avatarPreview || "").trim();
+  const athleteName = String(triggerElement.dataset.avatarName || "").trim();
+
+  if (!avatarSource) {
+    return;
+  }
+
+  lastAvatarTriggerElement = triggerElement;
+  avatarPreviewImageElement.src = avatarSource;
+  avatarPreviewImageElement.alt = athleteName ? `Foto de ${athleteName}` : "Foto do atleta";
+  avatarPreviewNameElement.textContent = athleteName || "Atleta";
+  avatarPreviewModalElement.classList.remove("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "false");
+  document.body.classList.add("avatar-preview-open");
+  avatarPreviewCloseButtonElement.focus();
+}
+
+function closeAvatarPreview() {
+  avatarPreviewModalElement.classList.add("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "true");
+  avatarPreviewImageElement.removeAttribute("src");
+  avatarPreviewImageElement.alt = "";
+  avatarPreviewNameElement.textContent = "";
+  document.body.classList.remove("avatar-preview-open");
+
+  if (lastAvatarTriggerElement) {
+    lastAvatarTriggerElement.focus();
+    lastAvatarTriggerElement = null;
+  }
 }
 
 function getAthleteInitials(name) {
