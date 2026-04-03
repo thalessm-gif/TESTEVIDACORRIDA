@@ -653,6 +653,49 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.ranking-top-panel {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.ranking-top-five {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ranking-top-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 18px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top, rgba(255, 106, 0, 0.18), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  box-shadow: var(--shadow);
+}
+
+.ranking-top-position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.16);
+  color: #ffe0cd;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ranking-top-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
 .ranking-filters-stack {
   display: grid;
   gap: 18px;
@@ -881,6 +924,12 @@ button:disabled {
   width: 56px;
   height: 56px;
   font-size: 1rem;
+}
+
+.athlete-avatar-top {
+  width: 88px;
+  height: 88px;
+  font-size: 1.45rem;
 }
 
 .athlete-avatar-fallback {
@@ -1167,6 +1216,10 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .ranking-top-five {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
   .brand-pill {
     display: flex;
     width: 100%;
@@ -1202,6 +1255,21 @@ tbody tr:hover {
 
   .ranking-card-list {
     display: grid;
+  }
+
+  .ranking-top-five {
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 12px;
+  }
+
+  .ranking-top-card {
+    padding: 14px 10px;
+  }
+
+  .athlete-avatar-top {
+    width: 74px;
+    height: 74px;
+    font-size: 1.2rem;
   }
 
   .ranking-athlete-card-top {

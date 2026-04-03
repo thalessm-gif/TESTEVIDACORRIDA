@@ -9,6 +9,8 @@ const cardListElement = document.getElementById("ranking-card-list");
 const tableHeadingElement = document.getElementById("ranking-table-heading");
 const categoryButtonsContainer = document.getElementById("ranking-category-buttons");
 const distanceButtonsContainer = document.getElementById("ranking-distance-buttons");
+const topFiveContainerElement = document.getElementById("ranking-top-five");
+const topFiveStatusElement = document.getElementById("ranking-top-status");
 const avatarPreviewModalElement = document.getElementById("avatar-preview-modal");
 const avatarPreviewImageElement = document.getElementById("avatar-preview-image");
 const avatarPreviewNameElement = document.getElementById("avatar-preview-name");
@@ -67,6 +69,7 @@ function initializeRankingPage() {
 
   tableBodyElement.addEventListener("click", handleRankingClick);
   cardListElement.addEventListener("click", handleRankingClick);
+  topFiveContainerElement.addEventListener("click", handleRankingClick);
 
   searchInputElement.addEventListener("input", () => {
     renderRanking();
@@ -256,9 +259,36 @@ function renderRanking() {
     selectedView === "general" ? rankingData.generalEntries : rankingData.categoryEntries
   );
 
+  renderTopFive(currentEntries);
   renderTable(currentEntries);
   renderCards(currentEntries);
   renderTableHeading();
+}
+
+function renderTopFive(entries) {
+  const topEntries = entries.slice(0, 5);
+
+  if (!topEntries.length) {
+    topFiveContainerElement.innerHTML = `
+      <p class="ranking-top-empty">Nenhum atleta encontrado para os filtros selecionados.</p>
+    `;
+    topFiveStatusElement.textContent = "Sem resultados";
+    return;
+  }
+
+  topFiveStatusElement.textContent = `${topEntries.length} atleta${topEntries.length === 1 ? "" : "s"} em destaque`;
+  topFiveContainerElement.innerHTML = topEntries
+    .map((entry, index) => `
+      <article
+        class="ranking-top-card"
+        aria-label="${escapeHtmlAttribute(`Posicao ${index + 1}: ${entry.athlete}`)}"
+        title="${escapeHtmlAttribute(entry.athlete)}"
+      >
+        <span class="ranking-top-position">${index + 1}</span>
+        ${renderAthleteAvatar(entry, "top")}
+      </article>
+    `)
+    .join("");
 }
 
 function renderTable(entries) {
@@ -381,6 +411,10 @@ function renderCards(entries) {
 }
 
 function renderEmptyState(message) {
+  topFiveContainerElement.innerHTML = `
+    <p class="ranking-top-empty">${escapeHtml(message)}</p>
+  `;
+  topFiveStatusElement.textContent = "Indisponivel";
   tableBodyElement.innerHTML = `
     <tr>
       <td colspan="7">${escapeHtml(message)}</td>
@@ -538,6 +572,7 @@ function renderAthleteAvatar(entry, variant) {
         class="athlete-avatar athlete-avatar-${variant} athlete-avatar-button"
         data-avatar-preview="${escapeHtmlAttribute(entry.avatar)}"
         data-avatar-name="${escapeHtmlAttribute(entry.athlete)}"
+        title="${escapeHtmlAttribute(entry.athlete)}"
         aria-label="Ampliar foto de ${escapeHtmlAttribute(entry.athlete)}"
       >
         <span class="athlete-avatar-fallback">${athleteInitials}</span>
