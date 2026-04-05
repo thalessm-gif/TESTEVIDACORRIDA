@@ -172,6 +172,22 @@ body {
   color: #fff7ed;
 }
 
+.feature-card-calendar {
+  border-color: rgba(99, 214, 255, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(117, 223, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(8, 86, 116, 0.42), rgba(255, 255, 255, 0.05));
+}
+
+.feature-card-calendar .feature-tag {
+  background: rgba(103, 220, 255, 0.16);
+  color: #d6f8ff;
+}
+
+.feature-card-calendar .feature-link {
+  color: #e0fbff;
+}
+
 .feature-card-plans {
   grid-column: 1 / -1;
   border-color: rgba(145, 214, 196, 0.22);
@@ -646,6 +662,189 @@ button:disabled {
 .ranking-hero {
   padding: 32px;
   margin-bottom: 24px;
+}
+
+.calendar-hero,
+.calendar-panel {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.calendar-race-list {
+  display: grid;
+  gap: 24px;
+}
+
+.calendar-month-section {
+  display: grid;
+  gap: 16px;
+}
+
+.calendar-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.calendar-month-name {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.calendar-month-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(99, 214, 255, 0.14);
+  color: #d8f7ff;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.calendar-month-races {
+  display: grid;
+  gap: 18px;
+}
+
+.calendar-race-card,
+.calendar-empty-card {
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.calendar-race-card-top {
+  margin-bottom: 16px;
+}
+
+.calendar-race-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.calendar-race-meta-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calendar-race-meta-item strong {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.calendar-race-headline h3 {
+  margin-bottom: 6px;
+  font-size: 1.28rem;
+}
+
+.calendar-race-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.calendar-race-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-bottom: 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.16);
+  color: #ffd8c2;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.calendar-race-headline p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.calendar-race-meta-item {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.calendar-race-meta-item-distances {
+  grid-column: span 1;
+}
+
+.calendar-distance-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-distance-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.calendar-race-notes {
+  margin: 16px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.calendar-race-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.calendar-race-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff5b00 0%, #ff8a24 100%);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 14px 26px rgba(255, 106, 0, 0.22);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.calendar-race-link:hover {
+  transform: translateY(-1px);
+}
+
+.calendar-race-link-disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff0e7;
+  box-shadow: none;
+  cursor: default;
 }
 
 .ranking-controls-panel {
@@ -1216,6 +1415,15 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .calendar-race-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-month-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .ranking-top-five {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
@@ -1236,8 +1444,10 @@ tbody tr:hover {
   .form-panel,
   .overview,
   .table-panel,
+  .calendar-panel,
   .ranking-controls-panel,
   .ranking-hero,
+  .calendar-hero,
   .home-hero,
   .highlights-hero {
     padding: 18px;

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendário de Provas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="top-nav" aria-label="Navegação principal">
+      <a href="index.html" class="nav-link">Página inicial</a>
+      <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
+      <a href="destaques-semanais.html" class="nav-link">Destaques Semanais</a>
+      <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
+    </nav>
+
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">"Os desafios nos definem."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel calendar-hero">
+      <p class="eyebrow">Área 4</p>
+      <h1>Calendário de Provas</h1>
+      <p class="hero-text">
+        Acompanhe as próximas provas da região.
+      </p>
+    </section>
+
+    <section class="panel calendar-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Agenda</p>
+          <h2>Próximas provas</h2>
+        </div>
+        <span id="calendar-status" class="count-badge">Atualizando agenda</span>
+      </div>
+
+      <div id="calendar-race-list" class="calendar-race-list" aria-live="polite">
+        <p class="empty-state">Carregando calendário...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="calendar-data.js"></script>
+  <script src="calendar.js"></script>
+</body>
+</html>
