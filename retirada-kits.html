@@ -25,6 +25,7 @@
       <a href="index.html" class="nav-link">Pagina inicial</a>
       <a href="destaques-semanais.html" class="nav-link">Destaques Semanais</a>
       <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
+      <a href="calendario-provas.html" class="nav-link">Calendario de Provas</a>
     </nav>
 
     <section class="brand-banner">
@@ -58,7 +59,8 @@
         <form id="kit-form" novalidate>
           <label class="field">
             <span>Nome Completo</span>
-            <input id="fullName" name="fullName" type="text" placeholder="Digite o seu nome" required>
+            <input id="fullName" name="fullName" type="text" placeholder="Digite o seu nome" list="athlete-name-suggestions" autocomplete="off" required>
+            <datalist id="athlete-name-suggestions"></datalist>
           </label>
 
           <label class="field">
@@ -130,6 +132,7 @@
     </section>
   </main>
 
+  <script src="kit-athletes.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -11,6 +11,7 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpnGjHiV8bDv
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");
+const athleteSuggestionList = document.getElementById("athlete-name-suggestions");
 const distanceInput = document.getElementById("distance");
 const shirtSizeInput = document.getElementById("shirtSize");
 const messageElement = document.getElementById("form-message");
@@ -24,6 +25,7 @@ const statusBox = document.getElementById("status-box");
 const statusBoxTitle = document.getElementById("status-box-title");
 const statusBoxText = document.getElementById("status-box-text");
 const statusSpinner = document.getElementById("status-spinner");
+const preloadedAthleteNames = Array.isArray(window.KIT_ATHLETE_NAMES) ? window.KIT_ATHLETE_NAMES : [];
 
 let entries = [];
 let statusHideTimeoutId = null;
@@ -575,6 +577,7 @@ function render() {
   const groupedEntries = groupEntriesByDistance(sortedEntries);
   const shirtSummary = getShirtSizeSummary(sortedEntries);
 
+  updateAthleteNameSuggestions(sortedEntries);
   totalCountElement.textContent = `${sortedEntries.length} inscrito${sortedEntries.length === 1 ? "" : "s"}`;
 
   groupsContainer.innerHTML = groupedEntries
@@ -641,6 +644,35 @@ function render() {
       `;
 }
 
+function updateAthleteNameSuggestions(currentEntries) {
+  if (!athleteSuggestionList) {
+    return;
+  }
+
+  const names = getSuggestedAthleteNames();
+  athleteSuggestionList.innerHTML = names
+    .map((name) => `<option value="${escapeHtmlAttribute(name)}"></option>`)
+    .join("");
+}
+
+function getSuggestedAthleteNames() {
+  const uniqueNames = new Map();
+
+  preloadedAthleteNames
+    .map((name) => String(name || "").trim().replace(/\s+/g, " "))
+    .filter(Boolean)
+    .forEach((name) => {
+      const normalizedKey = name.toLocaleLowerCase("pt-BR");
+      if (!uniqueNames.has(normalizedKey)) {
+        uniqueNames.set(normalizedKey, name);
+      }
+    });
+
+  return [...uniqueNames.values()].sort((first, second) =>
+    first.localeCompare(second, "pt-BR", { sensitivity: "base" })
+  );
+}
+
 function showMessage(text, isError = false) {
   messageElement.textContent = text;
   messageElement.style.color = isError ? "#ffd0d0" : "#d8ffef";
@@ -658,6 +690,10 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
 }
 
 function createEntryId() {
