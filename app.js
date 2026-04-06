@@ -1,4 +1,4 @@
-const DISTANCE_ORDER = ["3km", "5km", "10km", "21km"];
+const DEFAULT_DISTANCE_OPTIONS = ["3km", "5km", "10km", "21km"];
 const SHIRT_SIZE_ORDER = ["PP", "P", "M", "G", "GG"];
 const STORAGE_KEY = "kit-withdrawal-entries";
 const LEGACY_STORAGE_KEYS = ["kit-withdrawal-entries", "kitWithdrawalEntries"];
@@ -28,8 +28,10 @@ const statusSpinner = document.getElementById("status-spinner");
 const preloadedAthleteNames = Array.isArray(window.KIT_ATHLETE_NAMES) ? window.KIT_ATHLETE_NAMES : [];
 
 let entries = [];
+let distanceOptions = [...DEFAULT_DISTANCE_OPTIONS];
 let statusHideTimeoutId = null;
 
+renderDistanceOptions();
 render();
 initializeApp();
 
@@ -289,6 +291,43 @@ function saveEntriesToLocalStorage(nextEntries) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(nextEntries));
 }
 
+function normalizeDistanceOptions(options) {
+  const uniqueOptions = new Set();
+
+  return (Array.isArray(options) ? options : [])
+    .map((option) => String(option || "").trim())
+    .filter((option) => {
+      if (!option || uniqueOptions.has(option)) {
+        return false;
+      }
+
+      uniqueOptions.add(option);
+      return true;
+    });
+}
+
+function setDistanceOptions(nextOptions) {
+  const normalizedOptions = normalizeDistanceOptions(nextOptions);
+  distanceOptions = normalizedOptions.length ? normalizedOptions : [...DEFAULT_DISTANCE_OPTIONS];
+  renderDistanceOptions();
+}
+
+function renderDistanceOptions() {
+  if (!distanceInput) {
+    return;
+  }
+
+  const currentValue = distanceInput.value;
+  distanceInput.innerHTML = [
+    '<option value="">Selecione</option>',
+    ...distanceOptions.map((distance) => `<option value="${escapeHtmlAttribute(distance)}">${escapeHtml(distance)}</option>`)
+  ].join("");
+
+  if (distanceOptions.includes(currentValue)) {
+    distanceInput.value = currentValue;
+  }
+}
+
 async function loadEntriesFromIndexedDB() {
   if (!window.indexedDB) {
     return [];
@@ -444,6 +483,9 @@ async function loadEntriesFromGoogleSheets(options = {}) {
     }
 
     const data = await response.json();
+    if (Array.isArray(data.distanceOptions)) {
+      setDistanceOptions(data.distanceOptions);
+    }
     return Array.isArray(data.entries) ? data.entries.map(normalizeEntry) : [];
   } catch (error) {
     console.error("Erro ao carregar dados do Google Sheets:", error);
@@ -536,7 +578,7 @@ function createEntryFingerprint(entry) {
 
 function sortEntries(list) {
   return [...list].sort((first, second) => {
-    const distanceDiff = DISTANCE_ORDER.indexOf(first.distance) - DISTANCE_ORDER.indexOf(second.distance);
+    const distanceDiff = getDistanceWeight(first.distance) - getDistanceWeight(second.distance);
     if (distanceDiff !== 0) {
       return distanceDiff;
     }
@@ -545,8 +587,21 @@ function sortEntries(list) {
   });
 }
 
+function getDistanceWeight(distance) {
+  const index = distanceOptions.indexOf(String(distance || "").trim());
+  return index === -1 ? distanceOptions.length + 999 : index;
+}
+
 function groupEntriesByDistance(list) {
-  return DISTANCE_ORDER.map((distance) => ({
+  const configuredOptions = [...distanceOptions];
+  const additionalOptions = [...new Set(
+    list
+      .map((entry) => String(entry.distance || "").trim())
+      .filter(Boolean)
+      .filter((distance) => !configuredOptions.includes(distance))
+  )].sort((first, second) => first.localeCompare(second, "pt-BR", { sensitivity: "base" }));
+
+  return [...configuredOptions, ...additionalOptions].map((distance) => ({
     distance,
     items: list
       .filter((entry) => entry.distance === distance)
@@ -749,6 +804,7 @@ function containsEntry(list, expectedEntry) {
 
 function resetFormAfterSubmit() {
   form.reset();
+  renderDistanceOptions();
   fullNameInput.focus();
 }
 
