@@ -150,7 +150,7 @@ exportButton.addEventListener("click", () => {
   }
 
   const csvLines = [
-    ["Nome completo", "Distancia", "Tamanho da camisa"],
+    ["Nome completo", "Distância", "Tamanho da camisa"],
     ...sortEntries([...entries]).map((entry) => [entry.fullName, entry.distance, entry.shirtSize])
   ];
 
@@ -587,7 +587,7 @@ function render() {
           <article class="distance-card">
             <h3>${group.distance}</h3>
             <p class="distance-count">0 atletas</p>
-            <p class="empty-state">Nenhum nome cadastrado nessa distancia ainda.</p>
+            <p class="empty-state">Nenhum nome cadastrado nessa distância.</p>
           </article>
         `;
       }
