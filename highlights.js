@@ -155,7 +155,7 @@ function renderSummary({ athleteCount, weekCount, perfectCount }) {
 function renderPerfectList(entries) {
   if (!entries.length) {
     renderPerfectMessage(
-      "Nenhum atleta 100% ativo encontrado ainda. Quando alguem completar todas as semanas, ele aparece aqui."
+      "Nenhum atleta 100% ativo encontrado."
     );
     return;
   }
