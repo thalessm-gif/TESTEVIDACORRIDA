@@ -283,7 +283,7 @@ function buildTelegramMessages_(entries) {
 }
 
 function sendTelegramMessage_(config, message) {
-  var url = "https://api.telegram.org/bot" + encodeURIComponent(config.token) + "/sendMessage";
+  var url = "https://api.telegram.org/bot" + config.token + "/sendMessage";
 
   var response = UrlFetchApp.fetch(url, {
     method: "post",
@@ -299,6 +299,17 @@ function sendTelegramMessage_(config, message) {
   if (statusCode < 200 || statusCode >= 300) {
     throw new Error("Telegram respondeu com status " + statusCode + ": " + response.getContentText());
   }
+}
+
+function testarTelegram() {
+  var config = getTelegramConfig_();
+
+  if (!config.token || !config.chatId) {
+    throw new Error("Configure TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID nas Propriedades do script.");
+  }
+
+  sendTelegramMessage_(config, "<b>Teste do Telegram</b>\nA integracao com o Google Apps Script esta funcionando.");
+  Logger.log("Mensagem de teste enviada com sucesso para o chat " + config.chatId);
 }
 
 function escapeTelegramHtml_(value) {
