@@ -905,6 +905,94 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.referral-info-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 28px;
+  margin-bottom: 24px;
+  border-color: rgba(255, 154, 88, 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(255, 106, 0, 0.16), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(61, 111, 255, 0.14), transparent 26%),
+    linear-gradient(180deg, rgba(8, 27, 55, 0.94), rgba(4, 18, 38, 0.96));
+}
+
+.referral-info-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.referral-info-copy,
+.referral-info-side {
+  min-width: 0;
+}
+
+.referral-info-lead {
+  margin-bottom: 18px;
+  color: #edf3fd;
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.referral-benefit-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.referral-benefit-card,
+.referral-note-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.referral-benefit-tag {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff5b00 0%, #ff8a24 100%);
+  color: #fff7f1;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.referral-benefit-card strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.referral-benefit-card p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.referral-note-title {
+  margin-bottom: 12px;
+  color: #ffd8c2;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.referral-note-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #edf3fd;
+  display: grid;
+  gap: 12px;
+  line-height: 1.65;
+}
+
 .ranking-top-five {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1558,6 +1646,10 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .referral-info-layout {
+    grid-template-columns: 1fr;
+  }
+
   .calendar-month-header {
     align-items: flex-start;
     flex-direction: column;
@@ -1618,6 +1710,10 @@ tbody tr:hover {
 
   .ranking-top-card {
     padding: 14px 10px;
+  }
+
+  .referral-info-panel {
+    padding: 18px;
   }
 
   .athlete-avatar-top {
