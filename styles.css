@@ -172,6 +172,22 @@ body {
   color: #fff7ed;
 }
 
+.feature-card-referral {
+  border-color: rgba(255, 163, 96, 0.28);
+  background:
+    radial-gradient(circle at top left, rgba(255, 166, 82, 0.18), transparent 30%),
+    linear-gradient(135deg, rgba(140, 74, 16, 0.34), rgba(255, 255, 255, 0.05));
+}
+
+.feature-card-referral .feature-tag {
+  background: rgba(255, 177, 108, 0.16);
+  color: #ffe5ca;
+}
+
+.feature-card-referral .feature-link {
+  color: #fff1e4;
+}
+
 .feature-card-calendar {
   border-color: rgba(99, 214, 255, 0.24);
   background:
@@ -925,6 +941,28 @@ button:disabled {
 .ranking-top-empty {
   margin: 0;
   color: var(--muted);
+}
+
+.referral-top-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.referral-top-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.16);
+  color: #ffe0cd;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .ranking-filters-stack {

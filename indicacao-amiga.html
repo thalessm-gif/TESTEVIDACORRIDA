@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indica&#231;&#227;o Amiga VC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a href="index.html" class="nav-link">P&#225;gina inicial</a>
+      <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
+      <a href="destaques-semanais.html" class="nav-link">Destaques Semanais</a>
+      <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
+      <a href="calendario-provas.html" class="nav-link">Calend&#225;rio de Provas</a>
+      <a href="planos-fidelizacao.html" class="nav-link">Planos de Fideliza&#231;&#227;o</a>
+    </nav>
+
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">"Os desafios nos definem."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel ranking-hero">
+      <p class="eyebrow">&#193;rea 6</p>
+      <h1>Indica&#231;&#227;o Amiga</h1>
+      <p class="hero-text">
+        Veja quem mais trouxe amigos para a assessoria. O Top 5 destaca os atletas com mais indica&#231;&#245;es e a lista completa mostra toda a base em ordem.
+      </p>
+    </section>
+
+    <section class="panel ranking-controls-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Busca</p>
+          <h2>Encontre um atleta rapidamente</h2>
+        </div>
+        <span id="referral-sheet-status" class="count-badge">Aguardando planilha</span>
+      </div>
+
+      <div class="ranking-filters-stack">
+        <label class="field ranking-search-field">
+          <span>Buscar atleta</span>
+          <input id="referral-search" type="text" placeholder="Digite um nome para filtrar">
+        </label>
+      </div>
+    </section>
+
+    <section class="panel ranking-top-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Top 5</p>
+          <h2>Atletas mais amigos</h2>
+        </div>
+        <span id="referral-top-status" class="count-badge">Aguardando dados</span>
+      </div>
+
+      <div id="referral-top-five" class="ranking-top-five" aria-live="polite">
+        <p class="ranking-top-empty">Conecte a planilha para visualizar o Top 5.</p>
+      </div>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Lista completa</p>
+          <h2>Ranking de indica&#231;&#245;es</h2>
+        </div>
+      </div>
+
+      <div class="table-wrapper ranking-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Pos.</th>
+              <th>Atleta</th>
+              <th>Indica&#231;&#245;es</th>
+            </tr>
+          </thead>
+          <tbody id="referral-table-body">
+            <tr>
+              <td colspan="3">Conecte a planilha em indicacao-amiga.js para visualizar as indica&#231;&#245;es.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="referral-card-list" class="ranking-card-list">
+        <article class="ranking-athlete-card">
+          <p class="ranking-card-empty">Conecte a planilha em indicacao-amiga.js para visualizar as indica&#231;&#245;es.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="indicacao-amiga.js"></script>
+</body>
+</html>
