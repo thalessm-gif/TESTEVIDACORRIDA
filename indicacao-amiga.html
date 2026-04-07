@@ -172,6 +172,50 @@
     </div>
   </div>
 
-  <script src="indicacao-amiga.js?v=20260407-7"></script>
+  <script src="indicacao-amiga.js?v=20260407-8"></script>
+  <script>
+    (function () {
+      const referralTableBody = document.getElementById("referral-table-body");
+
+      if (!referralTableBody) {
+        return;
+      }
+
+      function normalizeReferralTableOrder() {
+        const rows = [...referralTableBody.querySelectorAll("tr")];
+
+        rows.forEach((row) => {
+          const cells = [...row.children];
+          if (cells.length !== 5) {
+            return;
+          }
+
+          const thirdCell = cells[2];
+          const fourthCell = cells[3];
+          const fifthCell = cells[4];
+          const looksLikeOldOrder =
+            Boolean(thirdCell.querySelector(".referral-level-pill")) ||
+            Boolean(fourthCell.querySelector(".referral-validity-pill"));
+
+          if (!looksLikeOldOrder) {
+            return;
+          }
+
+          row.replaceChildren(cells[0], cells[1], fifthCell, thirdCell, fourthCell);
+        });
+      }
+
+      normalizeReferralTableOrder();
+
+      const observer = new MutationObserver(() => {
+        normalizeReferralTableOrder();
+      });
+
+      observer.observe(referralTableBody, {
+        childList: true,
+        subtree: true
+      });
+    }());
+  </script>
 </body>
 </html>
