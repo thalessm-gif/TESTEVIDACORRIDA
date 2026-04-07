@@ -199,9 +199,9 @@ function renderReferralTable(entries) {
       <tr>
         <td><span class="ranking-position">${index + 1}</span></td>
         <td>${renderReferralAthleteIdentity(entry, "table")}</td>
+        <td class="ranking-points">${escapeHtml(formatNumber(entry.referrals))}</td>
         <td>${entry.level ? `<span class="referral-level-pill">${escapeHtml(entry.level)}</span>` : "-"}</td>
         <td>${renderReferralValidityCell(entry.validity)}</td>
-        <td class="ranking-points">${escapeHtml(formatNumber(entry.referrals))}</td>
       </tr>
     `)
     .join("");
@@ -458,7 +458,7 @@ function renderReferralValidityNote(validity) {
 }
 
 function getReferralValidityLabel(validity) {
-  const prefix = validity.isExpired ? "Expirou em" : "V\u00E1lido at\u00E9";
+  const prefix = validity.isExpired ? "Expirou em" : "Vigente at\u00E9";
   return `${prefix} ${formatDatePtBr(validity.validUntilDate)}`;
 }
 
