@@ -136,11 +136,13 @@ function renderReferralRanking() {
 }
 
 function renderReferralTopFive(entries) {
-  const topEntries = entries.slice(0, 5);
+  const topEntries = entries
+    .filter((entry) => Number(entry.referrals) > 0)
+    .slice(0, 5);
 
   if (!topEntries.length) {
     referralTopFiveElement.innerHTML = `
-      <p class="ranking-top-empty">Nenhum atleta encontrado para a busca atual.</p>
+      <p class="ranking-top-empty">Nenhum atleta com indica&#231;&#245;es para a busca atual.</p>
     `;
     referralTopStatusElement.textContent = "Sem resultados";
     return;
