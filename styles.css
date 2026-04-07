@@ -1332,6 +1332,25 @@ button:disabled {
   color: var(--text);
 }
 
+.fidelity-gift-pill {
+  font-weight: 700;
+}
+
+.fidelity-gift-pill-available {
+  background: rgba(255, 187, 87, 0.18);
+  color: #ffe8bf;
+}
+
+.fidelity-gift-pill-delivered {
+  background: rgba(65, 201, 141, 0.16);
+  color: #d8ffef;
+}
+
+.fidelity-gift-pill-unknown {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
 .ranking-athlete-card-top {
   display: grid;
   grid-template-columns: auto 1fr auto;

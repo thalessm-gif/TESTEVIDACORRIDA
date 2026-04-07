@@ -6,7 +6,12 @@ const FIDELITY_STATUS_LABELS = {
   active: "Ativo",
   expiring: "Vencendo",
   expired: "Encerrado",
-  unknown: "Sem vigência"
+  unknown: "Sem vig\u00EAncia"
+};
+const FIDELITY_GIFT_LABELS = {
+  available: "Dispon\u00EDvel",
+  delivered: "Entregue",
+  unknown: "N\u00E3o informado"
 };
 
 const fidelitySheetStatusElement = document.getElementById("fidelity-sheet-status");
@@ -59,7 +64,7 @@ function initializeFidelityPage() {
 async function loadFidelityFromSheet() {
   if (!FIDELITY_SHEET_URL) {
     setFidelitySheetStatus("Cole o link da planilha");
-    renderFidelityEmptyState("Conecte a planilha em fidelizacao.js para visualizar os planos de fidelização.");
+    renderFidelityEmptyState("Conecte a planilha em fidelizacao.js para visualizar os planos de fidelizacao.");
     return;
   }
 
@@ -81,12 +86,12 @@ async function loadFidelityFromSheet() {
     renderFidelity();
     setFidelitySheetStatus("Planilha conectada");
   } catch (error) {
-    console.error("Erro ao carregar planos de fidelização:", error);
+    console.error("Erro ao carregar planos de fidelizacao:", error);
     fidelityEntries = [];
     fidelityPlans = [];
     renderFidelityPlanButtons([]);
     renderFidelityEmptyState(
-      "Não foi possível carregar a planilha. Verifique o link em fidelizacao.js e confirme se a base está acessível."
+      "Nao foi possivel carregar a planilha. Verifique o link em fidelizacao.js e confirme se a base esta acessivel."
     );
     setFidelitySheetStatus("Erro ao carregar");
   }
@@ -106,14 +111,15 @@ function parseFidelityCsv(csvContent) {
 
   const athleteColumn = findHeader(headers, ["atleta", "nome", "corredor"]);
   const planColumn = findHeader(headers, ["plano"]);
-  const startColumn = findHeader(headers, ["inicio", "data inicio", "início"]);
-  const endColumn = findHeader(headers, ["termino", "termino do plano", "término", "fim"]);
+  const startColumn = findHeader(headers, ["inicio", "data inicio", "inicio"]);
+  const endColumn = findHeader(headers, ["termino", "termino do plano", "termino", "fim"]);
   const usedColumn = findHeader(headers, ["desconto vc store utilizado", "desconto utilizado", "utilizado", "usado"]);
-  const balanceColumn = findHeader(headers, ["saldo", "saldo disponivel", "saldo disponível"]);
-  const validityColumn = findHeader(headers, ["vigencia ate", "vigencia", "vigência até", "vigência"]);
+  const balanceColumn = findHeader(headers, ["saldo", "saldo disponivel", "saldo disponivel"]);
+  const validityColumn = findHeader(headers, ["vigencia ate", "vigencia", "vigencia ate", "vigencia"]);
+  const giftsColumn = findHeader(headers, ["brindes", "brinde", "status brindes", "entrega brindes"]);
 
   if (!athleteColumn) {
-    throw new Error("Coluna de atleta não encontrada na planilha.");
+    throw new Error("Coluna de atleta nao encontrada na planilha.");
   }
 
   const entries = rows
@@ -126,8 +132,10 @@ function parseFidelityCsv(csvContent) {
       const usedText = getCellValue(row, usedColumn ? usedColumn.index : -1);
       const balanceText = getCellValue(row, balanceColumn ? balanceColumn.index : -1);
       const validityText = getCellValue(row, validityColumn ? validityColumn.index : -1);
+      const giftsText = getCellValue(row, giftsColumn ? giftsColumn.index : -1);
       const validityDate = parseBrazilianDate(validityText) || parseBrazilianDate(endText);
       const status = getFidelityStatus(validityDate);
+      const giftsStatus = normalizeGiftStatus(giftsText);
 
       return {
         id: `fidelity-${index}-${normalizeHeader(athlete)}-${normalizeHeader(plan)}`,
@@ -141,7 +149,9 @@ function parseFidelityCsv(csvContent) {
         usedValue: parseCurrencyValue(usedText),
         balanceValue: parseCurrencyValue(balanceText),
         validityDate,
-        status
+        status,
+        giftsText: giftsText || (FIDELITY_GIFT_LABELS[giftsStatus] || FIDELITY_GIFT_LABELS.unknown),
+        giftsStatus
       };
     })
     .filter((entry) => entry.athlete)
@@ -163,7 +173,7 @@ function renderFidelityTable(entries) {
   if (!entries.length) {
     fidelityTableBodyElement.innerHTML = `
       <tr>
-        <td colspan="8">Nenhum atleta encontrado para o filtro atual.</td>
+        <td colspan="9">Nenhum atleta encontrado para o filtro atual.</td>
       </tr>
     `;
     return;
@@ -179,6 +189,7 @@ function renderFidelityTable(entries) {
         <td>${escapeHtml(entry.usedText || formatCurrency(entry.usedValue))}</td>
         <td>${escapeHtml(entry.balanceText || formatCurrency(entry.balanceValue))}</td>
         <td>${escapeHtml(entry.validityText || "-")}</td>
+        <td>${renderGiftBadge(entry.giftsStatus, entry.giftsText)}</td>
         <td>${renderStatusBadge(entry.status)}</td>
       </tr>
     `)
@@ -201,28 +212,29 @@ function renderFidelityCards(entries) {
         <div class="fidelity-athlete-card-top">
           <div>
             <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
-            <p class="ranking-athlete-meta">${escapeHtml(entry.plan || "Plano não informado")}</p>
+            <p class="ranking-athlete-meta">${escapeHtml(entry.plan || "Plano nao informado")}</p>
           </div>
           ${renderStatusBadge(entry.status)}
         </div>
 
         <div class="fidelity-meta-grid">
-          ${renderCardMetaItem("Início", entry.startText)}
-          ${renderCardMetaItem("Término", entry.endText)}
+          ${renderCardMetaItem("Inicio", entry.startText)}
+          ${renderCardMetaItem("Termino", entry.endText)}
           ${renderCardMetaItem("Utilizado", entry.usedText || formatCurrency(entry.usedValue))}
           ${renderCardMetaItem("Saldo", entry.balanceText || formatCurrency(entry.balanceValue))}
-          ${renderCardMetaItem("Vigência até", entry.validityText)}
+          ${renderCardMetaItem("Vigencia ate", entry.validityText)}
+          ${renderCardMetaItem("Brindes", entry.giftsText, renderGiftBadge(entry.giftsStatus, entry.giftsText))}
         </div>
       </article>
     `)
     .join("");
 }
 
-function renderCardMetaItem(label, value) {
+function renderCardMetaItem(label, value, overrideValueHtml) {
   return `
     <div class="fidelity-meta-item">
       <span class="fidelity-meta-label">${escapeHtml(label)}</span>
-      <strong class="fidelity-meta-value">${escapeHtml(value || "-")}</strong>
+      <strong class="fidelity-meta-value">${overrideValueHtml || escapeHtml(value || "-")}</strong>
     </div>
   `;
 }
@@ -233,9 +245,15 @@ function renderStatusBadge(status) {
   return `<span class="${className}">${escapeHtml(label)}</span>`;
 }
 
+function renderGiftBadge(status, fallbackText) {
+  const label = FIDELITY_GIFT_LABELS[status] || fallbackText || FIDELITY_GIFT_LABELS.unknown;
+  const className = `table-status fidelity-gift-pill fidelity-gift-pill-${status || "unknown"}`;
+  return `<span class="${className}">${escapeHtml(label)}</span>`;
+}
+
 function renderFidelityHeading(resultCount) {
   if (selectedPlan === "all" && selectedStatus === "all") {
-    fidelityTableHeadingElement.textContent = "Todos os planos de fidelização";
+    fidelityTableHeadingElement.textContent = "Todos os planos de fidelizacao";
     return;
   }
 
@@ -251,7 +269,7 @@ function renderFidelityHeading(resultCount) {
 
   fidelityTableHeadingElement.textContent = parts.length
     ? `${parts.join(" • ")} (${resultCount})`
-    : "Todos os planos de fidelização";
+    : "Todos os planos de fidelizacao";
 }
 
 function renderFidelityPlanButtons(plans) {
@@ -299,11 +317,11 @@ function filterFidelityEntries(entries) {
 }
 
 function renderFidelityEmptyState(message) {
-  fidelityTableHeadingElement.textContent = "Todos os planos de fidelização";
+  fidelityTableHeadingElement.textContent = "Todos os planos de fidelizacao";
 
   fidelityTableBodyElement.innerHTML = `
     <tr>
-      <td colspan="8">${escapeHtml(message)}</td>
+      <td colspan="9">${escapeHtml(message)}</td>
     </tr>
   `;
 
@@ -401,6 +419,33 @@ function parseCurrencyValue(value) {
   return Number.isFinite(numericValue) ? numericValue : 0;
 }
 
+function normalizeGiftStatus(value) {
+  const normalizedValue = normalizeHeader(value);
+
+  if (!normalizedValue) {
+    return "unknown";
+  }
+
+  if (
+    normalizedValue === "entregue" ||
+    normalizedValue === "retirado" ||
+    normalizedValue === "recebido"
+  ) {
+    return "delivered";
+  }
+
+  if (
+    normalizedValue === "disponivel" ||
+    normalizedValue === "disponivel para retirada" ||
+    normalizedValue === "pendente" ||
+    normalizedValue === "a retirar"
+  ) {
+    return "available";
+  }
+
+  return "unknown";
+}
+
 function formatCurrency(value) {
   return Number(value || 0).toLocaleString("pt-BR", {
     style: "currency",
@@ -418,7 +463,10 @@ function startOfDay(date) {
 
 function findHeader(headers, aliases) {
   return headers.find((header) =>
-    aliases.some((alias) => header.normalized === normalizeHeader(alias) || header.normalized.includes(normalizeHeader(alias)))
+    aliases.some((alias) => {
+      const normalizedAlias = normalizeHeader(alias);
+      return header.normalized === normalizedAlias || header.normalized.includes(normalizedAlias);
+    })
   );
 }
 
