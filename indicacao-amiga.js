@@ -8,14 +8,35 @@ const referralTopFiveElement = document.getElementById("referral-top-five");
 const referralTopStatusElement = document.getElementById("referral-top-status");
 const referralTableBodyElement = document.getElementById("referral-table-body");
 const referralCardListElement = document.getElementById("referral-card-list");
+const avatarPreviewModalElement = document.getElementById("avatar-preview-modal");
+const avatarPreviewImageElement = document.getElementById("avatar-preview-image");
+const avatarPreviewNameElement = document.getElementById("avatar-preview-name");
+const avatarPreviewCloseButtonElement = avatarPreviewModalElement.querySelector(".avatar-preview-close");
 
 let referralEntries = [];
+let lastAvatarTriggerElement = null;
 
 initializeReferralPage();
 
 function initializeReferralPage() {
   referralSearchInputElement.addEventListener("input", () => {
     renderReferralRanking();
+  });
+
+  referralTopFiveElement.addEventListener("click", handleReferralClick);
+  referralTableBodyElement.addEventListener("click", handleReferralClick);
+  referralCardListElement.addEventListener("click", handleReferralClick);
+
+  avatarPreviewModalElement.addEventListener("click", (event) => {
+    if (event.target.closest("[data-avatar-close]")) {
+      closeAvatarPreview();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !avatarPreviewModalElement.classList.contains("avatar-preview-modal-hidden")) {
+      closeAvatarPreview();
+    }
   });
 
   loadReferralRankingFromSheet();
@@ -73,15 +94,18 @@ function parseReferralCsv(csvContent) {
     "total indicacoes",
     "quantidade"
   ]);
+  const avatarHeader = findHeader(firstRowHeaders, ["avatar", "foto", "imagem", "foto perfil", "foto_perfil"]);
 
   const athleteColumnIndex = athleteHeader ? athleteHeader.index : 0;
   const referralsColumnIndex = referralsHeader ? referralsHeader.index : 1;
+  const avatarColumnIndex = avatarHeader ? avatarHeader.index : -1;
   const dataRows = athleteHeader || referralsHeader ? rows.slice(1) : rows;
   const groupedEntries = new Map();
 
   dataRows.forEach((row) => {
     const athlete = getCellValue(row, athleteColumnIndex).replace(/\s+/g, " ").trim();
     const referrals = parseReferralCount(getCellValue(row, referralsColumnIndex));
+    const avatar = normalizeAvatarValue(getCellValue(row, avatarColumnIndex));
 
     if (!athlete) {
       return;
@@ -91,11 +115,14 @@ function parseReferralCsv(csvContent) {
     if (!groupedEntries.has(athleteKey)) {
       groupedEntries.set(athleteKey, {
         athlete,
-        referrals: 0
+        referrals: 0,
+        avatar: ""
       });
     }
 
-    groupedEntries.get(athleteKey).referrals += referrals;
+    const entry = groupedEntries.get(athleteKey);
+    entry.referrals += referrals;
+    entry.avatar = entry.avatar || avatar;
   });
 
   return [...groupedEntries.values()].sort(sortReferralEntries);
@@ -124,6 +151,7 @@ function renderReferralTopFive(entries) {
     .map((entry, index) => `
       <article class="ranking-top-card" aria-label="${escapeHtmlAttribute(`Posicao ${index + 1}: ${entry.athlete}`)}">
         <span class="ranking-top-position">${index + 1}</span>
+        ${renderAthleteAvatar(entry, "top")}
         <p class="referral-top-name">${escapeHtml(entry.athlete)}</p>
         <span class="referral-top-count">${escapeHtml(formatReferralCount(entry.referrals))}</span>
       </article>
@@ -145,7 +173,7 @@ function renderReferralTable(entries) {
     .map((entry, index) => `
       <tr>
         <td><span class="ranking-position">${index + 1}</span></td>
-        <td>${escapeHtml(entry.athlete)}</td>
+        <td>${renderReferralAthleteIdentity(entry, "table")}</td>
         <td class="ranking-points">${escapeHtml(formatNumber(entry.referrals))}</td>
       </tr>
     `)
@@ -168,7 +196,7 @@ function renderReferralCards(entries) {
         <div class="ranking-athlete-card-top">
           <span class="ranking-position">${index + 1}</span>
           <div class="ranking-athlete-main">
-            <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
+            ${renderReferralAthleteIdentity(entry, "card")}
           </div>
           <div class="ranking-athlete-total">
             <span class="ranking-athlete-total-label">Indica\u00E7\u00F5es</span>
@@ -206,6 +234,15 @@ function filterReferralEntries(entries) {
   });
 }
 
+function handleReferralClick(event) {
+  const avatarButton = event.target.closest("[data-avatar-preview]");
+  if (!avatarButton) {
+    return;
+  }
+
+  openAvatarPreview(avatarButton);
+}
+
 function setReferralSheetStatus(text) {
   referralSheetStatusElement.textContent = text;
 }
@@ -235,6 +272,122 @@ function formatReferralCount(value) {
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("pt-BR");
+}
+
+function renderReferralAthleteIdentity(entry, variant) {
+  if (variant === "card") {
+    return `
+      <div class="ranking-athlete-identity ranking-athlete-identity-card">
+        ${renderAthleteAvatar(entry, "card")}
+        <div class="ranking-athlete-identity-copy">
+          <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="ranking-athlete-identity">
+      ${renderAthleteAvatar(entry, "table")}
+      <div class="ranking-athlete-identity-copy">
+        <span class="ranking-athlete-name-inline">${escapeHtml(entry.athlete)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderAthleteAvatar(entry, variant) {
+  const athleteInitials = escapeHtml(getAthleteInitials(entry.athlete));
+  const avatarImage = entry.avatar
+    ? `<img src="${escapeHtmlAttribute(entry.avatar)}" alt="" class="athlete-avatar-image" loading="lazy" decoding="async" onerror="this.remove()">`
+    : "";
+
+  if (entry.avatar) {
+    return `
+      <button
+        type="button"
+        class="athlete-avatar athlete-avatar-${variant} athlete-avatar-button"
+        data-avatar-preview="${escapeHtmlAttribute(entry.avatar)}"
+        data-avatar-name="${escapeHtmlAttribute(entry.athlete)}"
+        title="${escapeHtmlAttribute(entry.athlete)}"
+        aria-label="Ampliar foto de ${escapeHtmlAttribute(entry.athlete)}"
+      >
+        <span class="athlete-avatar-fallback">${athleteInitials}</span>
+        ${avatarImage}
+      </button>
+    `;
+  }
+
+  return `
+    <span class="athlete-avatar athlete-avatar-${variant}" aria-hidden="true">
+      <span class="athlete-avatar-fallback">${athleteInitials}</span>
+      ${avatarImage}
+    </span>
+  `;
+}
+
+function openAvatarPreview(triggerElement) {
+  const avatarSource = String(triggerElement.dataset.avatarPreview || "").trim();
+  const athleteName = String(triggerElement.dataset.avatarName || "").trim();
+
+  if (!avatarSource) {
+    return;
+  }
+
+  lastAvatarTriggerElement = triggerElement;
+  avatarPreviewImageElement.src = avatarSource;
+  avatarPreviewImageElement.alt = athleteName ? `Foto de ${athleteName}` : "Foto do atleta";
+  avatarPreviewNameElement.textContent = athleteName || "Atleta";
+  avatarPreviewModalElement.classList.remove("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "false");
+  document.body.classList.add("avatar-preview-open");
+  avatarPreviewCloseButtonElement.focus();
+}
+
+function closeAvatarPreview() {
+  avatarPreviewModalElement.classList.add("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "true");
+  avatarPreviewImageElement.removeAttribute("src");
+  avatarPreviewImageElement.alt = "";
+  avatarPreviewNameElement.textContent = "";
+  document.body.classList.remove("avatar-preview-open");
+
+  if (lastAvatarTriggerElement) {
+    lastAvatarTriggerElement.focus();
+    lastAvatarTriggerElement = null;
+  }
+}
+
+function getAthleteInitials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+
+  if (!parts.length) {
+    return "VC";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+}
+
+function normalizeAvatarValue(value) {
+  const safeValue = String(value || "").trim().replace(/\\/g, "/");
+
+  if (!safeValue) {
+    return "";
+  }
+
+  if (/^(https?:)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
+    return safeValue;
+  }
+
+  if (/^(?:\.{1,2}\/)?assets\//i.test(safeValue) || safeValue.startsWith("./") || safeValue.startsWith("../")) {
+    return safeValue;
+  }
+
+  return `assets/avatars/${safeValue}`;
 }
 
 function findHeader(headers, aliases) {

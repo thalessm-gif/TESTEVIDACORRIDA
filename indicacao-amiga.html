@@ -102,6 +102,17 @@
     </section>
   </main>
 
+  <div id="avatar-preview-modal" class="avatar-preview-modal avatar-preview-modal-hidden" aria-hidden="true">
+    <div class="avatar-preview-backdrop" data-avatar-close></div>
+    <div class="avatar-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="avatar-preview-name">
+      <button type="button" class="avatar-preview-close" data-avatar-close aria-label="Fechar visualizacao da foto">&times;</button>
+      <div class="avatar-preview-media">
+        <img id="avatar-preview-image" src="" alt="" class="avatar-preview-image">
+      </div>
+      <p id="avatar-preview-name" class="avatar-preview-name"></p>
+    </div>
+  </div>
+
   <script src="indicacao-amiga.js"></script>
 </body>
 </html>
