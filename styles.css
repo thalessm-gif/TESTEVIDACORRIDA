@@ -696,6 +696,97 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.regulation-link-card {
+  display: block;
+  max-width: 560px;
+  margin: 0 0 24px;
+  text-decoration: none;
+}
+
+.regulation-link-card:hover {
+  transform: translateY(-1px);
+  border-left-color: #43c9a8;
+}
+
+.regulation-hero {
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.regulation-panel {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+}
+
+.regulation-section {
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.regulation-section p:last-child,
+.regulation-section ul:last-child,
+.regulation-section ol:last-child {
+  margin-bottom: 0;
+}
+
+.regulation-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.regulation-summary-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.regulation-summary-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.regulation-summary-card strong {
+  line-height: 1.45;
+}
+
+.regulation-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 12px;
+  color: #edf3fd;
+  line-height: 1.65;
+}
+
+.regulation-points-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.regulation-point-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.14);
+  color: #ffd8c2;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .fidelity-hero,
 .fidelity-controls-panel {
   padding: 24px;
@@ -1800,6 +1891,10 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .regulation-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .fidelity-benefit-grid {
     grid-template-columns: 1fr;
   }
@@ -1836,6 +1931,7 @@ tbody tr:hover {
   .calendar-panel,
   .ranking-controls-panel,
   .ranking-hero,
+  .regulation-hero,
   .calendar-hero,
   .home-hero,
   .highlights-hero {
