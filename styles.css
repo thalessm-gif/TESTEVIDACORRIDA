@@ -702,6 +702,88 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.fidelity-info-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 28px;
+  margin-bottom: 24px;
+  border-color: rgba(255, 154, 88, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(255, 106, 0, 0.16), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(67, 201, 168, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(8, 27, 55, 0.95), rgba(4, 18, 38, 0.97));
+}
+
+.fidelity-benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.fidelity-benefit-card {
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.fidelity-benefit-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.fidelity-benefit-tag,
+.fidelity-benefit-discount {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.fidelity-benefit-tag {
+  background: linear-gradient(135deg, #ff5b00 0%, #ff8a24 100%);
+  color: #fff7f1;
+  text-transform: uppercase;
+}
+
+.fidelity-benefit-discount {
+  background: rgba(255, 255, 255, 0.08);
+  color: #edf8f4;
+}
+
+.fidelity-benefit-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #edf3fd;
+  display: grid;
+  gap: 10px;
+  line-height: 1.55;
+}
+
+.fidelity-benefit-card-monthly {
+  border-color: rgba(255, 147, 72, 0.22);
+}
+
+.fidelity-benefit-card-quarterly {
+  border-color: rgba(255, 191, 98, 0.22);
+}
+
+.fidelity-benefit-card-semiannual {
+  border-color: rgba(110, 225, 200, 0.22);
+}
+
+.fidelity-benefit-card-annual {
+  border-color: rgba(107, 186, 255, 0.22);
+}
+
 .fidelity-store-highlight {
   display: block;
   text-decoration: none;
@@ -1718,6 +1800,10 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .fidelity-benefit-grid {
+    grid-template-columns: 1fr;
+  }
+
   .referral-info-layout {
     grid-template-columns: 1fr;
   }
@@ -1785,6 +1871,10 @@ tbody tr:hover {
   }
 
   .referral-info-panel {
+    padding: 18px;
+  }
+
+  .fidelity-info-panel {
     padding: 18px;
   }
 
