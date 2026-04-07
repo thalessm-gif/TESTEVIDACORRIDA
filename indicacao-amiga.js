@@ -258,7 +258,8 @@ function sortReferralEntries(first, second) {
 function parseReferralCount(value) {
   const normalizedValue = String(value || "")
     .trim()
-    .replace(/\./g, "")
+    .replace(/[^\d,.-]/g, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
     .replace(",", ".");
 
   const numericValue = Number(normalizedValue);
@@ -266,8 +267,10 @@ function parseReferralCount(value) {
 }
 
 function formatReferralCount(value) {
-  const formattedNumber = formatNumber(value);
-  return `${formattedNumber} indica\u00E7\u00E3o${Number(value) === 1 ? "" : "\u00F5es"}`;
+  const numericValue = Number(value) || 0;
+  const formattedNumber = formatNumber(numericValue);
+  const label = numericValue === 1 ? "indica\u00E7\u00E3o" : "indica\u00E7\u00F5es";
+  return `${formattedNumber} ${label}`;
 }
 
 function formatNumber(value) {
