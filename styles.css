@@ -188,6 +188,22 @@ body {
   color: #e0fbff;
 }
 
+.feature-card-fidelity {
+  border-color: rgba(116, 229, 199, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(92, 255, 203, 0.2), transparent 28%),
+    linear-gradient(135deg, rgba(9, 88, 96, 0.42), rgba(255, 255, 255, 0.05));
+}
+
+.feature-card-fidelity .feature-tag {
+  background: rgba(99, 237, 200, 0.16);
+  color: #d7fff4;
+}
+
+.feature-card-fidelity .feature-link {
+  color: #ddfff6;
+}
+
 .feature-card-plans {
   grid-column: 1 / -1;
   border-color: rgba(145, 214, 196, 0.22);
@@ -664,6 +680,22 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.fidelity-hero,
+.fidelity-controls-panel {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.fidelity-store-highlight {
+  display: block;
+  text-decoration: none;
+}
+
+.fidelity-store-highlight:hover {
+  transform: translateY(-1px);
+  border-left-color: #43c9a8;
+}
+
 .calendar-hero,
 .calendar-panel {
   padding: 24px;
@@ -1045,11 +1077,80 @@ button:disabled {
   gap: 14px;
 }
 
+.fidelity-card-list {
+  display: none;
+  gap: 14px;
+}
+
 .ranking-athlete-card {
   padding: 18px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.fidelity-athlete-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.fidelity-athlete-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.fidelity-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fidelity-meta-item {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fidelity-meta-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.fidelity-meta-value {
+  display: block;
+  line-height: 1.4;
+}
+
+.fidelity-status-pill {
+  font-weight: 700;
+}
+
+.fidelity-status-pill-active {
+  background: rgba(65, 201, 141, 0.16);
+  color: #d8ffef;
+}
+
+.fidelity-status-pill-expiring {
+  background: rgba(255, 187, 87, 0.18);
+  color: #ffe8bf;
+}
+
+.fidelity-status-pill-expired {
+  background: rgba(255, 117, 117, 0.16);
+  color: #ffd5d5;
+}
+
+.fidelity-status-pill-unknown {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
 }
 
 .ranking-athlete-card-top {
@@ -1463,8 +1564,13 @@ tbody tr:hover {
     display: none;
   }
 
-  .ranking-card-list {
+  .ranking-card-list,
+  .fidelity-card-list {
     display: grid;
+  }
+
+  .fidelity-table-wrapper {
+    display: none;
   }
 
   .ranking-top-five {
@@ -1498,6 +1604,14 @@ tbody tr:hover {
 
   .ranking-stage-detail-points {
     justify-content: flex-start;
+  }
+
+  .fidelity-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fidelity-athlete-card-top {
+    flex-direction: column;
   }
 
   .primary-button,

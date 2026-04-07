@@ -1,0 +1,529 @@
+const FIDELITY_SHEET_URL = "https://docs.google.com/spreadsheets/d/1ms5k9CZZhfSKQGxv3oIh0fDq-skaUqO7Dxj0_2k0d1s/edit?usp=sharing";
+const FIDELITY_SHEET_NAME = "";
+
+const FIDELITY_PLAN_ORDER = ["Mensal", "Trimestral", "Semestral", "Anual"];
+const FIDELITY_STATUS_LABELS = {
+  active: "Ativo",
+  expiring: "Vencendo",
+  expired: "Encerrado",
+  unknown: "Sem vigência"
+};
+
+const fidelitySheetStatusElement = document.getElementById("fidelity-sheet-status");
+const fidelityPlanButtonsContainer = document.getElementById("fidelity-plan-buttons");
+const fidelityStatusButtonsContainer = document.getElementById("fidelity-status-buttons");
+const fidelitySearchInputElement = document.getElementById("fidelity-search");
+const fidelityTableBodyElement = document.getElementById("fidelity-table-body");
+const fidelityCardListElement = document.getElementById("fidelity-card-list");
+const fidelityTableHeadingElement = document.getElementById("fidelity-table-heading");
+
+let fidelityEntries = [];
+let fidelityPlans = [];
+let selectedPlan = "all";
+let selectedStatus = "all";
+
+initializeFidelityPage();
+
+function initializeFidelityPage() {
+  fidelityPlanButtonsContainer.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-plan]");
+    if (!button) {
+      return;
+    }
+
+    selectedPlan = button.dataset.plan || "all";
+    updateFidelityPlanButtons();
+    renderFidelity();
+  });
+
+  fidelityStatusButtonsContainer.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-status]");
+    if (!button) {
+      return;
+    }
+
+    selectedStatus = button.dataset.status || "all";
+    updateFidelityStatusButtons();
+    renderFidelity();
+  });
+
+  fidelitySearchInputElement.addEventListener("input", () => {
+    renderFidelity();
+  });
+
+  updateFidelityPlanButtons();
+  updateFidelityStatusButtons();
+  loadFidelityFromSheet();
+}
+
+async function loadFidelityFromSheet() {
+  if (!FIDELITY_SHEET_URL) {
+    setFidelitySheetStatus("Cole o link da planilha");
+    renderFidelityEmptyState("Conecte a planilha em fidelizacao.js para visualizar os planos de fidelização.");
+    return;
+  }
+
+  try {
+    setFidelitySheetStatus("Carregando planilha...");
+    const csvUrl = buildCsvUrl(FIDELITY_SHEET_URL, FIDELITY_SHEET_NAME);
+    const response = await fetch(`${csvUrl}${csvUrl.includes("?") ? "&" : "?"}ts=${Date.now()}`);
+
+    if (!response.ok) {
+      throw new Error(`Resposta inesperada: ${response.status}`);
+    }
+
+    const csvContent = await response.text();
+    const parsedData = parseFidelityCsv(csvContent);
+
+    fidelityEntries = parsedData.entries;
+    fidelityPlans = parsedData.plans;
+    renderFidelityPlanButtons(fidelityPlans);
+    renderFidelity();
+    setFidelitySheetStatus("Planilha conectada");
+  } catch (error) {
+    console.error("Erro ao carregar planos de fidelização:", error);
+    fidelityEntries = [];
+    fidelityPlans = [];
+    renderFidelityPlanButtons([]);
+    renderFidelityEmptyState(
+      "Não foi possível carregar a planilha. Verifique o link em fidelizacao.js e confirme se a base está acessível."
+    );
+    setFidelitySheetStatus("Erro ao carregar");
+  }
+}
+
+function parseFidelityCsv(csvContent) {
+  const rows = parseCsv(csvContent).filter((row) => row.some((cell) => String(cell || "").trim()));
+
+  if (rows.length < 2) {
+    return { entries: [], plans: [] };
+  }
+
+  const headers = rows[0].map((header, index) => ({
+    index,
+    normalized: normalizeHeader(header)
+  }));
+
+  const athleteColumn = findHeader(headers, ["atleta", "nome", "corredor"]);
+  const planColumn = findHeader(headers, ["plano"]);
+  const startColumn = findHeader(headers, ["inicio", "data inicio", "início"]);
+  const endColumn = findHeader(headers, ["termino", "termino do plano", "término", "fim"]);
+  const usedColumn = findHeader(headers, ["desconto vc store utilizado", "desconto utilizado", "utilizado", "usado"]);
+  const balanceColumn = findHeader(headers, ["saldo", "saldo disponivel", "saldo disponível"]);
+  const validityColumn = findHeader(headers, ["vigencia ate", "vigencia", "vigência até", "vigência"]);
+
+  if (!athleteColumn) {
+    throw new Error("Coluna de atleta não encontrada na planilha.");
+  }
+
+  const entries = rows
+    .slice(1)
+    .map((row, index) => {
+      const athlete = getCellValue(row, athleteColumn.index);
+      const plan = getCellValue(row, planColumn ? planColumn.index : -1);
+      const startText = getCellValue(row, startColumn ? startColumn.index : -1);
+      const endText = getCellValue(row, endColumn ? endColumn.index : -1);
+      const usedText = getCellValue(row, usedColumn ? usedColumn.index : -1);
+      const balanceText = getCellValue(row, balanceColumn ? balanceColumn.index : -1);
+      const validityText = getCellValue(row, validityColumn ? validityColumn.index : -1);
+      const validityDate = parseBrazilianDate(validityText) || parseBrazilianDate(endText);
+      const status = getFidelityStatus(validityDate);
+
+      return {
+        id: `fidelity-${index}-${normalizeHeader(athlete)}-${normalizeHeader(plan)}`,
+        athlete,
+        plan,
+        startText,
+        endText,
+        usedText,
+        balanceText,
+        validityText: validityText || endText,
+        usedValue: parseCurrencyValue(usedText),
+        balanceValue: parseCurrencyValue(balanceText),
+        validityDate,
+        status
+      };
+    })
+    .filter((entry) => entry.athlete)
+    .sort(sortFidelityEntries);
+
+  const plans = [...new Set(entries.map((entry) => entry.plan).filter(Boolean))].sort(sortPlans);
+  return { entries, plans };
+}
+
+function renderFidelity() {
+  const filteredEntries = filterFidelityEntries(fidelityEntries);
+
+  renderFidelityTable(filteredEntries);
+  renderFidelityCards(filteredEntries);
+  renderFidelityHeading(filteredEntries.length);
+}
+
+function renderFidelityTable(entries) {
+  if (!entries.length) {
+    fidelityTableBodyElement.innerHTML = `
+      <tr>
+        <td colspan="8">Nenhum atleta encontrado para o filtro atual.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  fidelityTableBodyElement.innerHTML = entries
+    .map((entry) => `
+      <tr>
+        <td>${escapeHtml(entry.athlete)}</td>
+        <td>${escapeHtml(entry.plan || "-")}</td>
+        <td>${escapeHtml(entry.startText || "-")}</td>
+        <td>${escapeHtml(entry.endText || "-")}</td>
+        <td>${escapeHtml(entry.usedText || formatCurrency(entry.usedValue))}</td>
+        <td>${escapeHtml(entry.balanceText || formatCurrency(entry.balanceValue))}</td>
+        <td>${escapeHtml(entry.validityText || "-")}</td>
+        <td>${renderStatusBadge(entry.status)}</td>
+      </tr>
+    `)
+    .join("");
+}
+
+function renderFidelityCards(entries) {
+  if (!entries.length) {
+    fidelityCardListElement.innerHTML = `
+      <article class="fidelity-athlete-card">
+        <p class="ranking-card-empty">Nenhum atleta encontrado para o filtro atual.</p>
+      </article>
+    `;
+    return;
+  }
+
+  fidelityCardListElement.innerHTML = entries
+    .map((entry) => `
+      <article class="fidelity-athlete-card">
+        <div class="fidelity-athlete-card-top">
+          <div>
+            <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
+            <p class="ranking-athlete-meta">${escapeHtml(entry.plan || "Plano não informado")}</p>
+          </div>
+          ${renderStatusBadge(entry.status)}
+        </div>
+
+        <div class="fidelity-meta-grid">
+          ${renderCardMetaItem("Início", entry.startText)}
+          ${renderCardMetaItem("Término", entry.endText)}
+          ${renderCardMetaItem("Utilizado", entry.usedText || formatCurrency(entry.usedValue))}
+          ${renderCardMetaItem("Saldo", entry.balanceText || formatCurrency(entry.balanceValue))}
+          ${renderCardMetaItem("Vigência até", entry.validityText)}
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function renderCardMetaItem(label, value) {
+  return `
+    <div class="fidelity-meta-item">
+      <span class="fidelity-meta-label">${escapeHtml(label)}</span>
+      <strong class="fidelity-meta-value">${escapeHtml(value || "-")}</strong>
+    </div>
+  `;
+}
+
+function renderStatusBadge(status) {
+  const label = FIDELITY_STATUS_LABELS[status] || FIDELITY_STATUS_LABELS.unknown;
+  const className = `table-status fidelity-status-pill fidelity-status-pill-${status}`;
+  return `<span class="${className}">${escapeHtml(label)}</span>`;
+}
+
+function renderFidelityHeading(resultCount) {
+  if (selectedPlan === "all" && selectedStatus === "all") {
+    fidelityTableHeadingElement.textContent = "Todos os planos de fidelização";
+    return;
+  }
+
+  const parts = [];
+
+  if (selectedPlan !== "all") {
+    parts.push(selectedPlan);
+  }
+
+  if (selectedStatus !== "all") {
+    parts.push(FIDELITY_STATUS_LABELS[selectedStatus] || selectedStatus);
+  }
+
+  fidelityTableHeadingElement.textContent = parts.length
+    ? `${parts.join(" • ")} (${resultCount})`
+    : "Todos os planos de fidelização";
+}
+
+function renderFidelityPlanButtons(plans) {
+  const availablePlans = ["all", ...plans];
+
+  if (!availablePlans.includes(selectedPlan)) {
+    selectedPlan = "all";
+  }
+
+  fidelityPlanButtonsContainer.innerHTML = availablePlans
+    .map((plan) => {
+      const label = plan === "all" ? "Todos os planos" : plan;
+      const activeClass = selectedPlan === plan ? " toggle-button-active" : "";
+
+      return `<button type="button" class="toggle-button ranking-category-button${activeClass}" data-plan="${escapeHtmlAttribute(plan)}">${escapeHtml(label)}</button>`;
+    })
+    .join("");
+}
+
+function updateFidelityPlanButtons() {
+  [...fidelityPlanButtonsContainer.querySelectorAll("[data-plan]")].forEach((button) => {
+    const isActive = button.dataset.plan === selectedPlan;
+    button.classList.toggle("toggle-button-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function updateFidelityStatusButtons() {
+  [...fidelityStatusButtonsContainer.querySelectorAll("[data-status]")].forEach((button) => {
+    const isActive = button.dataset.status === selectedStatus;
+    button.classList.toggle("toggle-button-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function filterFidelityEntries(entries) {
+  const normalizedSearch = normalizeHeader(fidelitySearchInputElement.value || "");
+
+  return entries.filter((entry) => {
+    const matchesSearch = !normalizedSearch || normalizeHeader(entry.athlete).includes(normalizedSearch);
+    const matchesPlan = selectedPlan === "all" || entry.plan === selectedPlan;
+    const matchesStatus = selectedStatus === "all" || entry.status === selectedStatus;
+    return matchesSearch && matchesPlan && matchesStatus;
+  });
+}
+
+function renderFidelityEmptyState(message) {
+  fidelityTableHeadingElement.textContent = "Todos os planos de fidelização";
+
+  fidelityTableBodyElement.innerHTML = `
+    <tr>
+      <td colspan="8">${escapeHtml(message)}</td>
+    </tr>
+  `;
+
+  fidelityCardListElement.innerHTML = `
+    <article class="fidelity-athlete-card">
+      <p class="ranking-card-empty">${escapeHtml(message)}</p>
+    </article>
+  `;
+}
+
+function getFidelityStatus(validityDate) {
+  if (!validityDate) {
+    return "unknown";
+  }
+
+  const today = startOfDay(new Date());
+  const targetDate = startOfDay(validityDate);
+  const diffInDays = Math.round((targetDate.getTime() - today.getTime()) / 86400000);
+
+  if (diffInDays < 0) {
+    return "expired";
+  }
+
+  if (diffInDays <= 30) {
+    return "expiring";
+  }
+
+  return "active";
+}
+
+function sortFidelityEntries(first, second) {
+  return first.athlete.localeCompare(second.athlete, "pt-BR", { sensitivity: "base" });
+}
+
+function sortPlans(first, second) {
+  const firstIndex = FIDELITY_PLAN_ORDER.indexOf(first);
+  const secondIndex = FIDELITY_PLAN_ORDER.indexOf(second);
+
+  if (firstIndex === -1 && secondIndex === -1) {
+    return String(first || "").localeCompare(String(second || ""), "pt-BR", { sensitivity: "base" });
+  }
+
+  if (firstIndex === -1) {
+    return 1;
+  }
+
+  if (secondIndex === -1) {
+    return -1;
+  }
+
+  return firstIndex - secondIndex;
+}
+
+function parseBrazilianDate(value) {
+  const safeValue = String(value || "").trim();
+  if (!safeValue) {
+    return null;
+  }
+
+  const directDate = new Date(safeValue);
+  if (!Number.isNaN(directDate.getTime()) && /[-/T]/.test(safeValue) && !safeValue.includes(",")) {
+    return directDate;
+  }
+
+  const match = safeValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (!match) {
+    return null;
+  }
+
+  const day = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  let year = Number(match[3]);
+
+  if (year < 100) {
+    year += year >= 70 ? 1900 : 2000;
+  }
+
+  const parsedDate = new Date(year, month, day);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function parseCurrencyValue(value) {
+  const safeValue = String(value || "").trim();
+  if (!safeValue) {
+    return 0;
+  }
+
+  const normalizedValue = safeValue
+    .replace(/R\$/gi, "")
+    .replace(/\s+/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const numericValue = Number(normalizedValue);
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+function formatCurrency(value) {
+  return Number(value || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+function setFidelitySheetStatus(text) {
+  fidelitySheetStatusElement.textContent = text;
+}
+
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function findHeader(headers, aliases) {
+  return headers.find((header) =>
+    aliases.some((alias) => header.normalized === normalizeHeader(alias) || header.normalized.includes(normalizeHeader(alias)))
+  );
+}
+
+function getCellValue(row, index) {
+  return index >= 0 ? String(row[index] || "").trim() : "";
+}
+
+function normalizeHeader(value) {
+  return String(value || "")
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function buildCsvUrl(sheetUrl, sheetName) {
+  const safeUrl = String(sheetUrl || "").trim();
+  const safeSheetName = String(sheetName || "").trim();
+
+  if (!safeUrl) {
+    return "";
+  }
+
+  if (/export\?format=csv/i.test(safeUrl) || /tqx=out:csv/i.test(safeUrl)) {
+    return safeUrl;
+  }
+
+  const match = safeUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/i);
+  if (!match) {
+    return safeUrl;
+  }
+
+  const sheetId = match[1];
+
+  if (safeSheetName) {
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(safeSheetName)}`;
+  }
+
+  const gidMatch = safeUrl.match(/[?&#]gid=([0-9]+)/i);
+  const gid = gidMatch ? gidMatch[1] : "0";
+
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let currentRow = [];
+  let currentValue = "";
+  let insideQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    const nextCharacter = text[index + 1];
+
+    if (character === '"') {
+      if (insideQuotes && nextCharacter === '"') {
+        currentValue += '"';
+        index += 1;
+      } else {
+        insideQuotes = !insideQuotes;
+      }
+      continue;
+    }
+
+    if (character === "," && !insideQuotes) {
+      currentRow.push(currentValue);
+      currentValue = "";
+      continue;
+    }
+
+    if ((character === "\n" || character === "\r") && !insideQuotes) {
+      if (character === "\r" && nextCharacter === "\n") {
+        index += 1;
+      }
+
+      currentRow.push(currentValue);
+      rows.push(currentRow);
+      currentRow = [];
+      currentValue = "";
+      continue;
+    }
+
+    currentValue += character;
+  }
+
+  if (currentValue.length || currentRow.length) {
+    currentRow.push(currentValue);
+    rows.push(currentRow);
+  }
+
+  return rows;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
+}
