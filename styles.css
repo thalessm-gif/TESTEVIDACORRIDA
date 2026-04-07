@@ -949,9 +949,15 @@ button:disabled {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
 }
 
+.referral-benefit-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .referral-benefit-tag {
   display: inline-flex;
-  margin-bottom: 12px;
   padding: 7px 12px;
   border-radius: 999px;
   background: linear-gradient(135deg, #ff5b00 0%, #ff8a24 100%);
@@ -1051,6 +1057,20 @@ button:disabled {
   font-size: 0.92rem;
   font-weight: 700;
   text-align: center;
+}
+
+.referral-level-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #edf3fd;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 
 .ranking-filters-stack {

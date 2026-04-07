@@ -95,10 +95,12 @@ function parseReferralCsv(csvContent) {
     "quantidade"
   ]);
   const avatarHeader = findHeader(firstRowHeaders, ["avatar", "foto", "imagem", "foto perfil", "foto_perfil"]);
+  const levelHeader = findHeader(firstRowHeaders, ["nivel", "nivel de indicacao", "nivel indicacao"]);
 
   const athleteColumnIndex = athleteHeader ? athleteHeader.index : 0;
   const referralsColumnIndex = referralsHeader ? referralsHeader.index : 1;
   const avatarColumnIndex = avatarHeader ? avatarHeader.index : -1;
+  const levelColumnIndex = levelHeader ? levelHeader.index : -1;
   const dataRows = athleteHeader || referralsHeader ? rows.slice(1) : rows;
   const groupedEntries = new Map();
 
@@ -106,6 +108,7 @@ function parseReferralCsv(csvContent) {
     const athlete = getCellValue(row, athleteColumnIndex).replace(/\s+/g, " ").trim();
     const referrals = parseReferralCount(getCellValue(row, referralsColumnIndex));
     const avatar = normalizeAvatarValue(getCellValue(row, avatarColumnIndex));
+    const level = normalizeLevelValue(getCellValue(row, levelColumnIndex));
 
     if (!athlete) {
       return;
@@ -116,13 +119,15 @@ function parseReferralCsv(csvContent) {
       groupedEntries.set(athleteKey, {
         athlete,
         referrals: 0,
-        avatar: ""
+        avatar: "",
+        level: ""
       });
     }
 
     const entry = groupedEntries.get(athleteKey);
     entry.referrals += referrals;
     entry.avatar = entry.avatar || avatar;
+    entry.level = getPreferredLevelLabel(entry.level, level);
   });
 
   return [...groupedEntries.values()].sort(sortReferralEntries);
@@ -137,7 +142,7 @@ function renderReferralRanking() {
 
 function renderReferralTopFive(entries) {
   const topEntries = entries
-    .filter((entry) => Number(entry.referrals) > 0)
+    .filter((entry) => hasPositiveReferralCount(entry.referrals))
     .slice(0, 5);
 
   if (!topEntries.length) {
@@ -155,6 +160,7 @@ function renderReferralTopFive(entries) {
         <span class="ranking-top-position">${index + 1}</span>
         ${renderAthleteAvatar(entry, "top")}
         <p class="referral-top-name">${escapeHtml(entry.athlete)}</p>
+        ${entry.level ? `<span class="referral-level-pill">${escapeHtml(entry.level)}</span>` : ""}
         <span class="referral-top-count">${escapeHtml(formatReferralCount(entry.referrals))}</span>
       </article>
     `)
@@ -165,7 +171,7 @@ function renderReferralTable(entries) {
   if (!entries.length) {
     referralTableBodyElement.innerHTML = `
       <tr>
-        <td colspan="3">Nenhum atleta encontrado para a busca atual.</td>
+        <td colspan="4">Nenhum atleta encontrado para a busca atual.</td>
       </tr>
     `;
     return;
@@ -176,6 +182,7 @@ function renderReferralTable(entries) {
       <tr>
         <td><span class="ranking-position">${index + 1}</span></td>
         <td>${renderReferralAthleteIdentity(entry, "table")}</td>
+        <td>${entry.level ? `<span class="referral-level-pill">${escapeHtml(entry.level)}</span>` : "-"}</td>
         <td class="ranking-points">${escapeHtml(formatNumber(entry.referrals))}</td>
       </tr>
     `)
@@ -205,6 +212,7 @@ function renderReferralCards(entries) {
             <strong>${escapeHtml(formatNumber(entry.referrals))}</strong>
           </div>
         </div>
+        ${entry.level ? `<div class="ranking-athlete-card-bottom"><span class="referral-level-pill">${escapeHtml(entry.level)}</span></div>` : ""}
       </article>
     `)
     .join("");
@@ -217,7 +225,7 @@ function renderReferralEmptyState(message) {
   referralTopStatusElement.textContent = "Indisponivel";
   referralTableBodyElement.innerHTML = `
     <tr>
-      <td colspan="3">${escapeHtml(message)}</td>
+      <td colspan="4">${escapeHtml(message)}</td>
     </tr>
   `;
   referralCardListElement.innerHTML = `
@@ -250,11 +258,34 @@ function setReferralSheetStatus(text) {
 }
 
 function sortReferralEntries(first, second) {
-  if (second.referrals !== first.referrals) {
-    return second.referrals - first.referrals;
+  const firstReferrals = getReferralCountValue(first.referrals);
+  const secondReferrals = getReferralCountValue(second.referrals);
+
+  if (secondReferrals !== firstReferrals) {
+    return secondReferrals - firstReferrals;
   }
 
   return first.athlete.localeCompare(second.athlete, "pt-BR", { sensitivity: "base" });
+}
+
+function hasPositiveReferralCount(value) {
+  return getReferralCountValue(value) > 0;
+}
+
+function getReferralCountValue(value) {
+  return parseReferralCount(value);
+}
+
+function getPreferredLevelLabel(currentLevel, nextLevel) {
+  if (!currentLevel) {
+    return nextLevel;
+  }
+
+  if (!nextLevel) {
+    return currentLevel;
+  }
+
+  return getLevelWeight(nextLevel) > getLevelWeight(currentLevel) ? nextLevel : currentLevel;
 }
 
 function parseReferralCount(value) {
@@ -269,14 +300,34 @@ function parseReferralCount(value) {
 }
 
 function formatReferralCount(value) {
-  const numericValue = Number(value) || 0;
+  const numericValue = getReferralCountValue(value);
   const formattedNumber = formatNumber(numericValue);
   const label = numericValue === 1 ? "indica\u00E7\u00E3o" : "indica\u00E7\u00F5es";
   return `${formattedNumber} ${label}`;
 }
 
 function formatNumber(value) {
-  return Number(value || 0).toLocaleString("pt-BR");
+  return getReferralCountValue(value).toLocaleString("pt-BR");
+}
+
+function normalizeLevelValue(value) {
+  const safeValue = String(value || "").trim().replace(/\s+/g, " ");
+  if (!safeValue) {
+    return "";
+  }
+
+  const levelMatch = safeValue.match(/\d+/);
+  if (levelMatch) {
+    return `N\u00EDvel ${levelMatch[0]}`;
+  }
+
+  return safeValue;
+}
+
+function getLevelWeight(level) {
+  const safeLevel = String(level || "").trim();
+  const levelMatch = safeLevel.match(/\d+/);
+  return levelMatch ? Number(levelMatch[0]) : 0;
 }
 
 function renderReferralAthleteIdentity(entry, variant) {
