@@ -1073,6 +1073,39 @@ button:disabled {
   letter-spacing: 0.03em;
 }
 
+.referral-validity-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(87, 217, 172, 0.14);
+  color: #ddfff4;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.referral-validity-pill-expired {
+  background: rgba(255, 117, 117, 0.16);
+  color: #ffd8d8;
+}
+
+.referral-validity-note {
+  margin: 0;
+  color: #d8fff4;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.referral-validity-note-expired {
+  color: #ffd8d8;
+}
+
 .ranking-filters-stack {
   display: grid;
   gap: 18px;

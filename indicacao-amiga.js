@@ -96,11 +96,19 @@ function parseReferralCsv(csvContent) {
   ]);
   const avatarHeader = findHeader(firstRowHeaders, ["avatar", "foto", "imagem", "foto perfil", "foto_perfil"]);
   const levelHeader = findHeader(firstRowHeaders, ["nivel", "nivel de indicacao", "nivel indicacao"]);
+  const firstReferralDateHeader = findHeader(firstRowHeaders, [
+    "primeira indicacao",
+    "data primeira indicacao",
+    "primeira data",
+    "data inicial",
+    "inicio indicacao"
+  ]);
 
   const athleteColumnIndex = athleteHeader ? athleteHeader.index : 0;
   const referralsColumnIndex = referralsHeader ? referralsHeader.index : 1;
   const avatarColumnIndex = avatarHeader ? avatarHeader.index : -1;
   const levelColumnIndex = levelHeader ? levelHeader.index : -1;
+  const firstReferralDateColumnIndex = firstReferralDateHeader ? firstReferralDateHeader.index : -1;
   const dataRows = athleteHeader || referralsHeader ? rows.slice(1) : rows;
   const groupedEntries = new Map();
 
@@ -109,6 +117,7 @@ function parseReferralCsv(csvContent) {
     const referrals = parseReferralCount(getCellValue(row, referralsColumnIndex));
     const avatar = normalizeAvatarValue(getCellValue(row, avatarColumnIndex));
     const level = normalizeLevelValue(getCellValue(row, levelColumnIndex));
+    const firstReferralDate = parseReferralDate(getCellValue(row, firstReferralDateColumnIndex));
 
     if (!athlete) {
       return;
@@ -120,7 +129,8 @@ function parseReferralCsv(csvContent) {
         athlete,
         referrals: 0,
         avatar: "",
-        level: ""
+        level: "",
+        firstReferralDate: null
       });
     }
 
@@ -128,9 +138,15 @@ function parseReferralCsv(csvContent) {
     entry.referrals += referrals;
     entry.avatar = entry.avatar || avatar;
     entry.level = getPreferredLevelLabel(entry.level, level);
+    entry.firstReferralDate = getEarlierReferralDate(entry.firstReferralDate, firstReferralDate);
   });
 
-  return [...groupedEntries.values()].sort(sortReferralEntries);
+  return [...groupedEntries.values()]
+    .map((entry) => ({
+      ...entry,
+      validity: buildReferralValidity(entry.firstReferralDate)
+    }))
+    .sort(sortReferralEntries);
 }
 
 function renderReferralRanking() {
@@ -162,6 +178,7 @@ function renderReferralTopFive(entries) {
         <p class="referral-top-name">${escapeHtml(entry.athlete)}</p>
         ${entry.level ? `<span class="referral-level-pill">${escapeHtml(entry.level)}</span>` : ""}
         <span class="referral-top-count">${escapeHtml(formatReferralCount(entry.referrals))}</span>
+        ${renderReferralValidityNote(entry.validity)}
       </article>
     `)
     .join("");
@@ -171,7 +188,7 @@ function renderReferralTable(entries) {
   if (!entries.length) {
     referralTableBodyElement.innerHTML = `
       <tr>
-        <td colspan="4">Nenhum atleta encontrado para a busca atual.</td>
+        <td colspan="5">Nenhum atleta encontrado para a busca atual.</td>
       </tr>
     `;
     return;
@@ -183,6 +200,7 @@ function renderReferralTable(entries) {
         <td><span class="ranking-position">${index + 1}</span></td>
         <td>${renderReferralAthleteIdentity(entry, "table")}</td>
         <td>${entry.level ? `<span class="referral-level-pill">${escapeHtml(entry.level)}</span>` : "-"}</td>
+        <td>${renderReferralValidityCell(entry.validity)}</td>
         <td class="ranking-points">${escapeHtml(formatNumber(entry.referrals))}</td>
       </tr>
     `)
@@ -212,7 +230,10 @@ function renderReferralCards(entries) {
             <strong>${escapeHtml(formatNumber(entry.referrals))}</strong>
           </div>
         </div>
-        ${entry.level ? `<div class="ranking-athlete-card-bottom"><span class="referral-level-pill">${escapeHtml(entry.level)}</span></div>` : ""}
+        <div class="ranking-athlete-card-bottom">
+          ${entry.level ? `<span class="referral-level-pill">${escapeHtml(entry.level)}</span>` : ""}
+          ${renderReferralValidityChip(entry.validity)}
+        </div>
       </article>
     `)
     .join("");
@@ -225,7 +246,7 @@ function renderReferralEmptyState(message) {
   referralTopStatusElement.textContent = "Indisponivel";
   referralTableBodyElement.innerHTML = `
     <tr>
-      <td colspan="4">${escapeHtml(message)}</td>
+      <td colspan="5">${escapeHtml(message)}</td>
     </tr>
   `;
   referralCardListElement.innerHTML = `
@@ -308,6 +329,141 @@ function formatReferralCount(value) {
 
 function formatNumber(value) {
   return getReferralCountValue(value).toLocaleString("pt-BR");
+}
+
+function getEarlierReferralDate(currentDate, nextDate) {
+  if (!currentDate) {
+    return nextDate;
+  }
+
+  if (!nextDate) {
+    return currentDate;
+  }
+
+  return nextDate.getTime() < currentDate.getTime() ? nextDate : currentDate;
+}
+
+function parseReferralDate(value) {
+  const safeValue = String(value || "").trim();
+  if (!safeValue) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(safeValue)) {
+    const [year, month, day] = safeValue.split("-").map(Number);
+    return createLocalDate(year, month, day);
+  }
+
+  const brMatch = safeValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (brMatch) {
+    const day = Number(brMatch[1]);
+    const month = Number(brMatch[2]);
+    const year = normalizeTwoDigitYear(Number(brMatch[3]));
+    return createLocalDate(year, month, day);
+  }
+
+  if (/^\d+(?:[.,]\d+)?$/.test(safeValue)) {
+    const serialDate = parseSpreadsheetSerialDate(safeValue);
+    if (serialDate) {
+      return serialDate;
+    }
+  }
+
+  const fallbackDate = new Date(safeValue);
+  if (Number.isNaN(fallbackDate.getTime())) {
+    return null;
+  }
+
+  return createLocalDate(
+    fallbackDate.getFullYear(),
+    fallbackDate.getMonth() + 1,
+    fallbackDate.getDate()
+  );
+}
+
+function normalizeTwoDigitYear(year) {
+  return year < 100 ? 2000 + year : year;
+}
+
+function createLocalDate(year, month, day) {
+  const safeDate = new Date(year, month - 1, day);
+  safeDate.setHours(12, 0, 0, 0);
+  return Number.isNaN(safeDate.getTime()) ? null : safeDate;
+}
+
+function parseSpreadsheetSerialDate(value) {
+  const serialNumber = Number(String(value || "").replace(",", "."));
+  if (!Number.isFinite(serialNumber) || serialNumber <= 0) {
+    return null;
+  }
+
+  const epoch = new Date(1899, 11, 30);
+  epoch.setHours(12, 0, 0, 0);
+  const resultDate = new Date(epoch);
+  resultDate.setDate(epoch.getDate() + Math.floor(serialNumber));
+  return resultDate;
+}
+
+function buildReferralValidity(firstReferralDate) {
+  if (!firstReferralDate) {
+    return null;
+  }
+
+  const validUntilDate = addMonthsToDate(firstReferralDate, 12);
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+
+  return {
+    firstReferralDate,
+    validUntilDate,
+    isExpired: validUntilDate.getTime() < today.getTime()
+  };
+}
+
+function addMonthsToDate(date, monthsToAdd) {
+  const result = new Date(date);
+  result.setHours(12, 0, 0, 0);
+  const originalDay = result.getDate();
+  result.setMonth(result.getMonth() + monthsToAdd);
+
+  if (result.getDate() < originalDay) {
+    result.setDate(0);
+  }
+
+  return result;
+}
+
+function renderReferralValidityCell(validity) {
+  if (!validity) {
+    return "-";
+  }
+
+  return `<span class="referral-validity-pill${validity.isExpired ? " referral-validity-pill-expired" : ""}">${escapeHtml(getReferralValidityLabel(validity))}</span>`;
+}
+
+function renderReferralValidityChip(validity) {
+  if (!validity) {
+    return "";
+  }
+
+  return `<span class="referral-validity-pill${validity.isExpired ? " referral-validity-pill-expired" : ""}">${escapeHtml(getReferralValidityLabel(validity))}</span>`;
+}
+
+function renderReferralValidityNote(validity) {
+  if (!validity) {
+    return "";
+  }
+
+  return `<p class="referral-validity-note${validity.isExpired ? " referral-validity-note-expired" : ""}">${escapeHtml(getReferralValidityLabel(validity))}</p>`;
+}
+
+function getReferralValidityLabel(validity) {
+  const prefix = validity.isExpired ? "Expirou em" : "V\u00E1lido at\u00E9";
+  return `${prefix} ${formatDatePtBr(validity.validUntilDate)}`;
+}
+
+function formatDatePtBr(date) {
+  return date.toLocaleDateString("pt-BR");
 }
 
 function normalizeLevelValue(value) {
