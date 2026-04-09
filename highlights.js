@@ -8,14 +8,34 @@ const sheetStatusElement = document.getElementById("sheet-status");
 const perfectListElement = document.getElementById("perfect-list");
 const tableBodyElement = document.getElementById("highlights-table-body");
 const searchInputElement = document.getElementById("highlights-search");
+const avatarPreviewModalElement = document.getElementById("avatar-preview-modal");
+const avatarPreviewImageElement = document.getElementById("avatar-preview-image");
+const avatarPreviewNameElement = document.getElementById("avatar-preview-name");
+const avatarPreviewCloseButtonElement = avatarPreviewModalElement.querySelector(".avatar-preview-close");
 
 let highlightEntries = [];
+let lastAvatarTriggerElement = null;
 
 initializeHighlightsPage();
 
 function initializeHighlightsPage() {
   searchInputElement.addEventListener("input", () => {
     renderHighlightsTable(filterEntries(searchInputElement.value));
+  });
+
+  perfectListElement.addEventListener("click", handleHighlightsClick);
+  tableBodyElement.addEventListener("click", handleHighlightsClick);
+
+  avatarPreviewModalElement.addEventListener("click", (event) => {
+    if (event.target.closest("[data-avatar-close]")) {
+      closeAvatarPreview();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !avatarPreviewModalElement.classList.contains("avatar-preview-modal-hidden")) {
+      closeAvatarPreview();
+    }
   });
 
   loadHighlightsFromSheet();
@@ -103,13 +123,21 @@ function parseHighlightsCsv(csvContent) {
     normalized: normalizeHeader(header)
   }));
 
+  const athleteIdColumn = findHeader(headers, ["id atleta", "id_atleta", "codigo atleta", "codigo_atleta", "matricula atleta"]);
+  const athleteEmailColumn = findHeader(headers, ["email atleta", "email", "e-mail"]);
   const nameColumn = headers.find((header) =>
     ["nome", "atleta", "atletas"].includes(header.normalized)
   );
+  const avatarColumn = findHeader(headers, ["avatar", "foto", "imagem", "foto perfil", "foto_perfil"]);
   const totalColumn = headers.find((header) => header.normalized === "total");
   const explicitWeekColumns = headers.filter((header) => /^semana/.test(header.normalized));
   const fallbackWeekColumns = headers.filter(
-    (header) => header !== nameColumn && header !== totalColumn
+    (header) =>
+      header !== athleteIdColumn &&
+      header !== athleteEmailColumn &&
+      header !== nameColumn &&
+      header !== avatarColumn &&
+      header !== totalColumn
   );
   const weekColumns = explicitWeekColumns.length ? explicitWeekColumns : fallbackWeekColumns;
 
@@ -119,26 +147,47 @@ function parseHighlightsCsv(csvContent) {
 
   const entries = rows
     .slice(1)
-    .map((row) => createHighlightEntry(row, nameColumn, totalColumn, weekColumns))
+    .map((row) =>
+      createHighlightEntry(row, {
+        athleteIdColumn,
+        athleteEmailColumn,
+        nameColumn,
+        avatarColumn,
+        totalColumn,
+        weekColumns
+      })
+    )
     .filter((entry) => entry.name)
     .sort(sortHighlightEntries);
 
   return { entries, weekColumns };
 }
 
-function createHighlightEntry(row, nameColumn, totalColumn, weekColumns) {
-  const name = getCellValue(row, nameColumn.index);
+function createHighlightEntry(row, columns) {
+  const athleteId = getCellValue(row, columns.athleteIdColumn ? columns.athleteIdColumn.index : -1);
+  const athleteEmail = getCellValue(row, columns.athleteEmailColumn ? columns.athleteEmailColumn.index : -1);
+  const name = getCellValue(row, columns.nameColumn.index);
+  const rawAvatar = getCellValue(row, columns.avatarColumn ? columns.avatarColumn.index : -1);
+  const avatar = resolveAvatarValue(rawAvatar, {
+    athleteId,
+    athleteEmail,
+    athleteName: name
+  });
+  const weekColumns = columns.weekColumns;
   const activeWeeks = weekColumns
     .filter((column) => isActiveValue(getCellValue(row, column.index)))
     .map((column) => column.label);
   const activeWeekShortLabels = activeWeeks.map(getWeekShortLabel);
   const computedTotal = activeWeeks.length;
-  const totalFromSheet = parsePositiveNumber(getCellValue(row, totalColumn ? totalColumn.index : -1));
+  const totalFromSheet = parsePositiveNumber(getCellValue(row, columns.totalColumn ? columns.totalColumn.index : -1));
   const total = totalFromSheet || computedTotal;
   const isPerfect = weekColumns.length > 0 && activeWeeks.length === weekColumns.length;
 
   return {
+    athleteId,
+    athleteEmail,
     name,
+    avatar,
     activeWeeks,
     activeWeekShortLabels,
     total,
@@ -162,7 +211,12 @@ function renderPerfectList(entries) {
 
   perfectListElement.innerHTML = entries
     .map(
-      (entry) => `<span class="perfect-name-pill">${escapeHtml(entry.name)}</span>`
+      (entry) => `
+        <article class="perfect-athlete-card">
+          ${renderHighlightAthleteAvatar(entry)}
+          <p class="perfect-athlete-name">${escapeHtml(entry.name)}</p>
+        </article>
+      `
     )
     .join("");
 }
@@ -189,7 +243,7 @@ function renderHighlightsTable(entries) {
     .map(
       (entry) => `
         <tr>
-          <td>${escapeHtml(entry.name)}</td>
+          <td>${renderHighlightAthleteIdentity(entry)}</td>
           <td>
             ${entry.activeWeekShortLabels.length
               ? `
@@ -219,6 +273,15 @@ function renderErrorState(message) {
       <td colspan="4">${escapeHtml(message)}</td>
     </tr>
   `;
+}
+
+function handleHighlightsClick(event) {
+  const avatarButton = event.target.closest("[data-avatar-preview]");
+  if (!avatarButton) {
+    return;
+  }
+
+  openAvatarPreview(avatarButton);
 }
 
 function filterEntries(searchTerm) {
@@ -271,6 +334,12 @@ function normalizeHeader(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ");
+}
+
+function findHeader(headers, aliases) {
+  return headers.find((header) =>
+    aliases.some((alias) => header.normalized === alias || header.normalized.includes(alias))
+  );
 }
 
 function getWeekShortLabel(value) {
@@ -335,4 +404,137 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value);
+}
+
+function renderHighlightAthleteIdentity(entry) {
+  return `
+    <div class="ranking-athlete-identity">
+      ${renderHighlightAthleteAvatar(entry)}
+      <div class="ranking-athlete-identity-copy">
+        <span class="ranking-athlete-name-inline">${escapeHtml(entry.name)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderHighlightAthleteAvatar(entry) {
+  const athleteInitials = escapeHtml(getAthleteInitials(entry.name));
+  const avatarImage = entry.avatar
+    ? `<img src="${escapeHtmlAttribute(entry.avatar)}" alt="" class="athlete-avatar-image" loading="lazy" decoding="async" onerror="this.remove()">`
+    : "";
+
+  if (entry.avatar) {
+    return `
+      <button
+        type="button"
+        class="athlete-avatar athlete-avatar-table athlete-avatar-button"
+        data-avatar-preview="${escapeHtmlAttribute(entry.avatar)}"
+        data-avatar-name="${escapeHtmlAttribute(entry.name)}"
+        title="${escapeHtmlAttribute(entry.name)}"
+        aria-label="Ampliar foto de ${escapeHtmlAttribute(entry.name)}"
+      >
+        <span class="athlete-avatar-fallback">${athleteInitials}</span>
+        ${avatarImage}
+      </button>
+    `;
+  }
+
+  return `
+    <span class="athlete-avatar athlete-avatar-table" aria-hidden="true">
+      <span class="athlete-avatar-fallback">${athleteInitials}</span>
+      ${avatarImage}
+    </span>
+  `;
+}
+
+function openAvatarPreview(triggerElement) {
+  const avatarSource = String(triggerElement.dataset.avatarPreview || "").trim();
+  const athleteName = String(triggerElement.dataset.avatarName || "").trim();
+
+  if (!avatarSource) {
+    return;
+  }
+
+  lastAvatarTriggerElement = triggerElement;
+  avatarPreviewImageElement.src = avatarSource;
+  avatarPreviewImageElement.alt = athleteName ? `Foto de ${athleteName}` : "Foto do atleta";
+  avatarPreviewNameElement.textContent = athleteName || "Atleta";
+  avatarPreviewModalElement.classList.remove("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "false");
+  document.body.classList.add("avatar-preview-open");
+  avatarPreviewCloseButtonElement.focus();
+}
+
+function closeAvatarPreview() {
+  avatarPreviewModalElement.classList.add("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "true");
+  avatarPreviewImageElement.removeAttribute("src");
+  avatarPreviewImageElement.alt = "";
+  avatarPreviewNameElement.textContent = "";
+  document.body.classList.remove("avatar-preview-open");
+
+  if (lastAvatarTriggerElement) {
+    lastAvatarTriggerElement.focus();
+    lastAvatarTriggerElement = null;
+  }
+}
+
+function getAthleteInitials(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!parts.length) {
+    return "?";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+}
+
+function normalizeAvatarValue(value) {
+  const safeValue = String(value || "").trim().replace(/\\/g, "/");
+
+  if (!safeValue) {
+    return "";
+  }
+
+  if (/^(?:(?:https?|file):)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
+    return safeValue;
+  }
+
+  if (/^(?:\.{1,2}\/)?assets\//i.test(safeValue) || safeValue.startsWith("./") || safeValue.startsWith("../")) {
+    return safeValue;
+  }
+
+  return `assets/avatars/${safeValue}`;
+}
+
+function resolveAvatarValue(value, { athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  const mappedAvatar = getMappedAvatarValue({ athleteId, athleteEmail, athleteName });
+  if (mappedAvatar) {
+    return normalizeAvatarValue(mappedAvatar);
+  }
+
+  return normalizeAvatarValue(value);
+}
+
+function getMappedAvatarValue({ athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  if (typeof window.getVidaCorridaMappedAvatar !== "function") {
+    return "";
+  }
+
+  return window.getVidaCorridaMappedAvatar({
+    athleteId,
+    athleteEmail,
+    athleteName
+  });
 }

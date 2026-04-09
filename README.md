@@ -53,5 +53,31 @@ No editor do Apps Script, configure as propriedades em `Configuracoes do projeto
 - `TELEGRAM_ENABLED`: `true` ou `false`
 - `TELEGRAM_BOT_TOKEN`: token do bot
 - `TELEGRAM_CHAT_ID`: id do grupo, canal ou conversa
+- `DISTANCE_OPTIONS`: distancias na ordem desejada, por exemplo `5km, 10km`
 
 Assim o token nao fica exposto no codigo do site nem no repositorio.
+
+## Distancias configuraveis
+
+As opcoes de distancia podem ficar em um unico lugar nas `Propriedades do script` do Apps Script.
+
+Exemplos:
+
+- `DISTANCE_OPTIONS = 5km, 10km`
+- `DISTANCE_OPTIONS = 3km, 5km, 10km, 21km`
+
+Depois de alterar essa propriedade, publique uma nova versao do aplicativo da web para a pagina carregar as novas opcoes automaticamente.
+
+## Editor de avatares
+
+Para manter os caminhos dos avatares em um lugar so, o projeto agora usa o arquivo `avatar-map-data.js`.
+
+Se quiser cadastrar ou atualizar esses caminhos por uma janela do Windows:
+
+1. Execute `abrir-editor-avatares.cmd`.
+2. Escolha o tipo de chave (`ID`, `E-mail` ou `Nome`).
+3. Preencha o identificador do atleta.
+4. Informe o caminho do avatar ou clique em `Escolher imagem...`.
+5. Clique em `Salvar arquivo`.
+
+O editor grava os dados em `avatar-map-data.js`, que e carregado pelas paginas que exibem avatares.

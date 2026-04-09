@@ -18,6 +18,7 @@
       <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
       <a href="indicacao-amiga.html" class="nav-link">Indica&#231;&#227;o Amiga</a>
       <a href="calendario-provas.html" class="nav-link">Calendário de Provas</a>
+      <a href="treinadores.html" class="nav-link">Treinadores</a>
     </nav>
 
     <section class="brand-banner">
@@ -180,6 +181,19 @@
     </section>
   </main>
 
-  <script src="fidelizacao.js?v=20260407-2"></script>
+  <div id="avatar-preview-modal" class="avatar-preview-modal avatar-preview-modal-hidden" aria-hidden="true">
+    <div class="avatar-preview-backdrop" data-avatar-close></div>
+    <div class="avatar-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="avatar-preview-name">
+      <button type="button" class="avatar-preview-close" data-avatar-close aria-label="Fechar visualizacao da foto">&times;</button>
+      <div class="avatar-preview-media">
+        <img id="avatar-preview-image" src="" alt="" class="avatar-preview-image">
+      </div>
+      <p id="avatar-preview-name" class="avatar-preview-name"></p>
+    </div>
+  </div>
+
+  <script src="avatar-map-data.js?v=20260408-5"></script>
+  <script src="avatar-map.js?v=20260408-5"></script>
+  <script src="fidelizacao.js?v=20260408-5"></script>
 </body>
 </html>

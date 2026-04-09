@@ -140,6 +140,8 @@ function parseRankingCsv(csvContent) {
     normalized: normalizeHeader(header)
   }));
 
+  const athleteIdColumn = findHeader(headers, ["id atleta", "id_atleta", "codigo atleta", "codigo_atleta", "matricula atleta"]);
+  const athleteEmailColumn = findHeader(headers, ["email atleta", "email", "e-mail"]);
   const athleteColumn = findHeader(headers, ["atleta", "nome", "corredor", "competidor"]);
   const categoryColumn = findHeader(headers, ["faixa etaria", "faixa_etaria", "categoria", "faixa"]);
   const sexColumn = findHeader(headers, ["sexo", "genero"]);
@@ -157,18 +159,31 @@ function parseRankingCsv(csvContent) {
 
   const stageRows = rows
     .slice(1)
-    .map((row) => ({
-      athlete: getCellValue(row, athleteColumn.index),
-      category: getCellValue(row, categoryColumn ? categoryColumn.index : -1),
-      sex: getCellValue(row, sexColumn ? sexColumn.index : -1),
-      distance: normalizeDistance(getCellValue(row, distanceColumn ? distanceColumn.index : -1)),
-      avatar: normalizeAvatarValue(getCellValue(row, avatarColumn ? avatarColumn.index : -1)),
-      stageNumber: getCellValue(row, stageNumberColumn ? stageNumberColumn.index : -1),
-      stageName: getCellValue(row, stageNameColumn ? stageNameColumn.index : -1),
-      date: getCellValue(row, dateColumn ? dateColumn.index : -1),
-      generalPoints: parsePositiveNumber(getCellValue(row, generalPointsColumn ? generalPointsColumn.index : -1)),
-      categoryPoints: parsePositiveNumber(getCellValue(row, categoryPointsColumn ? categoryPointsColumn.index : -1))
-    }))
+    .map((row) => {
+      const athleteId = getCellValue(row, athleteIdColumn ? athleteIdColumn.index : -1);
+      const athleteEmail = getCellValue(row, athleteEmailColumn ? athleteEmailColumn.index : -1);
+      const athlete = getCellValue(row, athleteColumn.index);
+      const rawAvatar = getCellValue(row, avatarColumn ? avatarColumn.index : -1);
+
+      return {
+        athleteId,
+        athleteEmail,
+        athlete,
+        category: getCellValue(row, categoryColumn ? categoryColumn.index : -1),
+        sex: getCellValue(row, sexColumn ? sexColumn.index : -1),
+        distance: normalizeDistance(getCellValue(row, distanceColumn ? distanceColumn.index : -1)),
+        avatar: resolveAvatarValue(rawAvatar, {
+          athleteId,
+          athleteEmail,
+          athleteName: athlete
+        }),
+        stageNumber: getCellValue(row, stageNumberColumn ? stageNumberColumn.index : -1),
+        stageName: getCellValue(row, stageNameColumn ? stageNameColumn.index : -1),
+        date: getCellValue(row, dateColumn ? dateColumn.index : -1),
+        generalPoints: parsePositiveNumber(getCellValue(row, generalPointsColumn ? generalPointsColumn.index : -1)),
+        categoryPoints: parsePositiveNumber(getCellValue(row, categoryPointsColumn ? categoryPointsColumn.index : -1))
+      };
+    })
     .filter((entry) => entry.athlete);
 
   const categories = [...new Set(stageRows.map((entry) => entry.category).filter(Boolean))].sort((a, b) =>
@@ -194,14 +209,21 @@ function buildRankingEntries(stageRows, mode) {
       return;
     }
 
+    const athleteKey = buildAthleteGroupKey({
+      athleteId: row.athleteId,
+      athleteEmail: row.athleteEmail,
+      athleteName: row.athlete
+    });
     const keyBase = mode === "category"
-      ? `${row.athlete.toLowerCase()}|${row.category.toLowerCase()}`
-      : row.athlete.toLowerCase();
+      ? `${athleteKey}|${row.category.toLowerCase()}`
+      : athleteKey;
     const key = `${keyBase}|${row.distance.toLowerCase()}`;
 
     if (!rankingMap.has(key)) {
       rankingMap.set(key, {
         id: key,
+        athleteId: row.athleteId,
+        athleteEmail: row.athleteEmail,
         athlete: row.athlete,
         category: row.category,
         sex: row.sex,
@@ -214,6 +236,8 @@ function buildRankingEntries(stageRows, mode) {
     }
 
     const entry = rankingMap.get(key);
+    entry.athleteId = entry.athleteId || row.athleteId;
+    entry.athleteEmail = entry.athleteEmail || row.athleteEmail;
     entry.category = entry.category || row.category;
     entry.sex = entry.sex || row.sex;
     entry.distance = entry.distance || row.distance;
@@ -232,6 +256,8 @@ function buildRankingEntries(stageRows, mode) {
   return [...rankingMap.values()]
     .map((entry) => ({
       id: entry.id,
+      athleteId: entry.athleteId,
+      athleteEmail: entry.athleteEmail,
       athlete: entry.athlete,
       category: entry.category,
       sex: entry.sex,
@@ -642,7 +668,7 @@ function normalizeAvatarValue(value) {
     return "";
   }
 
-  if (/^(https?:)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
+  if (/^(?:(?:https?|file):)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
     return safeValue;
   }
 
@@ -651,6 +677,41 @@ function normalizeAvatarValue(value) {
   }
 
   return `assets/avatars/${safeValue}`;
+}
+
+function resolveAvatarValue(value, { athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  const mappedAvatar = getMappedAvatarValue({ athleteId, athleteEmail, athleteName });
+  if (mappedAvatar) {
+    return normalizeAvatarValue(mappedAvatar);
+  }
+
+  return normalizeAvatarValue(value);
+}
+
+function getMappedAvatarValue({ athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  if (typeof window.getVidaCorridaMappedAvatar !== "function") {
+    return "";
+  }
+
+  return window.getVidaCorridaMappedAvatar({
+    athleteId,
+    athleteEmail,
+    athleteName
+  });
+}
+
+function buildAthleteGroupKey({ athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  const athleteIdKey = String(athleteId || "").trim().toLowerCase();
+  if (athleteIdKey) {
+    return `id:${athleteIdKey}`;
+  }
+
+  const athleteEmailKey = String(athleteEmail || "").trim().toLowerCase();
+  if (athleteEmailKey) {
+    return `email:${athleteEmailKey}`;
+  }
+
+  return `name:${normalizeHeader(athleteName)}`;
 }
 
 function normalizeDistance(value) {

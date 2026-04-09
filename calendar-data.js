@@ -218,5 +218,16 @@ window.RACE_CALENDAR_ENTRIES = [
     "signupUrl": "",
     "signupLabel": "",
     "notes": ""
+  },
+  {
+    "title": "Maratona Internacional de POA",
+    "date": "2026-05-30",
+    "time": "07:00",
+    "location": "Porto Alegre - RS",
+    "distances": ["5KM", "10KM", "21KM", "42KM"],
+    "circuito": "",
+    "signupUrl": "",
+    "signupLabel": "Inscrições abertas",
+    "notes": ""
   }
 ];

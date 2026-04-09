@@ -21,11 +21,16 @@ const fidelitySearchInputElement = document.getElementById("fidelity-search");
 const fidelityTableBodyElement = document.getElementById("fidelity-table-body");
 const fidelityCardListElement = document.getElementById("fidelity-card-list");
 const fidelityTableHeadingElement = document.getElementById("fidelity-table-heading");
+const avatarPreviewModalElement = document.getElementById("avatar-preview-modal");
+const avatarPreviewImageElement = document.getElementById("avatar-preview-image");
+const avatarPreviewNameElement = document.getElementById("avatar-preview-name");
+const avatarPreviewCloseButtonElement = avatarPreviewModalElement.querySelector(".avatar-preview-close");
 
 let fidelityEntries = [];
 let fidelityPlans = [];
 let selectedPlan = "all";
 let selectedStatus = "all";
+let lastAvatarTriggerElement = null;
 
 initializeFidelityPage();
 
@@ -54,6 +59,21 @@ function initializeFidelityPage() {
 
   fidelitySearchInputElement.addEventListener("input", () => {
     renderFidelity();
+  });
+
+  fidelityTableBodyElement.addEventListener("click", handleFidelityClick);
+  fidelityCardListElement.addEventListener("click", handleFidelityClick);
+
+  avatarPreviewModalElement.addEventListener("click", (event) => {
+    if (event.target.closest("[data-avatar-close]")) {
+      closeAvatarPreview();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !avatarPreviewModalElement.classList.contains("avatar-preview-modal-hidden")) {
+      closeAvatarPreview();
+    }
   });
 
   updateFidelityPlanButtons();
@@ -109,7 +129,10 @@ function parseFidelityCsv(csvContent) {
     normalized: normalizeHeader(header)
   }));
 
+  const athleteIdColumn = findHeader(headers, ["id atleta", "id_atleta", "codigo atleta", "codigo_atleta", "matricula atleta"]);
+  const athleteEmailColumn = findHeader(headers, ["email atleta", "email", "e-mail"]);
   const athleteColumn = findHeader(headers, ["atleta", "nome", "corredor"]);
+  const avatarColumn = findHeader(headers, ["avatar", "foto", "imagem", "foto perfil", "foto_perfil"]);
   const planColumn = findHeader(headers, ["plano"]);
   const startColumn = findHeader(headers, ["inicio", "data inicio", "inicio"]);
   const endColumn = findHeader(headers, ["termino", "termino do plano", "termino", "fim"]);
@@ -125,7 +148,10 @@ function parseFidelityCsv(csvContent) {
   const entries = rows
     .slice(1)
     .map((row, index) => {
+      const athleteId = getCellValue(row, athleteIdColumn ? athleteIdColumn.index : -1);
+      const athleteEmail = getCellValue(row, athleteEmailColumn ? athleteEmailColumn.index : -1);
       const athlete = getCellValue(row, athleteColumn.index);
+      const rawAvatar = getCellValue(row, avatarColumn ? avatarColumn.index : -1);
       const plan = getCellValue(row, planColumn ? planColumn.index : -1);
       const startText = getCellValue(row, startColumn ? startColumn.index : -1);
       const endText = getCellValue(row, endColumn ? endColumn.index : -1);
@@ -139,7 +165,14 @@ function parseFidelityCsv(csvContent) {
 
       return {
         id: `fidelity-${index}-${normalizeHeader(athlete)}-${normalizeHeader(plan)}`,
+        athleteId,
+        athleteEmail,
         athlete,
+        avatar: resolveAvatarValue(rawAvatar, {
+          athleteId,
+          athleteEmail,
+          athleteName: athlete
+        }),
         plan,
         startText,
         endText,
@@ -182,7 +215,7 @@ function renderFidelityTable(entries) {
   fidelityTableBodyElement.innerHTML = entries
     .map((entry) => `
       <tr>
-        <td>${escapeHtml(entry.athlete)}</td>
+        <td>${renderFidelityAthleteIdentity(entry, "table")}</td>
         <td>${escapeHtml(entry.plan || "-")}</td>
         <td>${escapeHtml(entry.startText || "-")}</td>
         <td>${escapeHtml(entry.endText || "-")}</td>
@@ -210,10 +243,7 @@ function renderFidelityCards(entries) {
     .map((entry) => `
       <article class="fidelity-athlete-card">
         <div class="fidelity-athlete-card-top">
-          <div>
-            <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
-            <p class="ranking-athlete-meta">${escapeHtml(entry.plan || "Plano nao informado")}</p>
-          </div>
+          ${renderFidelityAthleteIdentity(entry, "card")}
           ${renderStatusBadge(entry.status)}
         </div>
 
@@ -330,6 +360,157 @@ function renderFidelityEmptyState(message) {
       <p class="ranking-card-empty">${escapeHtml(message)}</p>
     </article>
   `;
+}
+
+function renderFidelityAthleteIdentity(entry, variant) {
+  const safeVariant = variant === "card" ? "card" : "table";
+  const athleteName = escapeHtml(entry.athlete);
+  const planLabel = escapeHtml(entry.plan || "Plano nao informado");
+
+  if (safeVariant === "card") {
+    return `
+      <div class="ranking-athlete-identity ranking-athlete-identity-card">
+        ${renderFidelityAthleteAvatar(entry, safeVariant)}
+        <div class="ranking-athlete-identity-copy">
+          <p class="ranking-athlete-name">${athleteName}</p>
+          <p class="ranking-athlete-meta">${planLabel}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="ranking-athlete-identity">
+      ${renderFidelityAthleteAvatar(entry, safeVariant)}
+      <div class="ranking-athlete-identity-copy">
+        <span class="ranking-athlete-name-inline">${athleteName}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderFidelityAthleteAvatar(entry, variant) {
+  const athleteInitials = escapeHtml(getAthleteInitials(entry.athlete));
+  const avatarImage = entry.avatar
+    ? `<img src="${escapeHtmlAttribute(entry.avatar)}" alt="" class="athlete-avatar-image" loading="lazy" decoding="async" onerror="this.remove()">`
+    : "";
+
+  if (entry.avatar) {
+    return `
+      <button
+        type="button"
+        class="athlete-avatar athlete-avatar-${variant} athlete-avatar-button"
+        data-avatar-preview="${escapeHtmlAttribute(entry.avatar)}"
+        data-avatar-name="${escapeHtmlAttribute(entry.athlete)}"
+        title="${escapeHtmlAttribute(entry.athlete)}"
+        aria-label="Ampliar foto de ${escapeHtmlAttribute(entry.athlete)}"
+      >
+        <span class="athlete-avatar-fallback">${athleteInitials}</span>
+        ${avatarImage}
+      </button>
+    `;
+  }
+
+  return `
+    <span class="athlete-avatar athlete-avatar-${variant}" aria-hidden="true">
+      <span class="athlete-avatar-fallback">${athleteInitials}</span>
+      ${avatarImage}
+    </span>
+  `;
+}
+
+function handleFidelityClick(event) {
+  const avatarButton = event.target.closest("[data-avatar-preview]");
+  if (!avatarButton) {
+    return;
+  }
+
+  openAvatarPreview(avatarButton);
+}
+
+function openAvatarPreview(triggerElement) {
+  const avatarSource = String(triggerElement.dataset.avatarPreview || "").trim();
+  const athleteName = String(triggerElement.dataset.avatarName || "").trim();
+
+  if (!avatarSource) {
+    return;
+  }
+
+  lastAvatarTriggerElement = triggerElement;
+  avatarPreviewImageElement.src = avatarSource;
+  avatarPreviewImageElement.alt = athleteName ? `Foto de ${athleteName}` : "Foto do atleta";
+  avatarPreviewNameElement.textContent = athleteName || "Atleta";
+  avatarPreviewModalElement.classList.remove("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "false");
+  document.body.classList.add("avatar-preview-open");
+  avatarPreviewCloseButtonElement.focus();
+}
+
+function closeAvatarPreview() {
+  avatarPreviewModalElement.classList.add("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "true");
+  avatarPreviewImageElement.removeAttribute("src");
+  avatarPreviewImageElement.alt = "";
+  avatarPreviewNameElement.textContent = "";
+  document.body.classList.remove("avatar-preview-open");
+
+  if (lastAvatarTriggerElement) {
+    lastAvatarTriggerElement.focus();
+    lastAvatarTriggerElement = null;
+  }
+}
+
+function getAthleteInitials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+
+  if (!parts.length) {
+    return "VC";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+}
+
+function normalizeAvatarValue(value) {
+  const safeValue = String(value || "").trim().replace(/\\/g, "/");
+
+  if (!safeValue) {
+    return "";
+  }
+
+  if (/^(?:(?:https?|file):)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
+    return safeValue;
+  }
+
+  if (/^(?:\.{1,2}\/)?assets\//i.test(safeValue) || safeValue.startsWith("./") || safeValue.startsWith("../")) {
+    return safeValue;
+  }
+
+  return `assets/avatars/${safeValue}`;
+}
+
+function resolveAvatarValue(value, { athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  const mappedAvatar = getMappedAvatarValue({ athleteId, athleteEmail, athleteName });
+  if (mappedAvatar) {
+    return normalizeAvatarValue(mappedAvatar);
+  }
+
+  return normalizeAvatarValue(value);
+}
+
+function getMappedAvatarValue({ athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  if (typeof window.getVidaCorridaMappedAvatar !== "function") {
+    return "";
+  }
+
+  return window.getVidaCorridaMappedAvatar({
+    athleteId,
+    athleteEmail,
+    athleteName
+  });
 }
 
 function getFidelityStatus(validityDate) {

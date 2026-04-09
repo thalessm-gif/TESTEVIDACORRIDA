@@ -84,6 +84,8 @@ function parseReferralCsv(csvContent) {
     normalized: normalizeHeader(header)
   }));
 
+  const athleteIdHeader = findHeader(firstRowHeaders, ["id atleta", "id_atleta", "codigo atleta", "codigo_atleta", "matricula atleta"]);
+  const athleteEmailHeader = findHeader(firstRowHeaders, ["email atleta", "email", "e-mail"]);
   const athleteHeader = findHeader(firstRowHeaders, ["atleta", "nome", "corredor", "competidor"]);
   const referralsHeader = findHeader(firstRowHeaders, [
     "quantidade de indicacoes",
@@ -104,6 +106,8 @@ function parseReferralCsv(csvContent) {
     "inicio indicacao"
   ]);
 
+  const athleteIdColumnIndex = athleteIdHeader ? athleteIdHeader.index : -1;
+  const athleteEmailColumnIndex = athleteEmailHeader ? athleteEmailHeader.index : -1;
   const athleteColumnIndex = athleteHeader ? athleteHeader.index : 0;
   const referralsColumnIndex = referralsHeader ? referralsHeader.index : 1;
   const avatarColumnIndex = avatarHeader ? avatarHeader.index : -1;
@@ -113,9 +117,15 @@ function parseReferralCsv(csvContent) {
   const groupedEntries = new Map();
 
   dataRows.forEach((row) => {
+    const athleteId = getCellValue(row, athleteIdColumnIndex);
+    const athleteEmail = getCellValue(row, athleteEmailColumnIndex);
     const athlete = getCellValue(row, athleteColumnIndex).replace(/\s+/g, " ").trim();
     const referrals = parseReferralCount(getCellValue(row, referralsColumnIndex));
-    const avatar = normalizeAvatarValue(getCellValue(row, avatarColumnIndex));
+    const avatar = resolveAvatarValue(getCellValue(row, avatarColumnIndex), {
+      athleteId,
+      athleteEmail,
+      athleteName: athlete
+    });
     const level = normalizeLevelValue(getCellValue(row, levelColumnIndex));
     const firstReferralDate = parseReferralDate(getCellValue(row, firstReferralDateColumnIndex));
 
@@ -123,9 +133,15 @@ function parseReferralCsv(csvContent) {
       return;
     }
 
-    const athleteKey = normalizeHeader(athlete);
+    const athleteKey = buildAthleteGroupKey({
+      athleteId,
+      athleteEmail,
+      athleteName: athlete
+    });
     if (!groupedEntries.has(athleteKey)) {
       groupedEntries.set(athleteKey, {
+        athleteId,
+        athleteEmail,
         athlete,
         referrals: 0,
         avatar: "",
@@ -135,6 +151,8 @@ function parseReferralCsv(csvContent) {
     }
 
     const entry = groupedEntries.get(athleteKey);
+    entry.athleteId = entry.athleteId || athleteId;
+    entry.athleteEmail = entry.athleteEmail || athleteEmail;
     entry.referrals += referrals;
     entry.avatar = entry.avatar || avatar;
     entry.level = getPreferredLevelLabel(entry.level, level);
@@ -591,7 +609,7 @@ function normalizeAvatarValue(value) {
     return "";
   }
 
-  if (/^(https?:)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
+  if (/^(?:(?:https?|file):)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
     return safeValue;
   }
 
@@ -600,6 +618,41 @@ function normalizeAvatarValue(value) {
   }
 
   return `assets/avatars/${safeValue}`;
+}
+
+function resolveAvatarValue(value, { athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  const mappedAvatar = getMappedAvatarValue({ athleteId, athleteEmail, athleteName });
+  if (mappedAvatar) {
+    return normalizeAvatarValue(mappedAvatar);
+  }
+
+  return normalizeAvatarValue(value);
+}
+
+function getMappedAvatarValue({ athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  if (typeof window.getVidaCorridaMappedAvatar !== "function") {
+    return "";
+  }
+
+  return window.getVidaCorridaMappedAvatar({
+    athleteId,
+    athleteEmail,
+    athleteName
+  });
+}
+
+function buildAthleteGroupKey({ athleteId = "", athleteEmail = "", athleteName = "" } = {}) {
+  const athleteIdKey = String(athleteId || "").trim().toLowerCase();
+  if (athleteIdKey) {
+    return `id:${athleteIdKey}`;
+  }
+
+  const athleteEmailKey = String(athleteEmail || "").trim().toLowerCase();
+  if (athleteEmailKey) {
+    return `email:${athleteEmailKey}`;
+  }
+
+  return `name:${normalizeHeader(athleteName)}`;
 }
 
 function findHeader(headers, aliases) {
