@@ -64,7 +64,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Sergio Carrasco":  "sergio_carrasco.jpg",
                    "Simone Castro De Oliveira":  "simone_castro.jpg",
                    "Thales Mirapalheta":  "thales-mirapalheta.jpeg",
-                   "Thales Soares Mirapalheta":  "thales-mirapalheta.jpg",
+                   "Thales Soares Mirapalheta":  "thales-mirapalheta.jpeg",
                    "Thiago Edom Nunes":  "thiago_edom.jpg",
                    "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg",
                    "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpeg"
