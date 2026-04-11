@@ -17,7 +17,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Camila Magroski":  "camila_magroski.jpg",
                    "Carla Fenzke":  "carla-fenzke.jpg",
                    "Catia Fenzke":  "catia-fenzke.jpeg",
-                   "Catia Silene Fenzke Mirapalheta":  "catia-fenzke.jpg",
+                   "Catia Silene Fenzke Mirapalheta":  "catia-fenzke.jpeg",
                    "Christian Vicente":  "christian_vicente.jpg",
                    "Cintia Campos":  "cintia_campos.jpg",
                    "Cintia Correa Campos":  "cintia_campos.jpg",
