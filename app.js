@@ -20,23 +20,41 @@ const shirtSummaryContainer = document.getElementById("shirt-summary");
 const tableBody = document.getElementById("entries-table-body");
 const totalCountElement = document.getElementById("total-count");
 const exportButton = document.getElementById("export-button");
-const submitButton = form.querySelector('button[type="submit"]');
+const submitButton = form ? form.querySelector('button[type="submit"]') : null;
 const statusBox = document.getElementById("status-box");
 const statusBoxTitle = document.getElementById("status-box-title");
 const statusBoxText = document.getElementById("status-box-text");
 const statusSpinner = document.getElementById("status-spinner");
 const preloadedAthleteNames = Array.isArray(window.KIT_ATHLETE_NAMES) ? window.KIT_ATHLETE_NAMES : [];
+const kitWithdrawalAccess =
+  typeof window.getKitWithdrawalAccess === "function"
+    ? window.getKitWithdrawalAccess()
+    : {};
+const isKitWithdrawalLocked = typeof window.isKitWithdrawalLocked === "function" && window.isKitWithdrawalLocked();
+const isKitWithdrawalSubmitLocked =
+  typeof window.isKitWithdrawalSubmitLocked === "function" && window.isKitWithdrawalSubmitLocked();
+const submitLockButtonText = String(kitWithdrawalAccess.submitButtonText || "Envio indisponivel");
+const submitLockMessage = String(
+  kitWithdrawalAccess.submitMessage || "O formulario continua visivel, mas o envio esta temporariamente bloqueado."
+);
 
 let entries = [];
 let distanceOptions = [...DEFAULT_DISTANCE_OPTIONS];
 let statusHideTimeoutId = null;
 
-renderDistanceOptions();
-render();
-initializeApp();
+if (!isKitWithdrawalLocked && form && exportButton && submitButton) {
+  renderDistanceOptions();
+  render();
+  applySubmitLockState();
+  initializeApp();
 
-form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", async (event) => {
   event.preventDefault();
+
+  if (isKitWithdrawalSubmitLocked) {
+    showMessage(submitLockMessage, true);
+    return;
+  }
 
   if (isFormDisabled()) {
     return;
@@ -143,9 +161,9 @@ form.addEventListener("submit", async (event) => {
   } finally {
     setFormDisabled(false);
   }
-});
+  });
 
-exportButton.addEventListener("click", () => {
+  exportButton.addEventListener("click", () => {
   if (!entries.length) {
     showMessage("Ainda nao ha cadastros para exportar.", true);
     return;
@@ -171,7 +189,8 @@ exportButton.addEventListener("click", () => {
 
   URL.revokeObjectURL(downloadUrl);
   showMessage("Arquivo CSV exportado com sucesso.");
-});
+  });
+}
 
 async function initializeApp() {
   showMessage("Carregando cadastros...");
@@ -237,6 +256,11 @@ async function initializeApp() {
     });
   } finally {
     setFormDisabled(false);
+    applySubmitLockState();
+
+    if (isKitWithdrawalSubmitLocked) {
+      showMessage(submitLockMessage, true);
+    }
   }
 }
 
@@ -808,12 +832,26 @@ function resetFormAfterSubmit() {
   fullNameInput.focus();
 }
 
+function applySubmitLockState() {
+  if (!submitButton || !isKitWithdrawalSubmitLocked) {
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = submitLockButtonText;
+  submitButton.title = submitLockMessage;
+}
+
 function setFormDisabled(disabled) {
   [fullNameInput, distanceInput, shirtSizeInput, submitButton, exportButton].forEach((element) => {
     if (element) {
       element.disabled = disabled;
     }
   });
+
+  if (!disabled) {
+    applySubmitLockState();
+  }
 }
 
 function isFormDisabled() {

@@ -68,6 +68,40 @@ Exemplos:
 
 Depois de alterar essa propriedade, publique uma nova versao do aplicativo da web para a pagina carregar as novas opcoes automaticamente.
 
+## Planilhas de consulta centralizadas
+
+As paginas `Destaques Semanais`, `Ranking Circuito`, `Planos de Fidelizacao` e `Indicacao Amiga` usam uma unica planilha de leitura com varias abas.
+
+1. Abra o arquivo `consulta-sheet-config.js`.
+2. Preencha `sharedSheetUrl` com o link da planilha principal das consultas.
+3. Ajuste os nomes das abas em `sharedTabs` para bater com a sua estrutura.
+4. Mantenha a `Retirada de Kits` separada em `app.js`, porque ela continua usando o Apps Script proprio para escrita e sincronizacao.
+
+## Trancar a retirada de kits
+
+Se quiser fechar temporariamente o acesso da area de `Retirada de Kits`:
+
+1. Abra o arquivo `site-access-config.js`.
+2. Altere `locked: false` para `locked: true`.
+3. Salve o arquivo e publique/atualize o site.
+
+Para reabrir depois:
+
+1. Abra `site-access-config.js`.
+2. Troque `locked: true` por `locked: false`.
+3. Salve e publique/atualize novamente.
+
+Com isso, a pagina inicial mostra a area como trancada e a pagina `retirada-kits.html` passa a exibir uma mensagem de bloqueio sem carregar o formulario.
+
+Se quiser manter a pagina aberta e bloquear apenas o botao de envio:
+
+1. Abra `site-access-config.js`.
+2. Deixe `locked: false`.
+3. Altere `submitLocked: false` para `submitLocked: true`.
+4. Salve e publique/atualize o site.
+
+Para liberar o envio depois, troque `submitLocked: true` por `submitLocked: false`.
+
 ## Editor de avatares
 
 Para manter os caminhos dos avatares em um lugar so, o projeto agora usa o arquivo `avatar-map-data.js`.

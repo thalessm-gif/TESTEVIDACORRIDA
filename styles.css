@@ -137,6 +137,41 @@ body {
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
 }
 
+.feature-card-locked,
+.feature-card-locked:hover {
+  transform: none;
+  cursor: not-allowed;
+  border-color: rgba(255, 214, 189, 0.2);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03)),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.03) 0,
+      rgba(255, 255, 255, 0.03) 12px,
+      rgba(255, 106, 0, 0.08) 12px,
+      rgba(255, 106, 0, 0.08) 24px
+    );
+  box-shadow: var(--shadow);
+}
+
+.feature-card-locked .feature-link {
+  color: #ffd8c2;
+}
+
+.feature-lock-pill {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 214, 189, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff3eb;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .feature-card-primary {
   background: linear-gradient(135deg, rgba(255, 106, 0, 0.2), rgba(255, 255, 255, 0.05));
 }
@@ -433,6 +468,42 @@ h2 {
   backdrop-filter: blur(10px);
 }
 
+.access-lock-panel {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding: 28px;
+  border-color: rgba(255, 214, 189, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(255, 106, 0, 0.14), transparent 30%),
+    linear-gradient(135deg, rgba(52, 28, 13, 0.52), rgba(255, 255, 255, 0.04));
+}
+
+.access-lock-panel-hidden {
+  display: none;
+}
+
+.access-lock-support {
+  margin-bottom: 0;
+  color: #ffe5d5;
+  line-height: 1.7;
+}
+
+.access-lock-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  text-decoration: none;
+}
+
+.kit-page-locked #status-box,
+.kit-page-locked .hero,
+.kit-page-locked .overview,
+.kit-page-locked .table-panel {
+  display: none;
+}
+
 .status-box {
   position: sticky;
   top: 18px;
@@ -597,6 +668,14 @@ button:disabled {
 .primary-button:hover,
 .secondary-button:hover {
   transform: translateY(-1px);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .form-message {

@@ -1,5 +1,9 @@
-// Cole aqui o link da sua planilha do Google Sheets ou o link de exportacao CSV.
-const HIGHLIGHTS_SHEET_URL = "https://docs.google.com/spreadsheets/d/1totTCrCymqU5gpsuYMrRgYoHOCSfrVIP3B8xNy2JKlw/edit?usp=sharing";
+const HIGHLIGHTS_SHEET_SOURCE =
+  typeof window.getConsultaSheetSource === "function"
+    ? window.getConsultaSheetSource("highlights")
+    : { url: "", sheetName: "" };
+const HIGHLIGHTS_SHEET_URL = HIGHLIGHTS_SHEET_SOURCE.url;
+const HIGHLIGHTS_SHEET_NAME = HIGHLIGHTS_SHEET_SOURCE.sheetName;
 
 const athletesCountElement = document.getElementById("athletes-count");
 const weeksCountElement = document.getElementById("weeks-count");
@@ -48,13 +52,13 @@ async function loadHighlightsFromSheet() {
     renderPerfectMessage(
       "Assim que voce conectar a planilha, esta area vai mostrar quem esteve em destaque em todas as semanas."
     );
-    renderErrorState("Conecte a planilha em highlights.js para visualizar os dados.");
+    renderErrorState("Conecte a planilha em consulta-sheet-config.js para visualizar os dados.");
     return;
   }
 
   try {
     setSheetStatus("Carregando informações...");
-    const csvUrl = buildCsvUrl(HIGHLIGHTS_SHEET_URL);
+    const csvUrl = buildCsvUrl(HIGHLIGHTS_SHEET_URL, HIGHLIGHTS_SHEET_NAME);
     const response = await fetch(`${csvUrl}${csvUrl.includes("?") ? "&" : "?"}ts=${Date.now()}`);
 
     if (!response.ok) {
@@ -82,13 +86,18 @@ async function loadHighlightsFromSheet() {
       "Nao foi possivel confirmar os atletas 100% ativos porque a leitura da planilha falhou."
     );
     renderErrorState(
-      "Nao foi possivel carregar a planilha. Verifique o link em highlights.js e confirme se a planilha esta acessivel."
+      "Nao foi possivel carregar a planilha. Verifique consulta-sheet-config.js."
     );
   }
 }
 
-function buildCsvUrl(sheetUrl) {
+function buildCsvUrl(sheetUrl, sheetName) {
+  if (typeof window.buildGoogleSheetCsvUrl === "function") {
+    return window.buildGoogleSheetCsvUrl(sheetUrl, sheetName);
+  }
+
   const safeUrl = String(sheetUrl || "").trim();
+  const safeSheetName = String(sheetName || "").trim();
 
   if (!safeUrl) {
     return "";
@@ -104,6 +113,10 @@ function buildCsvUrl(sheetUrl) {
   }
 
   const sheetId = match[1];
+  if (safeSheetName) {
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(safeSheetName)}`;
+  }
+
   const gidMatch = safeUrl.match(/[?&#]gid=([0-9]+)/i);
   const gid = gidMatch ? gidMatch[1] : "0";
 

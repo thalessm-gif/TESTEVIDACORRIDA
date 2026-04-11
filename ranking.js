@@ -1,6 +1,9 @@
-// Cole aqui o link da planilha do ranking ou o link de exportacao CSV.
-const RANKING_SHEET_URL = "https://docs.google.com/spreadsheets/d/10t1-ovZJxhwIPCW64IsOSpN1PPtDe9UZouuERrxUNEY/edit?usp=sharing";
-const RANKING_SHEET_NAME = "";
+const RANKING_SHEET_SOURCE =
+  typeof window.getConsultaSheetSource === "function"
+    ? window.getConsultaSheetSource("ranking")
+    : { url: "", sheetName: "" };
+const RANKING_SHEET_URL = RANKING_SHEET_SOURCE.url;
+const RANKING_SHEET_NAME = RANKING_SHEET_SOURCE.sheetName;
 
 const sheetStatusElement = document.getElementById("ranking-sheet-status");
 const searchInputElement = document.getElementById("ranking-search");
@@ -97,13 +100,13 @@ function initializeRankingPage() {
 async function loadRankingFromSheet() {
   if (!RANKING_SHEET_URL) {
     setSheetStatus("Cole o link da planilha");
-    renderEmptyState("Conecte a planilha em ranking.js para visualizar o ranking do circuito.");
+    renderEmptyState("Conecte a planilha em consulta-sheet-config.js para visualizar o ranking do circuito.");
     return;
   }
 
   try {
     setSheetStatus("Carregando planilha...");
-    const csvUrl = buildCsvUrl(RANKING_SHEET_URL);
+    const csvUrl = buildCsvUrl(RANKING_SHEET_URL, RANKING_SHEET_NAME);
     const response = await fetch(`${csvUrl}${csvUrl.includes("?") ? "&" : "?"}ts=${Date.now()}`);
 
     if (!response.ok) {
@@ -122,7 +125,7 @@ async function loadRankingFromSheet() {
     renderDistanceButtons([]);
     renderCategoryButtons([]);
     renderEmptyState(
-      "Nao foi possivel carregar a planilha. Verifique o link em ranking.js e confirme se a base esta acessivel."
+      "Nao foi possivel carregar a planilha. Verifique consulta-sheet-config.js."
     );
     setSheetStatus("Erro ao carregar");
   }
@@ -147,6 +150,15 @@ function parseRankingCsv(csvContent) {
   const sexColumn = findHeader(headers, ["sexo", "genero"]);
   const distanceColumn = findHeader(headers, ["distancia"]);
   const avatarColumn = findHeader(headers, ["avatar", "foto", "imagem", "foto perfil", "foto_perfil"]);
+  const birthDateColumn = findHeader(headers, [
+    "data de nascimento",
+    "data nascimento",
+    "nascimento",
+    "dt nascimento",
+    "data nasc",
+    "aniversario",
+    "data aniversario"
+  ]);
   const stageNumberColumn = findHeader(headers, ["etapa"]);
   const stageNameColumn = findHeader(headers, ["prova"]);
   const dateColumn = findHeader(headers, ["data"]);
@@ -177,6 +189,7 @@ function parseRankingCsv(csvContent) {
           athleteEmail,
           athleteName: athlete
         }),
+        birthDate: parseAthleteBirthDate(getCellValue(row, birthDateColumn ? birthDateColumn.index : -1)),
         stageNumber: getCellValue(row, stageNumberColumn ? stageNumberColumn.index : -1),
         stageName: getCellValue(row, stageNameColumn ? stageNameColumn.index : -1),
         date: getCellValue(row, dateColumn ? dateColumn.index : -1),
@@ -229,6 +242,7 @@ function buildRankingEntries(stageRows, mode) {
         sex: row.sex,
         distance: row.distance,
         avatar: row.avatar,
+        birthDate: row.birthDate,
         totalGeneral: 0,
         totalCategory: 0,
         stageDetails: []
@@ -242,6 +256,7 @@ function buildRankingEntries(stageRows, mode) {
     entry.sex = entry.sex || row.sex;
     entry.distance = entry.distance || row.distance;
     entry.avatar = entry.avatar || row.avatar;
+    entry.birthDate = pickOlderBirthDate(entry.birthDate, row.birthDate);
     entry.totalGeneral += row.generalPoints;
     entry.totalCategory += row.categoryPoints;
     entry.stageDetails.push({
@@ -263,6 +278,7 @@ function buildRankingEntries(stageRows, mode) {
       sex: entry.sex,
       distance: entry.distance,
       avatar: entry.avatar,
+      birthDate: entry.birthDate,
       totalGeneral: entry.totalGeneral,
       totalCategory: entry.totalCategory,
       total: mode === "general" ? entry.totalGeneral : entry.totalCategory,
@@ -747,6 +763,11 @@ function sortRankingEntries(first, second) {
     return second.total - first.total;
   }
 
+  const birthDateComparison = compareBirthDates(first.birthDate, second.birthDate);
+  if (birthDateComparison !== 0) {
+    return birthDateComparison;
+  }
+
   return first.athlete.localeCompare(second.athlete, "pt-BR", { sensitivity: "base" });
 }
 
@@ -765,6 +786,102 @@ function parsePositiveNumber(value) {
   return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : 0;
 }
 
+function parseAthleteBirthDate(value) {
+  const safeValue = String(value || "").trim();
+  if (!safeValue) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(safeValue)) {
+    const [year, month, day] = safeValue.split("-").map(Number);
+    return createLocalDate(year, month, day);
+  }
+
+  const brMatch = safeValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (brMatch) {
+    const day = Number(brMatch[1]);
+    const month = Number(brMatch[2]);
+    const year = normalizeTwoDigitYear(Number(brMatch[3]));
+    return createLocalDate(year, month, day);
+  }
+
+  const shortBrMatch = safeValue.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (shortBrMatch) {
+    const day = Number(shortBrMatch[1]);
+    const month = Number(shortBrMatch[2]);
+    return createLocalDate(9999, month, day);
+  }
+
+  if (/^\d+(?:[.,]\d+)?$/.test(safeValue)) {
+    const serialDate = parseSpreadsheetSerialDate(safeValue);
+    if (serialDate) {
+      return serialDate;
+    }
+  }
+
+  const fallbackDate = new Date(safeValue);
+  if (Number.isNaN(fallbackDate.getTime())) {
+    return null;
+  }
+
+  return createLocalDate(
+    fallbackDate.getFullYear(),
+    fallbackDate.getMonth() + 1,
+    fallbackDate.getDate()
+  );
+}
+
+function normalizeTwoDigitYear(year) {
+  return year < 100 ? 2000 + year : year;
+}
+
+function createLocalDate(year, month, day) {
+  const safeDate = new Date(year, month - 1, day);
+  safeDate.setHours(12, 0, 0, 0);
+  return Number.isNaN(safeDate.getTime()) ? null : safeDate;
+}
+
+function parseSpreadsheetSerialDate(value) {
+  const serialNumber = Number(String(value || "").replace(",", "."));
+  if (!Number.isFinite(serialNumber) || serialNumber <= 0) {
+    return null;
+  }
+
+  const epoch = new Date(1899, 11, 30);
+  epoch.setHours(12, 0, 0, 0);
+  const resultDate = new Date(epoch);
+  resultDate.setDate(epoch.getDate() + Math.floor(serialNumber));
+  return resultDate;
+}
+
+function pickOlderBirthDate(currentBirthDate, nextBirthDate) {
+  if (!currentBirthDate) {
+    return nextBirthDate || null;
+  }
+
+  if (!nextBirthDate) {
+    return currentBirthDate;
+  }
+
+  return nextBirthDate.getTime() < currentBirthDate.getTime() ? nextBirthDate : currentBirthDate;
+}
+
+function compareBirthDates(firstBirthDate, secondBirthDate) {
+  if (firstBirthDate && secondBirthDate) {
+    return firstBirthDate.getTime() - secondBirthDate.getTime();
+  }
+
+  if (firstBirthDate) {
+    return -1;
+  }
+
+  if (secondBirthDate) {
+    return 1;
+  }
+
+  return 0;
+}
+
 function normalizeHeader(value) {
   return String(value || "")
     .replace(/^\uFEFF/, "")
@@ -776,9 +893,13 @@ function normalizeHeader(value) {
     .replace(/\s+/g, " ");
 }
 
-function buildCsvUrl(sheetUrl) {
+function buildCsvUrl(sheetUrl, sheetName) {
+  if (typeof window.buildGoogleSheetCsvUrl === "function") {
+    return window.buildGoogleSheetCsvUrl(sheetUrl, sheetName);
+  }
+
   const safeUrl = String(sheetUrl || "").trim();
-  const safeSheetName = String(RANKING_SHEET_NAME || "").trim();
+  const safeSheetName = String(sheetName || "").trim();
 
   if (!safeUrl) {
     return "";
