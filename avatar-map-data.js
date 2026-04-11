@@ -13,6 +13,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Andressa Da Silva Cardoso":  "andressa-cardoso.jpg",
                    "Andressa Sartor":  "andressa_sartor.jpg",
                    "Angela Potter":  "angela_potter.jpg",
+                   "Brenda Leivas Madeira":  "brenda-leivas.jpg",
                    "Bruna Telmo Alvarenga":  "bruna_alvarenga.jpg",
                    "Camila Magroski":  "camila_magroski.jpg",
                    "Carla Fenzke":  "carla-fenzke.jpg",
@@ -22,7 +23,8 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Cintia Campos":  "cintia_campos.jpg",
                    "Cintia Correa Campos":  "cintia_campos.jpg",
                    "Claudio Corrêa Simões":  "claudio_simoes.jpg",
-                   "Daiane Marins Landgraf":  "daiane-landgraf.jpeg",
+                   "Daiana Marques Gauterio":  "daiana-gauterio.jpg",
+                   "Daiane Marins Landgraf":  "daiane-landgraf.jpg",
                    "Daise Da Fontoura Nicolette":  "daise_nicolette.jpg",
                    "Eduarda Constantino":  "eduarda_constantino.jpg",
                    "Elizabete Crexi Ortiz":  "elizabete_crexi.jpg",
@@ -31,7 +33,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Eunice Pitrez":  "eunice_pitrez.jpg",
                    "Fábio Gonçalves Machado":  "fabio_machado.jpg",
                    "Fátima Ortiz Crexi":  "fatima_ortiz.jpg",
-                   "Felipe Garcia Martins":  "felipe-garcia.jpeg",
+                   "Felipe Garcia Martins":  "felipe-garcia.jpg",
                    "Felype Nascimento":  "felype-nascimento.jpg",
                    "Frederico Gomes":  "frederico_gomes.jpg",
                    "Gabriela Machado Carvalho Zanetti":  "gabriela_zanetti.jpg",
@@ -57,6 +59,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Miguel Angelo Castro Jr.":  "miguel_castro.jpg",
                    "Nathalia Vergara":  "nathalia-vergara.jpg",
                    "Nitza França":  "nitza_franca.jpg",
+                   "Patrícia Medina":  "patricia-medina.jpg",
                    "Pierry Oliveira":  "pierry-oliveira.jpg",
                    "Pietra Braga Silva":  "pietra_braga.jpg",
                    "Priscila Duarte Gomes":  "priscila_gomes.jpg",
@@ -67,6 +70,6 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Thales Soares Mirapalheta":  "thales-mirapalheta.jpeg",
                    "Thiago Edom Nunes":  "thiago_edom.jpg",
                    "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg",
-                   "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpeg"
+                   "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpg"
                }
 };
