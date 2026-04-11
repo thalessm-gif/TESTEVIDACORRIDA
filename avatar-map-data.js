@@ -16,12 +16,13 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Bruna Telmo Alvarenga":  "bruna_alvarenga.jpg",
                    "Camila Magroski":  "camila_magroski.jpg",
                    "Carla Fenzke":  "carla-fenzke.jpg",
-                   "Catia Fenzke":  "catia-fenzke.jpg",
+                   "Catia Fenzke":  "catia-fenzke.jpeg",
                    "Catia Silene Fenzke Mirapalheta":  "catia-fenzke.jpg",
                    "Christian Vicente":  "christian_vicente.jpg",
                    "Cintia Campos":  "cintia_campos.jpg",
                    "Cintia Correa Campos":  "cintia_campos.jpg",
                    "Claudio Corrêa Simões":  "claudio_simoes.jpg",
+                   "Daiane Marins Landgraf":  "daiane-landgraf.jpeg",
                    "Daise Da Fontoura Nicolette":  "daise_nicolette.jpg",
                    "Eduarda Constantino":  "eduarda_constantino.jpg",
                    "Elizabete Crexi Ortiz":  "elizabete_crexi.jpg",
@@ -30,6 +31,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Eunice Pitrez":  "eunice_pitrez.jpg",
                    "Fábio Gonçalves Machado":  "fabio_machado.jpg",
                    "Fátima Ortiz Crexi":  "fatima_ortiz.jpg",
+                   "Felipe Garcia Martins":  "felipe-garcia.jpeg",
                    "Felype Nascimento":  "felype-nascimento.jpg",
                    "Frederico Gomes":  "frederico_gomes.jpg",
                    "Gabriela Machado Carvalho Zanetti":  "gabriela_zanetti.jpg",
@@ -61,9 +63,10 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Renata Salvador Louzada":  "renata_louzada.jpg",
                    "Sergio Carrasco":  "sergio_carrasco.jpg",
                    "Simone Castro De Oliveira":  "simone_castro.jpg",
-                   "Thales Mirapalheta":  "thales-mirapalheta.jpg",
+                   "Thales Mirapalheta":  "thales-mirapalheta.jpeg",
                    "Thales Soares Mirapalheta":  "thales-mirapalheta.jpg",
                    "Thiago Edom Nunes":  "thiago_edom.jpg",
-                   "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg"
+                   "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg",
+                   "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpeg"
                }
 };
