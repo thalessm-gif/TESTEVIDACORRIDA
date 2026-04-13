@@ -11,6 +11,16 @@
 </head>
 <body>
   <main class="page">
+    <div id="status-box" class="status-box status-box-hidden" role="status" aria-live="polite" aria-atomic="true">
+      <div class="status-box-panel">
+        <span id="status-spinner" class="status-spinner" aria-hidden="true"></span>
+        <div class="status-box-copy">
+          <p id="status-box-title" class="status-box-title">Carregando informacoes...</p>
+          <p id="status-box-text" class="status-box-text">Aguarde enquanto buscamos os dados atualizados.</p>
+        </div>
+      </div>
+    </div>
+
     <nav class="top-nav" aria-label="Navegação principal">
       <a href="index.html" class="nav-link">Página inicial</a>
       <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
@@ -58,6 +68,11 @@
           </label>
 
           <label class="field">
+            <span>Instagram (@)</span>
+            <input id="rp-instagram" type="text" placeholder="@seuinstagram" autocomplete="off">
+          </label>
+
+          <label class="field">
             <span>Qual prova foi?</span>
             <input id="rp-race-name" type="text" placeholder="Ex.: Meia Maratona do Choque" list="rp-race-suggestions" autocomplete="off" required>
             <datalist id="rp-race-suggestions"></datalist>
@@ -102,7 +117,6 @@
 
         <div class="actions">
           <button type="submit" class="primary-button">Registrar Momento RP</button>
-          <button type="button" id="rp-export-button" class="secondary-button">Exportar CSV</button>
         </div>
 
         <p id="rp-form-message" class="form-message" aria-live="polite"></p>
@@ -132,6 +146,6 @@
 
   <script src="kit-athletes.js"></script>
   <script src="calendar-data.js"></script>
-  <script src="momento-rp.js?v=20260412-4"></script>
+  <script src="momento-rp.js?v=20260412-7"></script>
 </body>
 </html>

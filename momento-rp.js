@@ -34,6 +34,7 @@ const RP_PODIUMS = [
 
 const rpFormElement = document.getElementById("rp-form");
 const athleteNameElement = document.getElementById("rp-athlete-name");
+const instagramElement = document.getElementById("rp-instagram");
 const raceNameElement = document.getElementById("rp-race-name");
 const raceDateElement = document.getElementById("rp-race-date");
 const timeElement = document.getElementById("rp-time");
@@ -44,8 +45,11 @@ const genderOptionsElement = document.getElementById("rp-gender-options");
 const categoryOptionsElement = document.getElementById("rp-category-options");
 const podiumOptionsElement = document.getElementById("rp-podium-options");
 const formMessageElement = document.getElementById("rp-form-message");
-const exportButtonElement = document.getElementById("rp-export-button");
 const statusElement = document.getElementById("rp-status");
+const statusBox = document.getElementById("status-box");
+const statusBoxTitle = document.getElementById("status-box-title");
+const statusBoxText = document.getElementById("status-box-text");
+const statusSpinner = document.getElementById("status-spinner");
 const searchElement = document.getElementById("rp-search");
 const entryListElement = document.getElementById("rp-entry-list");
 const athleteSuggestionsElement = document.getElementById("rp-athlete-suggestions");
@@ -58,6 +62,7 @@ let selectedDistance = "";
 let selectedGender = "";
 let selectedCategory = "";
 let selectedPodium = "";
+let statusHideTimeoutId = null;
 
 renderChoiceGroup(distanceOptionsElement, RP_DISTANCES, selectedDistance, "distance");
 renderChoiceGroup(genderOptionsElement, RP_GENDERS, selectedGender, "gender");
@@ -77,7 +82,6 @@ function attachRpEventListeners() {
   podiumOptionsElement.addEventListener("click", handleChoiceClick);
 
   rpFormElement.addEventListener("submit", handleRpSubmit);
-  exportButtonElement.addEventListener("click", handleRpExport);
   searchElement.addEventListener("input", renderRpEntries);
 }
 
@@ -85,6 +89,11 @@ async function initializeRpPage() {
   setRpFormDisabled(true);
   setRpStatus("Carregando registros");
   showRpMessage("Carregando registros do Momento RP...");
+  showStatus({
+    title: "Carregando informações...",
+    text: "Aguarde enquanto buscamos os dados mais recentes.",
+    busy: true
+  });
 
   try {
     if (shouldUseRpGoogleSheetsAsSingleSource()) {
@@ -96,6 +105,7 @@ async function initializeRpPage() {
           ? "Registros carregados do Google Sheets."
           : "Sistema pronto para receber o primeiro Momento RP."
       );
+      hideStatus();
       return;
     }
 
@@ -122,6 +132,7 @@ async function initializeRpPage() {
             : getRpLocalStorageHint("Sistema pronto.")
         )
     );
+    hideStatus();
   } catch (error) {
     console.error("Erro ao inicializar o Momento RP:", error);
     rpEntries = loadRpEntriesFromLocalStorage();
@@ -130,6 +141,11 @@ async function initializeRpPage() {
       "Não foi possível carregar a planilha do Momento RP agora. Os registros locais continuam disponíveis neste navegador.",
       true
     );
+    showStatus({
+      title: "Nao foi possivel carregar as informacoes",
+      text: "Verifique a conexao e a configuracao do Google Apps Script para tentar novamente.",
+      tone: "error"
+    });
   } finally {
     setRpFormDisabled(false);
   }
@@ -179,6 +195,7 @@ async function handleRpSubmit(event) {
   const normalizedTime = normalizeTimeValue(timeElement.value);
   const resolvedDistance = getResolvedDistanceLabel();
   const athleteName = normalizeText(athleteNameElement.value);
+  const instagram = normalizeInstagramHandle(instagramElement.value);
   const raceName = normalizeText(raceNameElement.value);
   const raceDate = normalizeDateOnlyValue(raceDateElement.value);
   const genderLabel = getLabelFromOptions(RP_GENDERS, selectedGender);
@@ -210,9 +227,10 @@ async function handleRpSubmit(event) {
     return;
   }
 
-  const newEntry = normalizeRpEntry({
+  const entryDraft = {
     id: createRpEntryId(),
     athleteName,
+    instagram,
     raceName,
     raceDate,
     time: normalizedTime,
@@ -221,14 +239,20 @@ async function handleRpSubmit(event) {
     category: categoryLabel,
     podium: podiumLabel,
     createdAt: new Date().toISOString()
-  });
+  };
+  const newEntry = normalizeRpEntry(entryDraft);
 
   setRpFormDisabled(true);
   setRpStatus("Enviando registro");
+  showStatus({
+    title: "Enviando dados...",
+    text: "Aguarde enquanto atualizamos a planilha e recarregamos a lista.",
+    busy: true
+  });
 
   try {
     if (shouldUseRpGoogleSheetsAsSingleSource()) {
-      const syncStatus = await syncRpEntryWithGoogleSheets(newEntry);
+      const syncStatus = await syncRpEntryWithGoogleSheets(entryDraft);
 
       if (syncStatus === "synced" || syncStatus === "queued") {
         const refreshedEntries = await refreshRpEntriesFromGoogleSheets(newEntry);
@@ -239,6 +263,12 @@ async function handleRpSubmit(event) {
           renderRpPage();
           resetRpFormAfterSubmit();
           showRpMessage("Momento RP registrado com sucesso.");
+          showStatus({
+            title: "Dados enviados com sucesso",
+            text: "A lista foi atualizada com as informações mais recentes.",
+            tone: "success",
+            hideAfterMs: 4000
+          });
           return;
         }
       }
@@ -251,6 +281,22 @@ async function handleRpSubmit(event) {
         getRpSubmitMessage(syncStatus),
         syncStatus === "rejected" || syncStatus === "local_only"
       );
+
+      if (syncStatus === "rejected" || syncStatus === "local_only") {
+        showStatus({
+          title: "Falha ao atualizar",
+          text: getRpSubmitMessage(syncStatus, true),
+          tone: "error"
+        });
+        return;
+      }
+
+      showStatus({
+        title: "Dados enviados com sucesso",
+        text: "A lista foi atualizada com as informações mais recentes.",
+        tone: "success",
+        hideAfterMs: 4000
+      });
       return;
     }
 
@@ -258,7 +304,7 @@ async function handleRpSubmit(event) {
     saveRpEntriesToLocalStorage(rpEntries);
     renderRpPage();
 
-    const syncStatus = await syncRpEntryWithGoogleSheets(newEntry);
+    const syncStatus = await syncRpEntryWithGoogleSheets(entryDraft);
 
     if (syncStatus === "synced" || syncStatus === "queued") {
       const refreshedEntries = await refreshRpEntriesFromGoogleSheets(newEntry);
@@ -273,53 +319,32 @@ async function handleRpSubmit(event) {
     if (syncStatus === "synced" || syncStatus === "queued" || syncStatus === "disabled" || syncStatus === "local_only") {
       resetRpFormAfterSubmit();
       showRpMessage(getRpSubmitMessage(syncStatus));
+      showStatus({
+        title: "Dados enviados com sucesso",
+        text: "O cadastro foi processado e a lista ja foi atualizada na tela.",
+        tone: "success",
+        hideAfterMs: 4000
+      });
       return;
     }
 
     showRpMessage(getRpSubmitMessage(syncStatus), true);
+    showStatus({
+      title: "Falha ao enviar dados",
+      text: getRpSubmitMessage(syncStatus),
+      tone: "error"
+    });
   } catch (error) {
     console.error("Erro ao registrar Momento RP:", error);
     showRpMessage("Não foi possível concluir o envio agora.", true);
+    showStatus({
+      title: "Falha ao enviar dados",
+      text: "Tivemos um problema ao processar o cadastro. Tente novamente em alguns instantes.",
+      tone: "error"
+    });
   } finally {
     setRpFormDisabled(false);
   }
-}
-
-function handleRpExport() {
-  if (!rpEntries.length) {
-    showRpMessage("Ainda não há registros para exportar.", true);
-    return;
-  }
-
-  const csvRows = [
-    ["Nome do atleta", "Prova", "Data da prova", "Tempo", "Distância", "Gênero", "Categoria", "Pódio"],
-    ...sortRpEntries([...rpEntries]).map((entry) => [
-      entry.athleteName,
-      entry.raceName,
-      entry.raceDate,
-      entry.time,
-      entry.distance,
-      entry.gender,
-      entry.category,
-      entry.podium
-    ])
-  ];
-
-  const csvContent = csvRows
-    .map((row) => row.map(escapeCsvValue).join(";"))
-    .join("\n");
-
-  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-  const downloadUrl = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  const today = new Date().toISOString().slice(0, 10);
-
-  link.href = downloadUrl;
-  link.download = `momento-rp-${today}.csv`;
-  link.click();
-
-  URL.revokeObjectURL(downloadUrl);
-  showRpMessage("Arquivo CSV exportado com sucesso.");
 }
 
 async function loadRpEntriesFromGoogleSheets(options = {}) {
@@ -357,10 +382,7 @@ async function syncRpEntryWithGoogleSheets(entry) {
     return "disabled";
   }
 
-  const payload = JSON.stringify({
-    resource: RP_RESOURCE,
-    ...normalizeRpEntry(entry)
-  });
+  const payload = JSON.stringify(buildRpSheetPayload(entry));
 
   try {
     const response = await fetch(RP_GOOGLE_SCRIPT_URL, {
@@ -661,6 +683,21 @@ function normalizeRpEntry(entry) {
   return normalizedEntry;
 }
 
+function buildRpSheetPayload(entry) {
+  const normalizedEntry = normalizeRpEntry(entry);
+  if (!normalizedEntry) {
+    return {
+      resource: RP_RESOURCE
+    };
+  }
+
+  return {
+    resource: RP_RESOURCE,
+    ...normalizedEntry,
+    instagram: normalizeInstagramHandle(entry && entry.instagram)
+  };
+}
+
 function normalizeDistanceLabel(value) {
   const safeValue = normalizeText(value);
   if (!safeValue) {
@@ -864,11 +901,11 @@ function resetRpFormAfterSubmit() {
 function setRpFormDisabled(disabled) {
   [
     athleteNameElement,
+    instagramElement,
     raceNameElement,
     raceDateElement,
     timeElement,
-    customDistanceElement,
-    exportButtonElement
+    customDistanceElement
   ].forEach((element) => {
     if (element) {
       element.disabled = disabled;
@@ -911,6 +948,51 @@ function setRpStatus(text) {
 function showRpMessage(message, isError = false) {
   formMessageElement.textContent = message;
   formMessageElement.style.color = isError ? "#ffd0d0" : "#d8ffef";
+}
+
+function showStatus(options = {}) {
+  if (!statusBox || !statusBoxTitle || !statusBoxText || !statusSpinner) {
+    return;
+  }
+
+  const {
+    title = "",
+    text = "",
+    tone = "info",
+    busy = false,
+    hideAfterMs = 0
+  } = options;
+
+  clearStatusHideTimeout();
+  statusBox.className = `status-box status-box-${tone}`;
+  statusBoxTitle.textContent = title;
+  statusBoxText.textContent = text;
+  statusBoxText.hidden = !text;
+  statusSpinner.classList.toggle("status-spinner-hidden", !busy);
+
+  if (hideAfterMs > 0) {
+    statusHideTimeoutId = window.setTimeout(() => {
+      hideStatus();
+    }, hideAfterMs);
+  }
+}
+
+function hideStatus() {
+  if (!statusBox || !statusSpinner || !statusBoxText) {
+    return;
+  }
+
+  clearStatusHideTimeout();
+  statusBox.className = "status-box status-box-hidden";
+  statusSpinner.classList.remove("status-spinner-hidden");
+  statusBoxText.hidden = false;
+}
+
+function clearStatusHideTimeout() {
+  if (statusHideTimeoutId) {
+    window.clearTimeout(statusHideTimeoutId);
+    statusHideTimeoutId = null;
+  }
 }
 
 function getRpSubmitMessage(syncStatus, strictRemoteMode = false) {
@@ -974,13 +1056,13 @@ function normalizeText(value) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
-function escapeCsvValue(value) {
-  const safeValue = String(value ?? "");
-  if (!/[;"\n]/.test(safeValue)) {
-    return safeValue;
+function normalizeInstagramHandle(value) {
+  const safeValue = String(value || "").trim().replace(/\s+/g, "");
+  if (!safeValue) {
+    return "";
   }
 
-  return `"${safeValue.replace(/"/g, '""')}"`;
+  return safeValue.startsWith("@") ? safeValue : `@${safeValue}`;
 }
 
 function escapeHtml(value) {
