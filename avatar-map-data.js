@@ -13,6 +13,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Andressa Da Silva Cardoso":  "andressa-cardoso.jpg",
                    "Andressa Sartor":  "andressa_sartor.jpg",
                    "Angela Potter":  "angela_potter.jpg",
+                   "Árison Gracia Franken":  "maninho-franken.jpg",
                    "Brenda Leivas Madeira":  "brenda-leivas.jpg",
                    "Bruna Telmo Alvarenga":  "bruna_alvarenga.jpg",
                    "Camila Magroski":  "camila_magroski.jpg",
@@ -50,6 +51,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Julio Araujo":  "julio-araujo.jpg",
                    "Karen Christie Louro Mano":  "karen_christie.jpg",
                    "Katy Kisner":  "katy_kisner.jpg",
+                   "Lais Mattos de Aguiar":  "lais-mattos.jpg",
                    "Lorraine Rosa":  "lorraine_rosa.jpg",
                    "Lorraine Silva Da Rosa":  "lorraine_rosa.jpg",
                    "Lucilene Carvalho":  "lene-carvalho.jpg",
@@ -66,10 +68,12 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Renata Salvador Louzada":  "renata_louzada.jpg",
                    "Sergio Carrasco":  "sergio_carrasco.jpg",
                    "Simone Castro De Oliveira":  "simone_castro.jpg",
+                   "Thales Batista":  "thales-batista.jpg",
                    "Thales Mirapalheta":  "thales-mirapalheta.jpeg",
                    "Thales Soares Mirapalheta":  "thales-mirapalheta.jpeg",
                    "Thiago Edom Nunes":  "thiago_edom.jpg",
                    "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg",
+                   "Tuana da Costa Heres":  "tuana-heres.jpg",
                    "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpg"
                }
 };
