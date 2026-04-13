@@ -44,6 +44,27 @@ Importante:
 
 Se quiser usar somente os dados da planilha, deixe `GOOGLE_SHEETS_ONLY_MODE = true` no arquivo `app.js`.
 
+## Momento RP
+
+A nova area `Momento RP` fica em `momento-rp.html` e usa o arquivo `momento-rp.js`.
+
+Ela pode funcionar de duas formas:
+
+- Sem Apps Script atualizado: os registros ficam apenas no navegador atual.
+- Com Apps Script atualizado: os registros passam a ser gravados e lidos da aba `MomentoRP` na mesma planilha do Apps Script.
+
+Para ativar a gravacao online do `Momento RP`:
+
+1. Atualize o conteudo de `google-apps-script/Code.gs` com a versao atual do projeto.
+2. Publique uma nova versao do Apps Script como `Aplicativo da Web`.
+3. Confirme a URL publicada em `momento-rp.js` na constante `RP_GOOGLE_SCRIPT_URL`.
+
+Observacoes:
+
+- A retirada de kits continua funcionando normalmente no mesmo endpoint.
+- A aba `MomentoRP` e criada automaticamente na planilha quando o primeiro registro for enviado.
+- Com `RP_GOOGLE_SHEETS_ONLY_MODE = true`, a pagina mostra somente o que estiver salvo na planilha.
+
 ## Telegram opcional
 
 O Apps Script deste projeto tambem pode enviar um relatorio atualizado para o Telegram sempre que um novo cadastro for recebido.

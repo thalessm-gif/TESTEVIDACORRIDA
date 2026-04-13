@@ -255,6 +255,22 @@ body {
   color: #ddfff6;
 }
 
+.feature-card-rp {
+  border-color: rgba(255, 190, 117, 0.28);
+  background:
+    radial-gradient(circle at top left, rgba(255, 196, 126, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(103, 58, 16, 0.4), rgba(255, 255, 255, 0.05));
+}
+
+.feature-card-rp .feature-tag {
+  background: rgba(255, 196, 126, 0.16);
+  color: #fff0dc;
+}
+
+.feature-card-rp .feature-link {
+  color: #fff5e8;
+}
+
 .feature-card-coaches {
   border-color: rgba(255, 145, 78, 0.28);
   background:
@@ -984,6 +1000,136 @@ button:disabled {
 .calendar-panel {
   padding: 24px;
   margin-bottom: 24px;
+}
+
+.rp-hero,
+.rp-form-panel,
+.rp-history-panel {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.rp-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.rp-aux-field {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.rp-aux-field-hidden {
+  display: none;
+}
+
+.rp-entry-list {
+  display: grid;
+  gap: 18px;
+}
+
+.rp-entry-card,
+.rp-empty-card {
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.rp-entry-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.rp-entry-heading {
+  min-width: 0;
+}
+
+.rp-entry-athlete {
+  margin: 0 0 8px;
+  color: #ffd8c2;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rp-entry-heading h3 {
+  margin: 0;
+  font-size: 1.28rem;
+  line-height: 1.35;
+}
+
+.rp-entry-time-block {
+  min-width: 120px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: right;
+}
+
+.rp-entry-time-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rp-entry-time {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.rp-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.rp-meta-item {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rp-meta-item strong {
+  line-height: 1.45;
+}
+
+.rp-meta-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rp-podium-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.16);
+  color: #ffe0cd;
+}
+
+.rp-podium-pill-muted {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
 }
 
 .trainers-hero {
@@ -2147,7 +2293,9 @@ tbody tr:hover {
   .distance-groups,
   .home-actions,
   .highlights-stat-grid,
-  .plan-grid {
+  .plan-grid,
+  .rp-form-grid,
+  .rp-meta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2232,6 +2380,9 @@ tbody tr:hover {
   .calendar-panel,
   .ranking-controls-panel,
   .ranking-hero,
+  .rp-hero,
+  .rp-form-panel,
+  .rp-history-panel,
   .regulation-hero,
   .calendar-hero,
   .home-hero,
@@ -2257,6 +2408,15 @@ tbody tr:hover {
 
   .fidelity-table-wrapper {
     display: none;
+  }
+
+  .rp-entry-card-top {
+    flex-direction: column;
+  }
+
+  .rp-entry-time-block {
+    width: 100%;
+    text-align: left;
   }
 
   .ranking-top-five {
