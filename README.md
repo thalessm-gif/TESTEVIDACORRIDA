@@ -64,16 +64,20 @@ Observacoes:
 - A retirada de kits continua funcionando normalmente no mesmo endpoint.
 - A aba `MomentoRP` e criada automaticamente na planilha quando o primeiro registro for enviado.
 - Com `RP_GOOGLE_SHEETS_ONLY_MODE = true`, a pagina mostra somente o que estiver salvo na planilha.
+- Se o campo `Tempo anterior` ficar em branco, o registro sera salvo como `Primeira prova`.
 
 ## Telegram opcional
 
 O Apps Script deste projeto tambem pode enviar um relatorio atualizado para o Telegram sempre que um novo cadastro for recebido.
+No `Momento RP`, o envio pode usar o mesmo bot, mas apontando para outro grupo e enviando somente o cadastro novo.
 
 No editor do Apps Script, configure as propriedades em `Configuracoes do projeto > Propriedades do script`:
 
 - `TELEGRAM_ENABLED`: `true` ou `false`
 - `TELEGRAM_BOT_TOKEN`: token do bot
 - `TELEGRAM_CHAT_ID`: id do grupo, canal ou conversa
+- `TELEGRAM_RP_CHAT_ID`: id do grupo do `Momento RP`
+- `TELEGRAM_RP_ENABLED`: opcional, use `true` ou `false` se quiser controlar o envio do `Momento RP` separadamente
 - `DISTANCE_OPTIONS`: distancias na ordem desejada, por exemplo `5km, 10km`
 
 Assim o token nao fica exposto no codigo do site nem no repositorio.

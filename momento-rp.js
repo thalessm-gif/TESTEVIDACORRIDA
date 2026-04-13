@@ -3,6 +3,7 @@ const RP_GOOGLE_SHEETS_ONLY_MODE = true;
 const RP_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec";
 const RP_RESOURCE = "rp";
 const RP_LIST_ACTION = "rp-list";
+const RP_FIRST_RACE_LABEL = "Primeira prova";
 const RP_DISTANCES = [
   { value: "3km", label: "3 km", storedValue: "3 km" },
   { value: "5km", label: "5 km", storedValue: "5 km" },
@@ -193,7 +194,7 @@ async function handleRpSubmit(event) {
     return;
   }
 
-  const normalizedPreviousTime = normalizeTimeValue(previousTimeElement.value);
+  const normalizedPreviousTime = normalizeRpPreviousTimeValue(previousTimeElement.value);
   const normalizedTime = normalizeTimeValue(timeElement.value);
   const resolvedDistance = getResolvedDistanceLabel();
   const athleteName = normalizeText(athleteNameElement.value);
@@ -204,8 +205,13 @@ async function handleRpSubmit(event) {
   const categoryLabel = getLabelFromOptions(RP_CATEGORIES, selectedCategory);
   const podiumLabel = getLabelFromOptions(RP_PODIUMS, selectedPodium);
 
-  if (!athleteName || !raceName || !raceDate || !normalizedPreviousTime || !normalizedTime) {
-    showRpMessage("Preencha nome, prova, data, tempo anterior e novo tempo em um formato válido.", true);
+  if (normalizeText(previousTimeElement.value) && !normalizedPreviousTime) {
+    showRpMessage("Se informar o tempo anterior, use um formato valido.", true);
+    return;
+  }
+
+  if (!athleteName || !raceName || !raceDate || !normalizedTime) {
+    showRpMessage("Preencha nome, prova, data e novo tempo em um formato valido.", true);
     return;
   }
 
@@ -486,7 +492,7 @@ function renderRpEntries() {
             <div class="rp-entry-time-block">
               <span class="rp-entry-time-label">Novo tempo</span>
               <strong class="rp-entry-time">${escapeHtml(entry.time)}</strong>
-              <span class="rp-entry-time-previous">Anterior: ${escapeHtml(entry.previousTime || "-")}</span>
+              <span class="rp-entry-time-previous">Anterior: ${escapeHtml(entry.previousTime || RP_FIRST_RACE_LABEL)}</span>
             </div>
           </div>
 
@@ -672,7 +678,7 @@ function normalizeRpEntry(entry) {
     athleteName: normalizeText(entry.athleteName),
     raceName: normalizeText(entry.raceName),
     raceDate: normalizeDateOnlyValue(entry.raceDate),
-    previousTime: normalizeTimeValue(entry.previousTime) || normalizeText(entry.previousTime),
+    previousTime: normalizeRpPreviousTimeValue(entry.previousTime),
     time: normalizeTimeValue(entry.time) || normalizeText(entry.time),
     distance: normalizeDistanceLabel(entry.distance),
     gender: normalizeLegacyChoiceLabel(entry.gender, RP_GENDERS),
@@ -699,9 +705,22 @@ function buildRpSheetPayload(entry) {
   return {
     resource: RP_RESOURCE,
     ...normalizedEntry,
-    previousTime: normalizeTimeValue(entry && entry.previousTime) || normalizeText(entry && entry.previousTime),
+    previousTime: normalizeRpPreviousTimeValue(entry && entry.previousTime),
     instagram: normalizeInstagramHandle(entry && entry.instagram)
   };
+}
+
+function normalizeRpPreviousTimeValue(value) {
+  const safeValue = normalizeText(value);
+  if (!safeValue) {
+    return RP_FIRST_RACE_LABEL;
+  }
+
+  if (safeValue.toLocaleLowerCase("pt-BR") === RP_FIRST_RACE_LABEL.toLocaleLowerCase("pt-BR")) {
+    return RP_FIRST_RACE_LABEL;
+  }
+
+  return normalizeTimeValue(safeValue);
 }
 
 function normalizeDistanceLabel(value) {
