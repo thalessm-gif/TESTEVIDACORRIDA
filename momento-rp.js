@@ -37,6 +37,7 @@ const athleteNameElement = document.getElementById("rp-athlete-name");
 const instagramElement = document.getElementById("rp-instagram");
 const raceNameElement = document.getElementById("rp-race-name");
 const raceDateElement = document.getElementById("rp-race-date");
+const previousTimeElement = document.getElementById("rp-previous-time");
 const timeElement = document.getElementById("rp-time");
 const distanceOptionsElement = document.getElementById("rp-distance-options");
 const customDistanceFieldElement = document.getElementById("rp-custom-distance-field");
@@ -192,6 +193,7 @@ async function handleRpSubmit(event) {
     return;
   }
 
+  const normalizedPreviousTime = normalizeTimeValue(previousTimeElement.value);
   const normalizedTime = normalizeTimeValue(timeElement.value);
   const resolvedDistance = getResolvedDistanceLabel();
   const athleteName = normalizeText(athleteNameElement.value);
@@ -202,8 +204,8 @@ async function handleRpSubmit(event) {
   const categoryLabel = getLabelFromOptions(RP_CATEGORIES, selectedCategory);
   const podiumLabel = getLabelFromOptions(RP_PODIUMS, selectedPodium);
 
-  if (!athleteName || !raceName || !raceDate || !normalizedTime) {
-    showRpMessage("Preencha nome, prova, data e tempo em um formato válido.", true);
+  if (!athleteName || !raceName || !raceDate || !normalizedPreviousTime || !normalizedTime) {
+    showRpMessage("Preencha nome, prova, data, tempo anterior e novo tempo em um formato válido.", true);
     return;
   }
 
@@ -233,6 +235,7 @@ async function handleRpSubmit(event) {
     instagram,
     raceName,
     raceDate,
+    previousTime: normalizedPreviousTime,
     time: normalizedTime,
     distance: resolvedDistance,
     gender: genderLabel,
@@ -481,8 +484,9 @@ function renderRpEntries() {
               <h3>${escapeHtml(entry.raceName)}</h3>
             </div>
             <div class="rp-entry-time-block">
-              <span class="rp-entry-time-label">Tempo</span>
+              <span class="rp-entry-time-label">Novo tempo</span>
               <strong class="rp-entry-time">${escapeHtml(entry.time)}</strong>
+              <span class="rp-entry-time-previous">Anterior: ${escapeHtml(entry.previousTime || "-")}</span>
             </div>
           </div>
 
@@ -668,6 +672,7 @@ function normalizeRpEntry(entry) {
     athleteName: normalizeText(entry.athleteName),
     raceName: normalizeText(entry.raceName),
     raceDate: normalizeDateOnlyValue(entry.raceDate),
+    previousTime: normalizeTimeValue(entry.previousTime) || normalizeText(entry.previousTime),
     time: normalizeTimeValue(entry.time) || normalizeText(entry.time),
     distance: normalizeDistanceLabel(entry.distance),
     gender: normalizeLegacyChoiceLabel(entry.gender, RP_GENDERS),
@@ -694,6 +699,7 @@ function buildRpSheetPayload(entry) {
   return {
     resource: RP_RESOURCE,
     ...normalizedEntry,
+    previousTime: normalizeTimeValue(entry && entry.previousTime) || normalizeText(entry && entry.previousTime),
     instagram: normalizeInstagramHandle(entry && entry.instagram)
   };
 }
@@ -867,6 +873,7 @@ function createRpEntryFingerprint(entry) {
     entry.athleteName || "",
     entry.raceName || "",
     entry.raceDate || "",
+    entry.previousTime || "",
     entry.time || "",
     entry.distance || "",
     entry.gender || "",
@@ -904,6 +911,7 @@ function setRpFormDisabled(disabled) {
     instagramElement,
     raceNameElement,
     raceDateElement,
+    previousTimeElement,
     timeElement,
     customDistanceElement
   ].forEach((element) => {
