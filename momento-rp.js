@@ -44,6 +44,7 @@ const previousTimeSecondsElement = document.getElementById("rp-previous-time-sec
 const timeHoursElement = document.getElementById("rp-time-hours");
 const timeMinutesElement = document.getElementById("rp-time-minutes");
 const timeSecondsElement = document.getElementById("rp-time-seconds");
+const photoInputElement = document.getElementById("rp-photo");
 const distanceOptionsElement = document.getElementById("rp-distance-options");
 const customDistanceFieldElement = document.getElementById("rp-custom-distance-field");
 const customDistanceElement = document.getElementById("rp-custom-distance");
@@ -216,6 +217,7 @@ async function handleRpSubmit(event) {
   const normalizedPreviousTime = normalizeRpPreviousTimeValue(previousTimeDraft.value);
   const normalizedTime = normalizeTimeValue(currentTimeDraft.value);
   const resolvedDistance = getResolvedDistanceLabel();
+  const selectedPhotoFile = photoInputElement && photoInputElement.files ? photoInputElement.files[0] : null;
   const athleteName = normalizeText(athleteNameElement.value);
   const instagram = normalizeInstagramHandle(instagramElement.value);
   const raceName = normalizeText(raceNameElement.value);
@@ -254,6 +256,16 @@ async function handleRpSubmit(event) {
     return;
   }
 
+  let photoPayload = null;
+  if (selectedPhotoFile) {
+    try {
+      photoPayload = await buildRpPhotoPayload(selectedPhotoFile);
+    } catch (error) {
+      showRpMessage(String(error && error.message ? error.message : "Nao foi possivel preparar a foto selecionada."), true);
+      return;
+    }
+  }
+
   const entryDraft = {
     id: createRpEntryId(),
     athleteName,
@@ -266,6 +278,7 @@ async function handleRpSubmit(event) {
     gender: genderLabel,
     category: categoryLabel,
     podium: podiumLabel,
+    photo: photoPayload,
     createdAt: new Date().toISOString()
   };
   const newEntry = normalizeRpEntry(entryDraft);
@@ -280,7 +293,9 @@ async function handleRpSubmit(event) {
 
   try {
     if (shouldUseRpGoogleSheetsAsSingleSource()) {
-      const syncStatus = await syncRpEntryWithGoogleSheets(entryDraft);
+      const syncResult = await syncRpEntryWithGoogleSheets(entryDraft);
+      const syncStatus = getRpSyncStatusCode(syncResult);
+      const syncMessage = getRpSyncStatusMessage(syncResult);
 
       if (syncStatus === "synced" || syncStatus === "queued") {
         const refreshedEntries = await refreshRpEntriesFromGoogleSheets(newEntry);
@@ -306,14 +321,14 @@ async function handleRpSubmit(event) {
       renderRpPage();
       resetRpFormAfterSubmit();
       showRpMessage(
-        getRpSubmitMessage(syncStatus),
+        getRpSubmitMessage(syncStatus, false, syncMessage),
         syncStatus === "rejected" || syncStatus === "local_only"
       );
 
       if (syncStatus === "rejected" || syncStatus === "local_only") {
         showStatus({
           title: "Falha ao atualizar",
-          text: getRpSubmitMessage(syncStatus, true),
+          text: getRpSubmitMessage(syncStatus, true, syncMessage),
           tone: "error"
         });
         return;
@@ -332,7 +347,9 @@ async function handleRpSubmit(event) {
     saveRpEntriesToLocalStorage(rpEntries);
     renderRpPage();
 
-    const syncStatus = await syncRpEntryWithGoogleSheets(entryDraft);
+    const syncResult = await syncRpEntryWithGoogleSheets(entryDraft);
+    const syncStatus = getRpSyncStatusCode(syncResult);
+    const syncMessage = getRpSyncStatusMessage(syncResult);
 
     if (syncStatus === "synced" || syncStatus === "queued") {
       const refreshedEntries = await refreshRpEntriesFromGoogleSheets(newEntry);
@@ -346,7 +363,7 @@ async function handleRpSubmit(event) {
 
     if (syncStatus === "synced" || syncStatus === "queued" || syncStatus === "disabled" || syncStatus === "local_only") {
       resetRpFormAfterSubmit();
-      showRpMessage(getRpSubmitMessage(syncStatus));
+      showRpMessage(getRpSubmitMessage(syncStatus, false, syncMessage));
       showStatus({
         title: "Dados enviados com sucesso",
         text: "O cadastro foi processado e a lista ja foi atualizada na tela.",
@@ -356,10 +373,10 @@ async function handleRpSubmit(event) {
       return;
     }
 
-    showRpMessage(getRpSubmitMessage(syncStatus), true);
+    showRpMessage(getRpSubmitMessage(syncStatus, false, syncMessage), true);
     showStatus({
       title: "Falha ao enviar dados",
-      text: getRpSubmitMessage(syncStatus),
+      text: getRpSubmitMessage(syncStatus, false, syncMessage),
       tone: "error"
     });
   } catch (error) {
@@ -407,7 +424,7 @@ async function loadRpEntriesFromGoogleSheets(options = {}) {
 
 async function syncRpEntryWithGoogleSheets(entry) {
   if (!isRpGoogleScriptConfigured()) {
-    return "disabled";
+    return { status: "disabled" };
   }
 
   const payload = JSON.stringify(buildRpSheetPayload(entry));
@@ -425,10 +442,13 @@ async function syncRpEntryWithGoogleSheets(entry) {
       const data = await safeReadJson(response);
 
       if (!data || data.ok !== false) {
-        return "synced";
+        return { status: "synced" };
       }
 
-      return "rejected";
+      return {
+        status: "rejected",
+        message: String(data.message || "O Apps Script rejeitou o cadastro do Momento RP.")
+      };
     }
   } catch (error) {
     console.error("Erro ao enviar Momento RP para o Google Sheets:", error);
@@ -444,10 +464,10 @@ async function syncRpEntryWithGoogleSheets(entry) {
       body: payload
     });
 
-    return "queued";
+    return { status: "queued" };
   } catch (error) {
     console.error("Erro no envio simples do Momento RP:", error);
-    return "local_only";
+    return { status: "local_only" };
   }
 }
 
@@ -703,6 +723,8 @@ function normalizeRpEntry(entry) {
     gender: normalizeLegacyChoiceLabel(entry.gender, RP_GENDERS),
     category: normalizeLegacyChoiceLabel(entry.category, RP_CATEGORIES),
     podium: normalizeLegacyChoiceLabel(entry.podium, RP_PODIUMS),
+    photoDriveFileId: normalizeText(entry.photoDriveFileId),
+    photoDriveUrl: normalizeText(entry.photoDriveUrl),
     createdAt: normalizeDateTimeValue(entry.createdAt)
   };
 
@@ -725,8 +747,94 @@ function buildRpSheetPayload(entry) {
     resource: RP_RESOURCE,
     ...normalizedEntry,
     previousTime: normalizeRpPreviousTimeValue(entry && entry.previousTime),
-    instagram: normalizeInstagramHandle(entry && entry.instagram)
+    instagram: normalizeInstagramHandle(entry && entry.instagram),
+    photo: entry && entry.photo ? {
+      fileName: entry.photo.fileName,
+      mimeType: entry.photo.mimeType,
+      base64Data: entry.photo.base64Data
+    } : null
   };
+}
+
+async function buildRpPhotoPayload(file) {
+  if (!file) {
+    return null;
+  }
+
+  if (!/^image\//i.test(String(file.type || ""))) {
+    throw new Error("Escolha uma imagem valida para o Momento RP.");
+  }
+
+  const processedImage = await readRpImageAsUploadPayload(file);
+
+  return {
+    fileName: buildRpPhotoFileName(file.name),
+    mimeType: processedImage.mimeType,
+    base64Data: processedImage.base64Data
+  };
+}
+
+function readRpImageAsUploadPayload(file) {
+  const maxDimension = 1600;
+  const outputMimeType = "image/jpeg";
+  const outputQuality = 0.88;
+
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        const naturalWidth = image.naturalWidth || image.width || 1;
+        const naturalHeight = image.naturalHeight || image.height || 1;
+        const scale = Math.min(1, maxDimension / Math.max(naturalWidth, naturalHeight));
+        const width = Math.max(1, Math.round(naturalWidth * scale));
+        const height = Math.max(1, Math.round(naturalHeight * scale));
+
+        if (!context) {
+          throw new Error("O navegador nao conseguiu preparar a imagem.");
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL(outputMimeType, outputQuality);
+        const base64Data = String(dataUrl.split(",")[1] || "").trim();
+
+        if (!base64Data) {
+          throw new Error("Nao foi possivel converter a imagem selecionada.");
+        }
+
+        resolve({
+          mimeType: outputMimeType,
+          base64Data
+        });
+      } catch (error) {
+        reject(error);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Nao foi possivel ler a imagem selecionada."));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+function buildRpPhotoFileName(originalName) {
+  const safeBaseName = normalizeText(String(originalName || "").replace(/\.[^.]+$/, ""))
+    .replace(/[^a-zA-Z0-9-_ ]/g, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase();
+
+  return `${safeBaseName || "momento-rp"}-upload.jpg`;
 }
 
 function attachTimeInputHandlers(elements) {
@@ -999,6 +1107,7 @@ function setRpFormDisabled(disabled) {
     raceNameElement,
     raceDateElement,
     ...allTimePartElements,
+    photoInputElement,
     customDistanceElement
   ].forEach((element) => {
     if (element) {
@@ -1089,7 +1198,19 @@ function clearStatusHideTimeout() {
   }
 }
 
-function getRpSubmitMessage(syncStatus, strictRemoteMode = false) {
+function getRpSyncStatusCode(syncResult) {
+  return typeof syncResult === "string"
+    ? syncResult
+    : String(syncResult && syncResult.status || "");
+}
+
+function getRpSyncStatusMessage(syncResult) {
+  return typeof syncResult === "string"
+    ? ""
+    : String(syncResult && syncResult.message || "");
+}
+
+function getRpSubmitMessage(syncStatus, strictRemoteMode = false, syncMessage = "") {
   if (syncStatus === "synced") {
     return "Momento RP salvo e enviado para o Google Sheets.";
   }
@@ -1111,6 +1232,10 @@ function getRpSubmitMessage(syncStatus, strictRemoteMode = false) {
   }
 
   if (syncStatus === "rejected") {
+    if (syncMessage) {
+      return syncMessage;
+    }
+
     return "O Apps Script atual ainda não está pronto para o Momento RP. Atualize o arquivo google-apps-script/Code.gs e publique novamente.";
   }
 

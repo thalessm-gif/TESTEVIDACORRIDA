@@ -621,6 +621,13 @@ h2 {
   font-weight: 600;
 }
 
+.field-help {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.87rem;
+  color: var(--muted);
+}
+
 input,
 select,
 button {

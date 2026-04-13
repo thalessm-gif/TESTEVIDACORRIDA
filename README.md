@@ -65,6 +65,7 @@ Observacoes:
 - A aba `MomentoRP` e criada automaticamente na planilha quando o primeiro registro for enviado.
 - Com `RP_GOOGLE_SHEETS_ONLY_MODE = true`, a pagina mostra somente o que estiver salvo na planilha.
 - Se o campo `Tempo anterior` ficar em branco, o registro sera salvo como `Primeira prova`.
+- A foto do `Momento RP`, quando anexada, e salva no Google Drive e enviada ao grupo do Telegram do `Momento RP`.
 
 ## Telegram opcional
 
@@ -78,9 +79,11 @@ No editor do Apps Script, configure as propriedades em `Configuracoes do projeto
 - `TELEGRAM_CHAT_ID`: id do grupo, canal ou conversa
 - `TELEGRAM_RP_CHAT_ID`: id do grupo do `Momento RP`
 - `TELEGRAM_RP_ENABLED`: opcional, use `true` ou `false` se quiser controlar o envio do `Momento RP` separadamente
+- `MOMENTO_RP_DRIVE_FOLDER_ID`: id da pasta do Google Drive onde as fotos do `Momento RP` serao salvas
 - `DISTANCE_OPTIONS`: distancias na ordem desejada, por exemplo `5km, 10km`
 
 Assim o token nao fica exposto no codigo do site nem no repositorio.
+Na propriedade `MOMENTO_RP_DRIVE_FOLDER_ID`, voce pode colar tanto o ID puro quanto a URL completa da pasta do Drive.
 
 ## Distancias configuraveis
 
