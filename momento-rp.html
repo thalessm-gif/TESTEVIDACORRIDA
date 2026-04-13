@@ -11,14 +11,14 @@
 </head>
 <body>
   <main class="page">
-    <nav class="top-nav" aria-label="Navegacao principal">
-      <a href="index.html" class="nav-link">Pagina inicial</a>
+    <nav class="top-nav" aria-label="Navegação principal">
+      <a href="index.html" class="nav-link">Página inicial</a>
       <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
       <a href="destaques-semanais.html" class="nav-link">Destaques Semanais</a>
       <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
-      <a href="calendario-provas.html" class="nav-link">Calendario de Provas</a>
-      <a href="planos-fidelizacao.html" class="nav-link">Planos de Fidelizacao</a>
-      <a href="indicacao-amiga.html" class="nav-link">Indicacao Amiga</a>
+      <a href="calendario-provas.html" class="nav-link">Calendário de Provas</a>
+      <a href="planos-fidelizacao.html" class="nav-link">Planos de Fidelização</a>
+      <a href="indicacao-amiga.html" class="nav-link">Indicação Amiga</a>
       <a href="treinadores.html" class="nav-link">Treinadores</a>
     </nav>
 
@@ -33,36 +33,11 @@
     </section>
 
     <section class="panel rp-hero">
-      <p class="eyebrow">Area 7</p>
+      <p class="eyebrow">Área 7</p>
       <h1>Momento RP</h1>
       <p class="hero-text">
-        Compartilhe seu recorde pessoal, celebre o resultado da prova e registre os podios que marcaram a sua evolucao.
+        Compartilhe seu recorde pessoal, celebre o resultado da prova e registre os pódios que marcaram a sua evolução.
       </p>
-
-      <div class="hero-highlight">
-        <span class="highlight-label">Novo espaco</span>
-        <p>Preencha o formulario, salve o seu resultado e exporte os registros em CSV quando quiser.</p>
-      </div>
-    </section>
-
-    <section class="highlights-stat-grid">
-      <article class="panel stat-card">
-        <p class="stat-label">Registros salvos</p>
-        <p id="rp-total-count" class="stat-value">0</p>
-        <p class="stat-support">Quantidade total de resultados registrados no Momento RP.</p>
-      </article>
-
-      <article class="panel stat-card">
-        <p class="stat-label">Provas diferentes</p>
-        <p id="rp-race-count" class="stat-value">0</p>
-        <p class="stat-support">Eventos unicos registrados no Momento RP.</p>
-      </article>
-
-      <article class="panel stat-card">
-        <p class="stat-label">Podios informados</p>
-        <p id="rp-podium-count" class="stat-value">0</p>
-        <p class="stat-support">Resultados com colocacao de destaque ou podium.</p>
-      </article>
     </section>
 
     <section class="panel rp-form-panel">
@@ -84,7 +59,8 @@
 
           <label class="field">
             <span>Qual prova foi?</span>
-            <input id="rp-race-name" type="text" placeholder="Ex.: Meia Maratona do Choque" required>
+            <input id="rp-race-name" type="text" placeholder="Ex.: Meia Maratona do Choque" list="rp-race-suggestions" autocomplete="off" required>
+            <datalist id="rp-race-suggestions"></datalist>
           </label>
 
           <label class="field">
@@ -100,17 +76,17 @@
 
         <div class="ranking-filters-stack">
           <div class="ranking-filter-block">
-            <p class="ranking-filter-label">Distancia</p>
-            <div id="rp-distance-options" class="ranking-category-chips" role="group" aria-label="Distancias do Momento RP"></div>
+            <p class="ranking-filter-label">Distância</p>
+            <div id="rp-distance-options" class="ranking-category-chips" role="group" aria-label="Distâncias do Momento RP"></div>
             <label id="rp-custom-distance-field" class="field rp-aux-field rp-aux-field-hidden">
-              <span>Qual distancia?</span>
+              <span>Qual distância?</span>
               <input id="rp-custom-distance" type="text" placeholder="Ex.: 15 km">
             </label>
           </div>
 
           <div class="ranking-filter-block">
-            <p class="ranking-filter-label">Genero</p>
-            <div id="rp-gender-options" class="ranking-view-toggle" role="group" aria-label="Genero do atleta"></div>
+            <p class="ranking-filter-label">Gênero</p>
+            <div id="rp-gender-options" class="ranking-view-toggle" role="group" aria-label="Gênero do atleta"></div>
           </div>
 
           <div class="ranking-filter-block">
@@ -119,8 +95,8 @@
           </div>
 
           <div class="ranking-filter-block">
-            <p class="ranking-filter-label">Podio no evento</p>
-            <div id="rp-podium-options" class="ranking-category-chips" role="group" aria-label="Resultado de podium"></div>
+            <p class="ranking-filter-label">Pódio no evento</p>
+            <div id="rp-podium-options" class="ranking-category-chips" role="group" aria-label="Resultado de pódio"></div>
           </div>
         </div>
 
@@ -136,7 +112,7 @@
     <section class="panel rp-history-panel">
       <div class="overview-header">
         <div>
-          <p class="eyebrow">Historico</p>
+          <p class="eyebrow">Histórico</p>
           <h2>Resultados registrados</h2>
         </div>
       </div>
@@ -148,13 +124,14 @@
 
       <div id="rp-entry-list" class="rp-entry-list">
         <article class="rp-empty-card">
-          <p class="empty-state">Nenhum resultado registrado ainda. Preencha o formulario para criar o primeiro Momento RP.</p>
+          <p class="empty-state">Nenhum resultado registrado ainda. Preencha o formulário para criar o primeiro Momento RP.</p>
         </article>
       </div>
     </section>
   </main>
 
   <script src="kit-athletes.js"></script>
-  <script src="momento-rp.js?v=20260412-2"></script>
+  <script src="calendar-data.js"></script>
+  <script src="momento-rp.js?v=20260412-4"></script>
 </body>
 </html>

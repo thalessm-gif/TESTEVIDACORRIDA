@@ -22,14 +22,14 @@ const RP_CATEGORIES = [
   { value: "50+", label: "50 anos ou mais" }
 ];
 const RP_PODIUMS = [
-  { value: "cat-1", label: "1o da categoria" },
-  { value: "cat-2", label: "2o da categoria" },
-  { value: "cat-3", label: "3o da categoria" },
-  { value: "cat-4", label: "4o da categoria" },
-  { value: "cat-5", label: "5o da categoria" },
+  { value: "cat-1", label: "1º da categoria" },
+  { value: "cat-2", label: "2º da categoria" },
+  { value: "cat-3", label: "3º da categoria" },
+  { value: "cat-4", label: "4º da categoria" },
+  { value: "cat-5", label: "5º da categoria" },
   { value: "general-top5", label: "Top 5 Geral" },
   { value: "general-top10", label: "Top 10 Geral" },
-  { value: "none", label: "Nenhum podio" }
+  { value: "none", label: "Nenhum pódio" }
 ];
 
 const rpFormElement = document.getElementById("rp-form");
@@ -45,14 +45,13 @@ const categoryOptionsElement = document.getElementById("rp-category-options");
 const podiumOptionsElement = document.getElementById("rp-podium-options");
 const formMessageElement = document.getElementById("rp-form-message");
 const exportButtonElement = document.getElementById("rp-export-button");
-const totalCountElement = document.getElementById("rp-total-count");
-const raceCountElement = document.getElementById("rp-race-count");
-const podiumCountElement = document.getElementById("rp-podium-count");
 const statusElement = document.getElementById("rp-status");
 const searchElement = document.getElementById("rp-search");
 const entryListElement = document.getElementById("rp-entry-list");
 const athleteSuggestionsElement = document.getElementById("rp-athlete-suggestions");
+const raceSuggestionsElement = document.getElementById("rp-race-suggestions");
 const preloadedAthleteNames = Array.isArray(window.KIT_ATHLETE_NAMES) ? window.KIT_ATHLETE_NAMES : [];
+const preloadedRaceEntries = Array.isArray(window.RACE_CALENDAR_ENTRIES) ? window.RACE_CALENDAR_ENTRIES : [];
 
 let rpEntries = [];
 let selectedDistance = "";
@@ -66,6 +65,7 @@ renderChoiceGroup(categoryOptionsElement, RP_CATEGORIES, selectedCategory, "cate
 renderChoiceGroup(podiumOptionsElement, RP_PODIUMS, selectedPodium, "podium");
 updateCustomDistanceVisibility();
 updateAthleteSuggestions();
+updateRaceSuggestions();
 renderRpPage();
 attachRpEventListeners();
 initializeRpPage();
@@ -127,7 +127,7 @@ async function initializeRpPage() {
     rpEntries = loadRpEntriesFromLocalStorage();
     renderRpPage();
     showRpMessage(
-      "Nao foi possivel carregar a planilha do Momento RP agora. Os registros locais continuam disponiveis neste navegador.",
+      "Não foi possível carregar a planilha do Momento RP agora. Os registros locais continuam disponíveis neste navegador.",
       true
     );
   } finally {
@@ -186,17 +186,17 @@ async function handleRpSubmit(event) {
   const podiumLabel = getLabelFromOptions(RP_PODIUMS, selectedPodium);
 
   if (!athleteName || !raceName || !raceDate || !normalizedTime) {
-    showRpMessage("Preencha nome, prova, data e tempo em um formato valido.", true);
+    showRpMessage("Preencha nome, prova, data e tempo em um formato válido.", true);
     return;
   }
 
   if (!selectedDistance || !resolvedDistance) {
-    showRpMessage("Selecione a distancia da prova.", true);
+    showRpMessage("Selecione a distância da prova.", true);
     return;
   }
 
   if (!genderLabel) {
-    showRpMessage("Selecione o genero do atleta.", true);
+    showRpMessage("Selecione o gênero do atleta.", true);
     return;
   }
 
@@ -206,7 +206,7 @@ async function handleRpSubmit(event) {
   }
 
   if (!podiumLabel) {
-    showRpMessage("Informe se houve podium no evento.", true);
+    showRpMessage("Informe se houve pódio no evento.", true);
     return;
   }
 
@@ -279,7 +279,7 @@ async function handleRpSubmit(event) {
     showRpMessage(getRpSubmitMessage(syncStatus), true);
   } catch (error) {
     console.error("Erro ao registrar Momento RP:", error);
-    showRpMessage("Nao foi possivel concluir o envio agora.", true);
+    showRpMessage("Não foi possível concluir o envio agora.", true);
   } finally {
     setRpFormDisabled(false);
   }
@@ -287,12 +287,12 @@ async function handleRpSubmit(event) {
 
 function handleRpExport() {
   if (!rpEntries.length) {
-    showRpMessage("Ainda nao ha registros para exportar.", true);
+    showRpMessage("Ainda não há registros para exportar.", true);
     return;
   }
 
   const csvRows = [
-    ["Nome do atleta", "Prova", "Data da prova", "Tempo", "Distancia", "Genero", "Categoria", "Podio"],
+    ["Nome do atleta", "Prova", "Data da prova", "Tempo", "Distância", "Gênero", "Categoria", "Pódio"],
     ...sortRpEntries([...rpEntries]).map((entry) => [
       entry.athleteName,
       entry.raceName,
@@ -430,10 +430,6 @@ function renderRpPage() {
 }
 
 function renderRpSummary() {
-  totalCountElement.textContent = String(rpEntries.length);
-  raceCountElement.textContent = String(getUniqueRaceCount(rpEntries));
-  podiumCountElement.textContent = String(rpEntries.filter((entry) => normalizeText(entry.podium).toLowerCase() !== "nenhum podio").length);
-
   setRpStatus(
     rpEntries.length
       ? `${rpEntries.length} registro${rpEntries.length === 1 ? "" : "s"}`
@@ -447,7 +443,7 @@ function renderRpEntries() {
   if (!filteredEntries.length) {
     entryListElement.innerHTML = `
       <article class="rp-empty-card">
-        <p class="empty-state">${rpEntries.length ? "Nenhum resultado encontrado para a busca atual." : "Nenhum resultado registrado ainda. Preencha o formulario para criar o primeiro Momento RP."}</p>
+        <p class="empty-state">${rpEntries.length ? "Nenhum resultado encontrado para a busca atual." : "Nenhum resultado registrado ainda. Preencha o formulário para criar o primeiro Momento RP."}</p>
       </article>
     `;
     return;
@@ -474,11 +470,11 @@ function renderRpEntries() {
               <strong>${escapeHtml(formatRaceDate(entry.raceDate))}</strong>
             </div>
             <div class="rp-meta-item">
-              <span class="rp-meta-label">Distancia</span>
+              <span class="rp-meta-label">Distância</span>
               <strong>${escapeHtml(entry.distance)}</strong>
             </div>
             <div class="rp-meta-item">
-              <span class="rp-meta-label">Genero</span>
+              <span class="rp-meta-label">Gênero</span>
               <strong>${escapeHtml(entry.gender)}</strong>
             </div>
             <div class="rp-meta-item">
@@ -487,7 +483,7 @@ function renderRpEntries() {
             </div>
             <div class="rp-meta-item">
               <span class="rp-meta-label">Resultado</span>
-              <strong class="rp-podium-pill${normalizeText(entry.podium).toLowerCase() === "nenhum podio" ? " rp-podium-pill-muted" : ""}">${escapeHtml(entry.podium)}</strong>
+              <strong class="rp-podium-pill${normalizeText(entry.podium).toLowerCase() === "nenhum pódio" ? " rp-podium-pill-muted" : ""}">${escapeHtml(entry.podium)}</strong>
             </div>
           </div>
         </article>
@@ -535,6 +531,22 @@ function updateAthleteSuggestions() {
   )].sort((first, second) => first.localeCompare(second, "pt-BR", { sensitivity: "base" }));
 
   athleteSuggestionsElement.innerHTML = uniqueNames
+    .map((name) => `<option value="${escapeHtmlAttribute(name)}"></option>`)
+    .join("");
+}
+
+function updateRaceSuggestions() {
+  if (!raceSuggestionsElement) {
+    return;
+  }
+
+  const uniqueRaceNames = [...new Set(
+    preloadedRaceEntries
+      .map((entry) => normalizeText(entry && entry.title))
+      .filter(Boolean)
+  )].sort((first, second) => first.localeCompare(second, "pt-BR", { sensitivity: "base" }));
+
+  raceSuggestionsElement.innerHTML = uniqueRaceNames
     .map((name) => `<option value="${escapeHtmlAttribute(name)}"></option>`)
     .join("");
 }
@@ -891,7 +903,9 @@ function isRpFormDisabled() {
 }
 
 function setRpStatus(text) {
-  statusElement.textContent = text;
+  if (statusElement) {
+    statusElement.textContent = text;
+  }
 }
 
 function showRpMessage(message, isError = false) {
@@ -906,14 +920,14 @@ function getRpSubmitMessage(syncStatus, strictRemoteMode = false) {
 
   if (syncStatus === "queued") {
     return strictRemoteMode
-      ? "O envio foi aceito, mas a planilha ainda nao confirmou a atualizacao. Tente recarregar em alguns instantes."
-      : "Momento RP enviado. A planilha pode levar alguns instantes para refletir a atualizacao.";
+      ? "O envio foi aceito, mas a planilha ainda não confirmou a atualização. Tente recarregar em alguns instantes."
+      : "Momento RP enviado. A planilha pode levar alguns instantes para refletir a atualização.";
   }
 
   if (syncStatus === "local_only") {
     return strictRemoteMode
-      ? "Nao foi possivel confirmar a atualizacao da planilha agora."
-      : "Momento RP salvo neste navegador, mas nao foi possivel atualizar a planilha agora.";
+      ? "Não foi possível confirmar a atualização da planilha agora."
+      : "Momento RP salvo neste navegador, mas não foi possível atualizar a planilha agora.";
   }
 
   if (syncStatus === "disabled") {
@@ -921,22 +935,22 @@ function getRpSubmitMessage(syncStatus, strictRemoteMode = false) {
   }
 
   if (syncStatus === "rejected") {
-    return "O Apps Script atual ainda nao esta pronto para o Momento RP. Atualize o arquivo google-apps-script/Code.gs e publique novamente.";
+    return "O Apps Script atual ainda não está pronto para o Momento RP. Atualize o arquivo google-apps-script/Code.gs e publique novamente.";
   }
 
   if (looksLikeSpreadsheetUrl(RP_GOOGLE_SCRIPT_URL)) {
-    return "A URL informada e da planilha, nao do Apps Script publicado. Use o link do tipo script.google.com/macros/s/.../exec.";
+    return "A URL informada é da planilha, não do Apps Script publicado. Use o link do tipo script.google.com/macros/s/.../exec.";
   }
 
   return strictRemoteMode
-    ? "Nao foi possivel confirmar o registro na planilha agora."
-    : "Nao foi possivel concluir o envio do Momento RP agora.";
+    ? "Não foi possível confirmar o registro na planilha agora."
+    : "Não foi possível concluir o envio do Momento RP agora.";
 }
 
 function getRpLocalStorageHint(prefix) {
   const baseMessage = window.location.protocol === "file:"
-    ? "Enquanto o Apps Script nao estiver ativo, os registros ficam apenas neste navegador."
-    : "Os registros estao guardados neste navegador ate a planilha estar conectada.";
+    ? "Enquanto o Apps Script não estiver ativo, os registros ficam apenas neste navegador."
+    : "Os registros estão guardados neste navegador até a planilha estar conectada.";
 
   return prefix ? `${prefix} ${baseMessage}` : baseMessage;
 }
@@ -945,7 +959,7 @@ async function safeReadJson(response) {
   try {
     return await response.json();
   } catch (error) {
-    console.error("Nao foi possivel ler a resposta JSON do Momento RP:", error);
+    console.error("Não foi possível ler a resposta JSON do Momento RP:", error);
     return null;
   }
 }
