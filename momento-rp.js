@@ -775,16 +775,24 @@ function normalizeTimeValue(value) {
     return "";
   }
 
-  if (!/^\d{1,2}:\d{2}(?::\d{2})?$/.test(safeValue)) {
+  if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(safeValue)) {
+    const parts = safeValue.split(":");
+    if (parts.length === 2) {
+      return `${parts[0].padStart(2, "0")}:${parts[1]}`;
+    }
+
+    return `${parts[0].padStart(2, "0")}:${parts[1]}:${parts[2]}`;
+  }
+
+  const embeddedTimeMatch = safeValue.match(/\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b/);
+  if (!embeddedTimeMatch) {
     return "";
   }
 
-  const parts = safeValue.split(":");
-  if (parts.length === 2) {
-    return `${parts[0].padStart(2, "0")}:${parts[1]}`;
-  }
-
-  return `${parts[0].padStart(2, "0")}:${parts[1]}:${parts[2]}`;
+  const [, hours, minutes, seconds] = embeddedTimeMatch;
+  return seconds
+    ? `${hours.padStart(2, "0")}:${minutes}:${seconds}`
+    : `${hours.padStart(2, "0")}:${minutes}`;
 }
 
 function formatRaceDate(value) {
