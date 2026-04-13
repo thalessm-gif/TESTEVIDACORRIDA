@@ -256,14 +256,17 @@ async function handleRpSubmit(event) {
     return;
   }
 
+  if (!selectedPhotoFile) {
+    showRpMessage("Anexe a foto do momento para enviar o formulario.", true);
+    return;
+  }
+
   let photoPayload = null;
-  if (selectedPhotoFile) {
-    try {
-      photoPayload = await buildRpPhotoPayload(selectedPhotoFile);
-    } catch (error) {
-      showRpMessage(String(error && error.message ? error.message : "Nao foi possivel preparar a foto selecionada."), true);
-      return;
-    }
+  try {
+    photoPayload = await buildRpPhotoPayload(selectedPhotoFile);
+  } catch (error) {
+    showRpMessage(String(error && error.message ? error.message : "Nao foi possivel preparar a foto selecionada."), true);
+    return;
   }
 
   const entryDraft = {
