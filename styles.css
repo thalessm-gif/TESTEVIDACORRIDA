@@ -1019,17 +1019,23 @@ button:disabled {
 .rp-time-input-group {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: nowrap;
 }
 
 .rp-time-part {
-  width: 100%;
-  max-width: 72px;
+  flex: 0 0 72px;
+  width: 72px;
+  min-width: 72px;
   text-align: center;
+  padding: 14px 10px;
 }
 
 .rp-time-separator {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
   font-size: 1.35rem;
   font-weight: 700;
   line-height: 1;
@@ -2441,6 +2447,17 @@ tbody tr:hover {
 
   .rp-entry-card-top {
     flex-direction: column;
+  }
+
+  .rp-time-input-group {
+    gap: 6px;
+  }
+
+  .rp-time-part {
+    flex-basis: 64px;
+    width: 64px;
+    min-width: 64px;
+    padding: 13px 8px;
   }
 
   .rp-entry-time-block {
