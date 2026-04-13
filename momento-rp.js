@@ -38,8 +38,12 @@ const athleteNameElement = document.getElementById("rp-athlete-name");
 const instagramElement = document.getElementById("rp-instagram");
 const raceNameElement = document.getElementById("rp-race-name");
 const raceDateElement = document.getElementById("rp-race-date");
-const previousTimeElement = document.getElementById("rp-previous-time");
-const timeElement = document.getElementById("rp-time");
+const previousTimeHoursElement = document.getElementById("rp-previous-time-hours");
+const previousTimeMinutesElement = document.getElementById("rp-previous-time-minutes");
+const previousTimeSecondsElement = document.getElementById("rp-previous-time-seconds");
+const timeHoursElement = document.getElementById("rp-time-hours");
+const timeMinutesElement = document.getElementById("rp-time-minutes");
+const timeSecondsElement = document.getElementById("rp-time-seconds");
 const distanceOptionsElement = document.getElementById("rp-distance-options");
 const customDistanceFieldElement = document.getElementById("rp-custom-distance-field");
 const customDistanceElement = document.getElementById("rp-custom-distance");
@@ -58,6 +62,17 @@ const athleteSuggestionsElement = document.getElementById("rp-athlete-suggestion
 const raceSuggestionsElement = document.getElementById("rp-race-suggestions");
 const preloadedAthleteNames = Array.isArray(window.KIT_ATHLETE_NAMES) ? window.KIT_ATHLETE_NAMES : [];
 const preloadedRaceEntries = Array.isArray(window.RACE_CALENDAR_ENTRIES) ? window.RACE_CALENDAR_ENTRIES : [];
+const previousTimePartElements = [
+  previousTimeHoursElement,
+  previousTimeMinutesElement,
+  previousTimeSecondsElement
+];
+const timePartElements = [
+  timeHoursElement,
+  timeMinutesElement,
+  timeSecondsElement
+];
+const allTimePartElements = [...previousTimePartElements, ...timePartElements];
 
 let rpEntries = [];
 let selectedDistance = "";
@@ -82,6 +97,8 @@ function attachRpEventListeners() {
   genderOptionsElement.addEventListener("click", handleChoiceClick);
   categoryOptionsElement.addEventListener("click", handleChoiceClick);
   podiumOptionsElement.addEventListener("click", handleChoiceClick);
+  attachTimeInputHandlers(previousTimePartElements);
+  attachTimeInputHandlers(timePartElements);
 
   rpFormElement.addEventListener("submit", handleRpSubmit);
   searchElement.addEventListener("input", renderRpEntries);
@@ -194,8 +211,10 @@ async function handleRpSubmit(event) {
     return;
   }
 
-  const normalizedPreviousTime = normalizeRpPreviousTimeValue(previousTimeElement.value);
-  const normalizedTime = normalizeTimeValue(timeElement.value);
+  const previousTimeDraft = buildTimeValueFromParts(previousTimePartElements);
+  const currentTimeDraft = buildTimeValueFromParts(timePartElements);
+  const normalizedPreviousTime = normalizeRpPreviousTimeValue(previousTimeDraft.value);
+  const normalizedTime = normalizeTimeValue(currentTimeDraft.value);
   const resolvedDistance = getResolvedDistanceLabel();
   const athleteName = normalizeText(athleteNameElement.value);
   const instagram = normalizeInstagramHandle(instagramElement.value);
@@ -205,13 +224,13 @@ async function handleRpSubmit(event) {
   const categoryLabel = getLabelFromOptions(RP_CATEGORIES, selectedCategory);
   const podiumLabel = getLabelFromOptions(RP_PODIUMS, selectedPodium);
 
-  if (normalizeText(previousTimeElement.value) && !normalizedPreviousTime) {
-    showRpMessage("Se informar o tempo anterior, use um formato valido.", true);
+  if (!previousTimeDraft.isValid) {
+    showRpMessage("Preencha o tempo anterior com 2 digitos em cada caixa ou deixe tudo em branco.", true);
     return;
   }
 
-  if (!athleteName || !raceName || !raceDate || !normalizedTime) {
-    showRpMessage("Preencha nome, prova, data e novo tempo em um formato valido.", true);
+  if (!currentTimeDraft.isValid || !athleteName || !raceName || !raceDate || !normalizedTime) {
+    showRpMessage("Preencha nome, prova, data e o novo tempo usando as 3 caixas HH:MM:SS.", true);
     return;
   }
 
@@ -710,6 +729,55 @@ function buildRpSheetPayload(entry) {
   };
 }
 
+function attachTimeInputHandlers(elements) {
+  elements.forEach((element, index) => {
+    if (!element) {
+      return;
+    }
+
+    element.addEventListener("input", () => {
+      const digitsOnlyValue = String(element.value || "").replace(/\D/g, "").slice(0, 2);
+      element.value = digitsOnlyValue;
+
+      if (digitsOnlyValue.length === 2 && index < elements.length - 1) {
+        elements[index + 1].focus();
+        elements[index + 1].select();
+      }
+    });
+
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Backspace" && !element.value && index > 0) {
+        elements[index - 1].focus();
+      }
+    });
+  });
+}
+
+function buildTimeValueFromParts(elements) {
+  const values = elements.map((element) => String(element && element.value || "").trim());
+  const hasAnyValue = values.some(Boolean);
+
+  if (!hasAnyValue) {
+    return {
+      value: "",
+      isValid: true
+    };
+  }
+
+  const isComplete = values.every((value) => /^\d{1,2}$/.test(value));
+  if (!isComplete) {
+    return {
+      value: "",
+      isValid: false
+    };
+  }
+
+  return {
+    value: values.map((value) => value.padStart(2, "0")).join(":"),
+    isValid: true
+  };
+}
+
 function normalizeRpPreviousTimeValue(value) {
   const safeValue = normalizeText(value);
   if (!safeValue) {
@@ -930,8 +998,7 @@ function setRpFormDisabled(disabled) {
     instagramElement,
     raceNameElement,
     raceDateElement,
-    previousTimeElement,
-    timeElement,
+    ...allTimePartElements,
     customDistanceElement
   ].forEach((element) => {
     if (element) {

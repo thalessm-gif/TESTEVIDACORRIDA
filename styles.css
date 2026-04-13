@@ -1016,6 +1016,26 @@ button:disabled {
   margin-bottom: 20px;
 }
 
+.rp-time-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.rp-time-part {
+  width: 100%;
+  max-width: 72px;
+  text-align: center;
+}
+
+.rp-time-separator {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .rp-aux-field {
   margin-top: 4px;
   margin-bottom: 0;

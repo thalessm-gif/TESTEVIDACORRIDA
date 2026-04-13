@@ -85,12 +85,24 @@
 
           <label class="field">
             <span>Tempo anterior (opcional)</span>
-            <input id="rp-previous-time" type="text" inputmode="numeric" placeholder="Se nao tiver, deixe em branco">
+            <div class="rp-time-input-group" data-time-group="previous">
+              <input id="rp-previous-time-hours" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="HH" aria-label="Horas do tempo anterior">
+              <span class="rp-time-separator" aria-hidden="true">:</span>
+              <input id="rp-previous-time-minutes" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="MM" aria-label="Minutos do tempo anterior">
+              <span class="rp-time-separator" aria-hidden="true">:</span>
+              <input id="rp-previous-time-seconds" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="SS" aria-label="Segundos do tempo anterior">
+            </div>
           </label>
 
           <label class="field">
             <span>Novo tempo</span>
-            <input id="rp-time" type="text" inputmode="numeric" placeholder="Ex.: 00:45:32" required>
+            <div class="rp-time-input-group" data-time-group="current">
+              <input id="rp-time-hours" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="HH" aria-label="Horas do novo tempo" required>
+              <span class="rp-time-separator" aria-hidden="true">:</span>
+              <input id="rp-time-minutes" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="MM" aria-label="Minutos do novo tempo" required>
+              <span class="rp-time-separator" aria-hidden="true">:</span>
+              <input id="rp-time-seconds" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="SS" aria-label="Segundos do novo tempo" required>
+            </div>
           </label>
         </div>
 
