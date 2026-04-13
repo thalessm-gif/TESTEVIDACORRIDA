@@ -223,7 +223,7 @@ window.KIT_ATHLETE_NAMES = [
   "Rebeca Serafim",
   "Regilaine Santos",
   "Renan Neves",
-  "RENATA DA ROSA",
+  "Renata da Rosa",
   "Renata Salvador Louzada",
   "Renato Flavio Cunha",
   "Renato Larus",
