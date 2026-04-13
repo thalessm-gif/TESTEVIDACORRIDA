@@ -257,7 +257,7 @@ async function handleRpSubmit(event) {
   }
 
   if (!selectedPhotoFile) {
-    showRpMessage("Anexe a foto do momento para enviar o formulario.", true);
+    showRpMessage("Anexe a foto da prova para enviar o formulario.", true);
     return;
   }
 
@@ -765,7 +765,7 @@ async function buildRpPhotoPayload(file) {
   }
 
   if (!/^image\//i.test(String(file.type || ""))) {
-    throw new Error("Escolha uma imagem valida para o Momento RP.");
+    throw new Error("Escolha uma imagem válida para o Momento RP.");
   }
 
   const processedImage = await readRpImageAsUploadPayload(file);
