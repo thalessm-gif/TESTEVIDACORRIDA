@@ -65,6 +65,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Pierry Oliveira":  "pierry-oliveira.jpg",
                    "Pietra Braga Silva":  "pietra_braga.jpg",
                    "Priscila Duarte Gomes":  "priscila_gomes.jpg",
+                   "Rafael Sá":  "rafael-sa.jpg",
                    "Renata Salvador Louzada":  "renata_louzada.jpg",
                    "Sergio Carrasco":  "sergio_carrasco.jpg",
                    "Simone Castro De Oliveira":  "simone_castro.jpg",
