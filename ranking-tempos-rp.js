@@ -10,10 +10,6 @@ const RP_CATEGORY_ORDER = [
 ];
 
 const statusElement = document.getElementById("rp-ranking-status");
-const summaryRecordsElement = document.getElementById("rp-ranking-summary-records");
-const summaryAthletesElement = document.getElementById("rp-ranking-summary-athletes");
-const summaryDistancesElement = document.getElementById("rp-ranking-summary-distances");
-const sourceNoteElement = document.getElementById("rp-ranking-source-note");
 const searchInputElement = document.getElementById("rp-ranking-search");
 const tableBodyElement = document.getElementById("rp-ranking-table-body");
 const cardListElement = document.getElementById("rp-ranking-card-list");
@@ -22,6 +18,10 @@ const categoryButtonsContainer = document.getElementById("rp-ranking-category-bu
 const distanceButtonsContainer = document.getElementById("rp-ranking-distance-buttons");
 const topFiveContainerElement = document.getElementById("rp-ranking-top-five");
 const topFiveStatusElement = document.getElementById("rp-ranking-top-status");
+const avatarPreviewModalElement = document.getElementById("avatar-preview-modal");
+const avatarPreviewImageElement = document.getElementById("avatar-preview-image");
+const avatarPreviewNameElement = document.getElementById("avatar-preview-name");
+const avatarPreviewCloseButtonElement = avatarPreviewModalElement.querySelector(".avatar-preview-close");
 const viewButtons = [...document.querySelectorAll("[data-view]")];
 const genderButtons = [...document.querySelectorAll("[data-gender]")];
 
@@ -31,6 +31,7 @@ let selectedDistance = "all";
 let selectedCategory = "all";
 let rankingData = createEmptyRankingData();
 let expandedEntryIds = new Set();
+let lastAvatarTriggerElement = null;
 
 initializeRankingPage();
 
@@ -75,7 +76,20 @@ function initializeRankingPage() {
 
   tableBodyElement.addEventListener("click", handleRankingClick);
   cardListElement.addEventListener("click", handleRankingClick);
+  topFiveContainerElement.addEventListener("click", handleRankingClick);
   searchInputElement.addEventListener("input", renderRanking);
+
+  avatarPreviewModalElement.addEventListener("click", (event) => {
+    if (event.target.closest("[data-avatar-close]")) {
+      closeAvatarPreview();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !avatarPreviewModalElement.classList.contains("avatar-preview-modal-hidden")) {
+      closeAvatarPreview();
+    }
+  });
 
   updateToggleButtons(viewButtons, selectedView, "data-view");
   updateToggleButtons(genderButtons, selectedGender, "data-gender");
@@ -93,7 +107,6 @@ async function loadRankingData() {
     rankingData = buildRankingData(entries);
     renderDistanceButtons(rankingData.distances);
     renderCategoryButtons(rankingData.categories);
-    renderSummary(source, rankingData);
     renderRanking();
 
     if (rankingData.totalRecords) {
@@ -107,8 +120,7 @@ async function loadRankingData() {
     rankingData = createEmptyRankingData();
     renderDistanceButtons([]);
     renderCategoryButtons([]);
-    renderSummary("error", rankingData);
-    renderEmptyState("Nao foi possivel carregar os registros do Momento RP agora.");
+    renderEmptyState("Não foi possível carregar os registros do Momento RP agora.");
     setStatus("Erro ao carregar");
   }
 }
@@ -264,6 +276,7 @@ function buildRankingEntries(entries, mode) {
         sex: entry.sex,
         category: mode === "category" ? entry.category : (bestHistoryEntry.category || entry.category),
         distance: entry.distance,
+        avatar: resolveAvatarValue("", "", entry.athlete),
         bestTimeLabel: bestHistoryEntry.timeLabel,
         bestTimeSeconds: bestHistoryEntry.timeSeconds,
         bestRaceName: bestHistoryEntry.raceName,
@@ -299,21 +312,6 @@ function buildHistoryEntry(entry) {
   };
 }
 
-function renderSummary(source, data) {
-  summaryRecordsElement.textContent = String(data.totalRecords || 0);
-  summaryAthletesElement.textContent = String(data.totalAthletes || 0);
-  summaryDistancesElement.textContent = String((data.distances || []).length);
-
-  if (!data.totalRecords) {
-    sourceNoteElement.textContent = source === "error"
-      ? "Nao foi possivel atualizar a leitura do Momento RP agora."
-      : "Nenhum resultado valido foi encontrado para montar o ranking.";
-    return;
-  }
-
-  sourceNoteElement.textContent = `Fonte atual: ${formatSourceLabel(source)}. O ranking usa o melhor tempo por atleta em cada distancia.`;
-}
-
 function renderRanking() {
   const currentEntries = filterEntries(
     selectedView === "general" ? rankingData.generalEntries : rankingData.categoryEntries
@@ -339,8 +337,9 @@ function renderTopFive(entries) {
   topFiveStatusElement.textContent = `${topEntries.length} atleta${topEntries.length === 1 ? "" : "s"} em destaque`;
   topFiveContainerElement.innerHTML = topEntries
     .map((entry, index) => `
-      <article class="ranking-top-card rp-ranking-top-card" aria-label="${escapeHtmlAttribute(`Posicao ${index + 1}: ${entry.athlete}`)}">
+      <article class="ranking-top-card rp-ranking-top-card" aria-label="${escapeHtmlAttribute(`Posição ${index + 1}: ${entry.athlete}`)}">
         <span class="ranking-top-position">${index + 1}</span>
+        ${renderAthleteAvatar(entry, "top")}
         <strong class="rp-ranking-top-time">${escapeHtml(entry.bestTimeLabel)}</strong>
         <p class="rp-ranking-top-name">${escapeHtml(entry.athlete)}</p>
         <p class="rp-ranking-top-meta">${escapeHtml(entry.distance)}${entry.category ? ` - ${escapeHtml(entry.category)}` : ""}</p>
@@ -472,7 +471,7 @@ function renderEmptyState(message) {
   topFiveContainerElement.innerHTML = `
     <p class="ranking-top-empty">${safeMessage}</p>
   `;
-  topFiveStatusElement.textContent = "Indisponivel";
+  topFiveStatusElement.textContent = "Indisponível";
   tableBodyElement.innerHTML = `
     <tr>
       <td colspan="8">${safeMessage}</td>
@@ -512,7 +511,7 @@ function renderDistanceButtons(distances) {
 
   distanceButtonsContainer.innerHTML = availableDistances
     .map((distance) => {
-      const label = distance === "all" ? "Todas as distancias" : distance;
+      const label = distance === "all" ? "Todas as distâncias" : distance;
       const activeClass = selectedDistance === distance ? " toggle-button-active" : "";
 
       return `<button type="button" class="toggle-button ranking-category-button${activeClass}" data-distance="${escapeHtmlAttribute(distance)}">${escapeHtml(label)}</button>`;
@@ -527,12 +526,50 @@ function renderTableHeading() {
 }
 
 function handleRankingClick(event) {
+  const avatarButton = event.target.closest("[data-avatar-preview]");
+  if (avatarButton) {
+    openAvatarPreview(avatarButton);
+    return;
+  }
+
   const toggleButton = event.target.closest("[data-entry-toggle]");
   if (!toggleButton) {
     return;
   }
 
   toggleExpandedEntry(toggleButton.dataset.entryToggle);
+}
+
+function openAvatarPreview(triggerElement) {
+  const avatarSource = String(triggerElement.dataset.avatarPreview || "").trim();
+  const athleteName = String(triggerElement.dataset.avatarName || "").trim();
+
+  if (!avatarSource) {
+    return;
+  }
+
+  lastAvatarTriggerElement = triggerElement;
+  avatarPreviewImageElement.src = avatarSource;
+  avatarPreviewImageElement.alt = athleteName ? `Foto de ${athleteName}` : "Foto do atleta";
+  avatarPreviewNameElement.textContent = athleteName || "Atleta";
+  avatarPreviewModalElement.classList.remove("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "false");
+  document.body.classList.add("avatar-preview-open");
+  avatarPreviewCloseButtonElement.focus();
+}
+
+function closeAvatarPreview() {
+  avatarPreviewModalElement.classList.add("avatar-preview-modal-hidden");
+  avatarPreviewModalElement.setAttribute("aria-hidden", "true");
+  avatarPreviewImageElement.removeAttribute("src");
+  avatarPreviewImageElement.alt = "";
+  avatarPreviewNameElement.textContent = "";
+  document.body.classList.remove("avatar-preview-open");
+
+  if (lastAvatarTriggerElement) {
+    lastAvatarTriggerElement.focus();
+    lastAvatarTriggerElement = null;
+  }
 }
 
 function toggleExpandedEntry(entryId) {
@@ -562,12 +599,14 @@ function filterEntries(entries) {
 }
 
 function renderAthleteIdentity(entry, variant) {
+  const safeVariant = variant === "card" ? "card" : "table";
   const athleteName = escapeHtml(entry.athlete);
   const metadata = `${escapeHtml(formatGenderLabel(entry.sex))} - ${escapeHtml(entry.distance || "-")} - ${escapeHtml(entry.category || "Sem categoria")}`;
 
-  if (variant === "card") {
+  if (safeVariant === "card") {
     return `
       <div class="ranking-athlete-identity ranking-athlete-identity-card rp-ranking-athlete-card-copy">
+        ${renderAthleteAvatar(entry, safeVariant)}
         <div class="ranking-athlete-identity-copy">
           <p class="ranking-athlete-name">${athleteName}</p>
           <p class="ranking-athlete-meta">${metadata}</p>
@@ -578,9 +617,9 @@ function renderAthleteIdentity(entry, variant) {
 
   return `
     <div class="ranking-athlete-identity rp-ranking-athlete-cell">
+      ${renderAthleteAvatar(entry, safeVariant)}
       <div class="ranking-athlete-identity-copy">
         <span class="ranking-athlete-name-inline">${athleteName}</span>
-        <span class="rp-ranking-name-meta">${escapeHtml(entry.bestRaceName || "Sem prova")}</span>
       </div>
     </div>
   `;
@@ -592,6 +631,36 @@ function renderBestRaceCell(entry) {
       <strong>${escapeHtml(entry.bestRaceName || "Sem prova")}</strong>
       <span>${escapeHtml(formatRaceDate(entry.bestRaceDate))}</span>
     </div>
+  `;
+}
+
+function renderAthleteAvatar(entry, variant) {
+  const athleteInitials = escapeHtml(getAthleteInitials(entry.athlete));
+  const avatarImage = entry.avatar
+    ? `<img src="${escapeHtmlAttribute(entry.avatar)}" alt="" class="athlete-avatar-image" loading="lazy" decoding="async" onerror="this.remove()">`
+    : "";
+
+  if (entry.avatar) {
+    return `
+      <button
+        type="button"
+        class="athlete-avatar athlete-avatar-${variant} athlete-avatar-button"
+        data-avatar-preview="${escapeHtmlAttribute(entry.avatar)}"
+        data-avatar-name="${escapeHtmlAttribute(entry.athlete)}"
+        title="${escapeHtmlAttribute(entry.athlete)}"
+        aria-label="Ampliar foto de ${escapeHtmlAttribute(entry.athlete)}"
+      >
+        <span class="athlete-avatar-fallback">${athleteInitials}</span>
+        ${avatarImage}
+      </button>
+    `;
+  }
+
+  return `
+    <span class="athlete-avatar athlete-avatar-${variant}" aria-hidden="true">
+      <span class="athlete-avatar-fallback">${athleteInitials}</span>
+      ${avatarImage}
+    </span>
   `;
 }
 
@@ -657,6 +726,59 @@ function buildHistoryKey(entry) {
     normalizeDateOnlyValue(entry && entry.raceDate),
     normalizeTimeValue(entry && entry.time)
   ].join("|");
+}
+
+function getAthleteInitials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+
+  if (!parts.length) {
+    return "VC";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+}
+
+function normalizeAvatarValue(value) {
+  const safeValue = String(value || "").trim().replace(/\\/g, "/");
+
+  if (!safeValue) {
+    return "";
+  }
+
+  if (/^(?:(?:https?|file):)?\/\//i.test(safeValue) || /^data:/i.test(safeValue) || safeValue.startsWith("/")) {
+    return safeValue;
+  }
+
+  if (/^(?:\.{1,2}\/)?assets\//i.test(safeValue) || safeValue.startsWith("./") || safeValue.startsWith("../")) {
+    return safeValue;
+  }
+
+  return `assets/avatars/${safeValue}`;
+}
+
+function resolveAvatarValue(athleteId = "", athleteEmail = "", athleteName = "") {
+  const mappedAvatar = getMappedAvatarValue(athleteId, athleteEmail, athleteName);
+  if (mappedAvatar) {
+    return normalizeAvatarValue(mappedAvatar);
+  }
+
+  return "";
+}
+
+function getMappedAvatarValue(athleteId = "", athleteEmail = "", athleteName = "") {
+  if (typeof window.getVidaCorridaMappedAvatar !== "function") {
+    return "";
+  }
+
+  return window.getVidaCorridaMappedAvatar({
+    athleteId,
+    athleteEmail,
+    athleteName
+  });
 }
 
 function normalizeText(value) {
@@ -842,7 +964,7 @@ function formatGenderLabel(value) {
     return "Masculino";
   }
 
-  return normalizeText(value) || "Sem genero";
+  return normalizeText(value) || "Sem gênero";
 }
 
 function parseDateToTime(value) {
@@ -958,22 +1080,6 @@ function setStatus(text) {
   statusElement.textContent = text;
 }
 
-function formatSourceLabel(source) {
-  if (source === "remote") {
-    return "Google Sheets do Momento RP";
-  }
-
-  if (source === "local") {
-    return "armazenamento local do navegador";
-  }
-
-  if (source === "empty") {
-    return "Momento RP sem registros";
-  }
-
-  return "dados indisponiveis";
-}
-
 function isRpGoogleScriptConfigured() {
   return Boolean(RP_RANKING_GOOGLE_SCRIPT_URL) && !looksLikeSpreadsheetUrl(RP_RANKING_GOOGLE_SCRIPT_URL);
 }
@@ -986,8 +1092,8 @@ async function safeReadJsonResponse(response) {
   try {
     return await response.json();
   } catch (error) {
-    console.error("Nao foi possivel ler a resposta JSON do Momento RP:", error);
-    return { ok: false, message: "A resposta do Momento RP nao estava em JSON." };
+    console.error("Não foi possível ler a resposta JSON do Momento RP:", error);
+    return { ok: false, message: "A resposta do Momento RP não estava em JSON." };
   }
 }
 
