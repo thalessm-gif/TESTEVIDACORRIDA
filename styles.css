@@ -814,6 +814,41 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.rp-ranking-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(255, 166, 82, 0.2), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(86, 203, 255, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(9, 27, 58, 0.94), rgba(4, 18, 38, 0.96));
+}
+
+.rp-ranking-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.rp-ranking-hero-link,
+.rp-ranking-hero-note {
+  max-width: none;
+  margin-bottom: 0;
+}
+
+.rp-ranking-hero-note {
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.rp-ranking-hero-note p {
+  margin-bottom: 0;
+  color: #edf3fd;
+  line-height: 1.7;
+}
+
 .regulation-link-card {
   display: block;
   max-width: 560px;
@@ -1014,6 +1049,47 @@ button:disabled {
 .rp-history-panel {
   padding: 24px;
   margin-bottom: 24px;
+}
+
+.rp-ranking-summary-panel {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.rp-ranking-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.rp-ranking-summary-card {
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.rp-ranking-summary-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rp-ranking-summary-value {
+  display: block;
+  font-size: clamp(1.8rem, 3.8vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rp-ranking-source-note {
+  margin: 16px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .rp-form-grid {
@@ -1618,6 +1694,32 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.rp-ranking-top-card {
+  align-content: start;
+}
+
+.rp-ranking-top-time {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.rp-ranking-top-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.rp-ranking-top-meta,
+.rp-ranking-top-race {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .ranking-top-position {
   display: inline-flex;
   align-items: center;
@@ -2145,6 +2247,28 @@ button:disabled {
   text-align: right;
 }
 
+.rp-ranking-name-meta {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.rp-ranking-race-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.rp-ranking-race-cell strong {
+  line-height: 1.4;
+}
+
+.rp-ranking-race-cell span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .ranking-athlete-total-label {
   display: block;
   margin-bottom: 4px;
@@ -2160,6 +2284,33 @@ button:disabled {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 14px;
+}
+
+.rp-ranking-card-race {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rp-ranking-card-race strong {
+  line-height: 1.4;
+}
+
+.rp-ranking-card-race span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.rp-ranking-history-item {
+  gap: 14px;
+}
+
+.rp-ranking-history-main {
+  min-width: 0;
 }
 
 .ranking-card-empty {
@@ -2437,6 +2588,11 @@ tbody tr:hover {
   .actions {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .rp-ranking-hero-layout,
+  .rp-ranking-summary-grid {
+    grid-template-columns: 1fr;
   }
 
   .ranking-table-wrapper {
