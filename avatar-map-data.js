@@ -81,7 +81,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Tatiana Cunha de Almeida":  "tatiana-almeida.jpg",
                    "Thales Batista":  "thales-batista.jpg",
                    "Thales Mirapalheta":  "thales-mirapalheta.jpeg",
-                   "Thales Soares Mirapalheta":  "thales-mirapalheta.jpeg",
+                   "Thales Soares Mirapalheta":  "thales-mirapalheta.jpg",
                    "Thiago Edom Nunes":  "thiago_edom.jpg",
                    "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg",
                    "Tuana da Costa Heres":  "tuana-heres.jpg",
