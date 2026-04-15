@@ -65,6 +65,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Matheus Domingues de Souza":  "matheus-domingues.jpg",
                    "Michel Bresqui":  "michel-bresqui.jpg",
                    "Miguel Angelo Castro Jr.":  "miguel_castro.jpg",
+                   "Mirene Cavalcante Meireles":  "mirene-cavalcante.jpg",
                    "Nathalia Vergara":  "nathalia-vergara.jpg",
                    "Nitza França":  "nitza_franca.jpg",
                    "Patrícia Medina":  "patricia-medina.jpg",
