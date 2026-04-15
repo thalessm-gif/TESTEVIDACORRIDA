@@ -13,6 +13,10 @@ const VDOT_RACE_OPTIONS = [
 ];
 
 const VDOT_EQUIVALENT_RACES = [
+  { label: "200 m", meters: 200 },
+  { label: "400 m", meters: 400 },
+  { label: "800 m", meters: 800 },
+  { label: "1 km", meters: 1000 },
   { label: "3 km", meters: 3000 },
   { label: "5 km", meters: 5000 },
   { label: "10 km", meters: 10000 },
