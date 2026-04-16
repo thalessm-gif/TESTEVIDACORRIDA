@@ -287,6 +287,22 @@ body {
   color: #ebfbff;
 }
 
+.feature-card-collective {
+  border-color: rgba(126, 232, 183, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(126, 232, 183, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(12, 84, 70, 0.44), rgba(255, 255, 255, 0.05));
+}
+
+.feature-card-collective .feature-tag {
+  background: rgba(126, 232, 183, 0.16);
+  color: #dffff0;
+}
+
+.feature-card-collective .feature-link {
+  color: #ebfff4;
+}
+
 .feature-card-coaches {
   border-color: rgba(255, 145, 78, 0.28);
   background:
@@ -1065,7 +1081,10 @@ button:disabled {
 .vdot-summary-panel,
 .vdot-zones-panel,
 .vdot-equivalent-panel,
-.vdot-info-panel {
+.vdot-info-panel,
+.collective-hero,
+.collective-form-panel,
+.collective-list-panel {
   padding: 24px;
   margin-bottom: 24px;
 }
@@ -1191,6 +1210,129 @@ button:disabled {
 .vdot-equivalent-time {
   font-size: 1.2rem;
   white-space: nowrap;
+}
+
+.collective-confirmation-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.collective-session-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.collective-callout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.7fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.collective-session-card,
+.collective-callout-card,
+.collective-status-banner {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+}
+
+.collective-session-card,
+.collective-callout-card {
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.collective-session-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.collective-session-card strong,
+.collective-callout-card strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.12rem;
+}
+
+.collective-session-card p,
+.collective-callout-card p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.collective-status-banner {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.collective-callout-card-deadline {
+  background:
+    radial-gradient(circle at top right, rgba(255, 106, 0, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+}
+
+.collective-status-banner-pending {
+  border-color: rgba(255, 187, 87, 0.32);
+  background: linear-gradient(135deg, rgba(84, 61, 18, 0.54), rgba(255, 255, 255, 0.04));
+}
+
+.collective-status-banner-ready,
+.collective-status-banner-confirmed {
+  border-color: rgba(65, 201, 141, 0.35);
+  background: linear-gradient(135deg, rgba(10, 66, 47, 0.58), rgba(255, 255, 255, 0.04));
+}
+
+.collective-status-banner-cancelled {
+  border-color: rgba(255, 117, 117, 0.4);
+  background: linear-gradient(135deg, rgba(78, 22, 22, 0.62), rgba(255, 255, 255, 0.04));
+}
+
+.collective-status-kicker {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.collective-status-text {
+  margin: 10px 0 0;
+  color: #edf5ff;
+  line-height: 1.7;
+}
+
+.collective-name-pill-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.collective-form-panel h2,
+.collective-list-panel h2 {
+  margin-bottom: 16px;
+}
+
+.collective-name-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid rgba(126, 232, 183, 0.22);
+  border-radius: 999px;
+  background: rgba(126, 232, 183, 0.12);
+  color: #ebfff4;
+  font-weight: 700;
 }
 
 .rp-time-part {
@@ -2569,12 +2711,15 @@ tbody tr:hover {
 
 @media (max-width: 860px) {
   .hero,
+  .collective-confirmation-layout,
   .distance-groups,
   .home-actions,
   .highlights-stat-grid,
   .plan-grid,
   .rp-form-grid,
   .rp-meta-grid,
+  .collective-session-grid,
+  .collective-callout-grid,
   .vdot-info-grid {
     grid-template-columns: 1fr;
   }
@@ -2666,6 +2811,9 @@ tbody tr:hover {
   .vdot-zones-panel,
   .vdot-equivalent-panel,
   .vdot-info-panel,
+  .collective-hero,
+  .collective-form-panel,
+  .collective-list-panel,
   .rp-hero,
   .rp-form-panel,
   .rp-history-panel,
