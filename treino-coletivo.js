@@ -156,6 +156,11 @@ async function loadCollectiveEntries() {
 async function handleCollectiveSubmit(event) {
   event.preventDefault();
 
+  if (isCollectiveManuallyCancelled()) {
+    showCollectiveMessage(getCollectiveClosedMessage(), true);
+    return;
+  }
+
   if (isCollectiveFormClosed()) {
     showCollectiveMessage("As confirmações desta sessão já foram encerradas.", true);
     return;
@@ -293,6 +298,14 @@ function renderCollectiveList(state) {
 }
 
 function applyCollectiveFormAvailability() {
+  if (COLLECTIVE_ENABLED && isCollectiveManuallyCancelled()) {
+    setCollectiveFormDisabled(true);
+    collectiveSubmitButton.textContent = "Treino cancelado";
+    collectiveSubmitButton.title = "Esta sessao foi cancelada manualmente.";
+    showCollectiveMessage(getCollectiveClosedMessage(), true);
+    return;
+  }
+
   setCollectiveFormDisabled(isCollectiveFormClosed());
 
   if (isCollectiveFormClosed()) {
@@ -314,6 +327,15 @@ function getCollectiveTrainingState() {
       title: "Nenhum treino coletivo aberto",
       text: "Ative a sessão no arquivo de configuração para exibir o treino na home e liberar novas confirmações.",
       emptyMessage: "Nenhum treino coletivo aberto no momento."
+    };
+  }
+
+  if (isCollectiveManuallyCancelled()) {
+    return {
+      bannerClass: "collective-status-banner-cancelled",
+      title: "TREINO COLETIVO CANCELADO",
+      text: getCollectiveManualCancellationText(),
+      emptyMessage: "Nenhuma confirmacao registrada para esta sessao."
     };
   }
 
@@ -378,6 +400,8 @@ async function loadCollectiveEntriesFromGoogleSheets(options = {}) {
       `decisionDeadlineIso=${encodeURIComponent(sessionPayload.decisionDeadlineIso || "")}`,
       `location=${encodeURIComponent(sessionPayload.location || "")}`,
       `minimumParticipants=${encodeURIComponent(String(sessionPayload.minimumParticipants || ""))}`,
+      `statusMode=${encodeURIComponent(sessionPayload.statusMode || "")}`,
+      `statusReason=${encodeURIComponent(sessionPayload.statusReason || "")}`,
       `ts=${Date.now()}`
     ];
     const response = await fetch(
@@ -460,7 +484,9 @@ function buildCollectiveSessionPayload() {
     startsAtIso: normalizeCollectiveSessionDateTime(collectiveSession.startsAtIso),
     decisionDeadlineIso: normalizeCollectiveSessionDateTime(collectiveSession.decisionDeadlineIso),
     location: normalizeCollectiveText(collectiveSession.location),
-    minimumParticipants: getCollectiveMinimumParticipants()
+    minimumParticipants: getCollectiveMinimumParticipants(),
+    statusMode: getCollectiveStatusMode(),
+    statusReason: getCollectiveStatusReason()
   };
 }
 
@@ -636,6 +662,40 @@ function getCollectiveSessionId() {
 function getCollectiveMinimumParticipants() {
   const parsedMinimum = Number.parseInt(String(collectiveSession.minimumParticipants || "5"), 10);
   return Number.isFinite(parsedMinimum) && parsedMinimum > 0 ? parsedMinimum : 5;
+}
+
+function getCollectiveStatusMode() {
+  const safeMode = normalizeCollectiveText(collectiveSession.statusMode || "automatic").toLowerCase();
+  return safeMode === "cancelled" ? "cancelled" : "automatic";
+}
+
+function getCollectiveStatusReason() {
+  return normalizeCollectiveText(collectiveSession.statusReason || "");
+}
+
+function isCollectiveManuallyCancelled() {
+  return getCollectiveStatusMode() === "cancelled";
+}
+
+function getCollectiveManualCancellationText() {
+  const reason = getCollectiveStatusReason();
+  if (reason) {
+    return `Este treino foi cancelado pela assessoria. Motivo: ${reason}`;
+  }
+
+  return "Este treino foi cancelado manualmente pela assessoria.";
+}
+
+function getCollectiveClosedMessage() {
+  if (!COLLECTIVE_ENABLED) {
+    return "Ative o treino no arquivo de configuracao para liberar novas confirmacoes.";
+  }
+
+  if (isCollectiveManuallyCancelled()) {
+    return getCollectiveManualCancellationText();
+  }
+
+  return "As confirmacoes desta sessao ja foram encerradas.";
 }
 
 function getCollectiveStartDate() {
