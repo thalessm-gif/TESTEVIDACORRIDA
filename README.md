@@ -67,6 +67,29 @@ Observacoes:
 - Se o campo `Tempo anterior` ficar em branco, o registro sera salvo como `Primeira prova`.
 - A foto do `Momento RP`, quando anexada, e salva no Google Drive e enviada ao grupo do Telegram do `Momento RP`.
 
+## Treino Coletivo
+
+A nova area `Treino Coletivo` fica em `treino-coletivo.html` e usa os arquivos `treino-coletivo-config.js` e `treino-coletivo.js`.
+
+Para abrir uma nova lista de presenca:
+
+1. Abra `treino-coletivo-config.js`.
+2. Atualize `id`, `startsAtIso`, `decisionDeadlineIso`, `location` e `minimumParticipants`.
+3. Salve o arquivo e publique/atualize o site.
+
+Como funciona:
+
+- O atleta informa o nome e entra na lista da sessao configurada.
+- Se a lista nao atingir o minimo ate `decisionDeadlineIso`, a pagina passa a mostrar `TREINO COLETIVO CANCELADO`.
+- Se atingir o minimo dentro do prazo, a pagina passa a mostrar `TREINO COLETIVO CONFIRMADO`.
+- Os dados online ficam na aba `coletivos` do Apps Script.
+
+Importante:
+
+- Para a lista funcionar em todos os aparelhos, publique novamente o Apps Script com os arquivos atualizados da pasta `google-apps-script`.
+- O projeto evita nomes duplicados na mesma sessao usando o nome normalizado do atleta.
+- Quando nao houver treino aberto, altere `enabled: true` para `enabled: false` em `treino-coletivo-config.js` para esconder o card da home.
+
 ## Telegram opcional
 
 O Apps Script deste projeto tambem pode enviar um relatorio atualizado para o Telegram sempre que um novo cadastro for recebido.
@@ -79,6 +102,8 @@ No editor do Apps Script, configure as propriedades em `Configuracoes do projeto
 - `TELEGRAM_CHAT_ID`: id do grupo, canal ou conversa
 - `TELEGRAM_RP_CHAT_ID`: id do grupo do `Momento RP`
 - `TELEGRAM_RP_ENABLED`: opcional, use `true` ou `false` se quiser controlar o envio do `Momento RP` separadamente
+- `TELEGRAM_COLLECTIVE_CHAT_ID`: id do grupo do `Treino Coletivo` (para o grupo novo, use `-1003944318693`)
+- `TELEGRAM_COLLECTIVE_ENABLED`: opcional, use `true` ou `false` se quiser controlar o envio do `Treino Coletivo` separadamente
 - `MOMENTO_RP_DRIVE_FOLDER_ID`: id da pasta do Google Drive onde as fotos do `Momento RP` serao salvas
 - `DISTANCE_OPTIONS`: distancias na ordem desejada, por exemplo `5km, 10km`
 
