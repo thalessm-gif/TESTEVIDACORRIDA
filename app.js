@@ -571,7 +571,11 @@ async function syncWithGoogleSheets(entry) {
     return "disabled";
   }
 
-  const payload = JSON.stringify(normalizeEntry(entry));
+  const payload = JSON.stringify({
+    ...normalizeEntry(entry),
+    pageTitle: getKitPageTitle(),
+    shirtSizeOptions: normalizeShirtSizeOptions(shirtSizeOptions)
+  });
 
   try {
     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -827,6 +831,18 @@ function escapeHtml(value) {
 
 function escapeHtmlAttribute(value) {
   return escapeHtml(value).replace(/`/g, "&#96;");
+}
+
+function getKitPageTitle() {
+  const heroTitle = document.querySelector(".hero-copy h1");
+  const currentHeroTitle = heroTitle ? String(heroTitle.textContent || "").trim() : "";
+
+  if (currentHeroTitle) {
+    return currentHeroTitle;
+  }
+
+  const currentDocumentTitle = String(document.title || "").trim();
+  return currentDocumentTitle || "Retirada de Kits";
 }
 
 function createEntryId() {
