@@ -106,6 +106,7 @@ No editor do Apps Script, configure as propriedades em `Configuracoes do projeto
 - `TELEGRAM_COLLECTIVE_ENABLED`: opcional, use `true` ou `false` se quiser controlar o envio do `Treino Coletivo` separadamente
 - `MOMENTO_RP_DRIVE_FOLDER_ID`: id da pasta do Google Drive onde as fotos do `Momento RP` serao salvas
 - `DISTANCE_OPTIONS`: distancias na ordem desejada, por exemplo `5km, 10km`
+- `SHIRT_SIZE_OPTIONS`: tamanhos de camisa na ordem desejada, por exemplo `PP, P, M, G, GG`
 
 Assim o token nao fica exposto no codigo do site nem no repositorio.
 Na propriedade `MOMENTO_RP_DRIVE_FOLDER_ID`, voce pode colar tanto o ID puro quanto a URL completa da pasta do Drive.
@@ -119,7 +120,20 @@ Exemplos:
 - `DISTANCE_OPTIONS = 5km, 10km`
 - `DISTANCE_OPTIONS = 3km, 5km, 10km, 21km`
 
-Depois de alterar essa propriedade, publique uma nova versao do aplicativo da web para a pagina carregar as novas opcoes automaticamente.
+Depois de alterar essa propriedade, salve as `Propriedades do script` e recarregue a pagina da retirada de kits.
+Se voce tambem tiver alterado o codigo do Apps Script, publique uma nova versao do aplicativo da web.
+
+## Tamanhos de camisa configuraveis
+
+Os tamanhos de camisa tambem podem ficar nas `Propriedades do script` do Apps Script.
+
+Exemplos:
+
+- `SHIRT_SIZE_OPTIONS = P, M, G, GG`
+- `SHIRT_SIZE_OPTIONS = Baby Look P, Baby Look M, P, M, G, GG`
+
+Depois de alterar essa propriedade, salve as `Propriedades do script` e recarregue a pagina da retirada de kits.
+Se voce tambem tiver alterado o codigo do Apps Script, publique uma nova versao do aplicativo da web.
 
 ## Planilhas de consulta centralizadas
 

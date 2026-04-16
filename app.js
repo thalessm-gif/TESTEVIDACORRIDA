@@ -1,5 +1,5 @@
 const DEFAULT_DISTANCE_OPTIONS = ["3km", "5km", "10km", "21km"];
-const SHIRT_SIZE_ORDER = ["PP", "P", "M", "G", "GG"];
+const DEFAULT_SHIRT_SIZE_OPTIONS = ["PP", "P", "M", "G", "GG"];
 const STORAGE_KEY = "kit-withdrawal-entries";
 const LEGACY_STORAGE_KEYS = ["kit-withdrawal-entries", "kitWithdrawalEntries"];
 const DB_NAME = "kit-withdrawal-db";
@@ -40,10 +40,12 @@ const submitLockMessage = String(
 
 let entries = [];
 let distanceOptions = [...DEFAULT_DISTANCE_OPTIONS];
+let shirtSizeOptions = [...DEFAULT_SHIRT_SIZE_OPTIONS];
 let statusHideTimeoutId = null;
 
 if (!isKitWithdrawalLocked && form && exportButton && submitButton) {
   renderDistanceOptions();
+  renderShirtSizeOptions();
   render();
   applySubmitLockState();
   initializeApp();
@@ -330,10 +332,31 @@ function normalizeDistanceOptions(options) {
     });
 }
 
+function normalizeShirtSizeOptions(options) {
+  const uniqueOptions = new Set();
+
+  return (Array.isArray(options) ? options : [])
+    .map((option) => String(option || "").trim().toUpperCase())
+    .filter((option) => {
+      if (!option || uniqueOptions.has(option)) {
+        return false;
+      }
+
+      uniqueOptions.add(option);
+      return true;
+    });
+}
+
 function setDistanceOptions(nextOptions) {
   const normalizedOptions = normalizeDistanceOptions(nextOptions);
   distanceOptions = normalizedOptions.length ? normalizedOptions : [...DEFAULT_DISTANCE_OPTIONS];
   renderDistanceOptions();
+}
+
+function setShirtSizeOptions(nextOptions) {
+  const normalizedOptions = normalizeShirtSizeOptions(nextOptions);
+  shirtSizeOptions = normalizedOptions.length ? normalizedOptions : [...DEFAULT_SHIRT_SIZE_OPTIONS];
+  renderShirtSizeOptions();
 }
 
 function renderDistanceOptions() {
@@ -349,6 +372,22 @@ function renderDistanceOptions() {
 
   if (distanceOptions.includes(currentValue)) {
     distanceInput.value = currentValue;
+  }
+}
+
+function renderShirtSizeOptions() {
+  if (!shirtSizeInput) {
+    return;
+  }
+
+  const currentValue = String(shirtSizeInput.value || "").trim().toUpperCase();
+  shirtSizeInput.innerHTML = [
+    '<option value="">Selecione</option>',
+    ...shirtSizeOptions.map((size) => `<option value="${escapeHtmlAttribute(size)}">${escapeHtml(size)}</option>`)
+  ].join("");
+
+  if (shirtSizeOptions.includes(currentValue)) {
+    shirtSizeInput.value = currentValue;
   }
 }
 
@@ -510,6 +549,9 @@ async function loadEntriesFromGoogleSheets(options = {}) {
     if (Array.isArray(data.distanceOptions)) {
       setDistanceOptions(data.distanceOptions);
     }
+    if (Array.isArray(data.shirtSizeOptions)) {
+      setShirtSizeOptions(data.shirtSizeOptions);
+    }
     return Array.isArray(data.entries) ? data.entries.map(normalizeEntry) : [];
   } catch (error) {
     console.error("Erro ao carregar dados do Google Sheets:", error);
@@ -636,7 +678,15 @@ function groupEntriesByDistance(list) {
 }
 
 function getShirtSizeSummary(list) {
-  const counts = new Map(SHIRT_SIZE_ORDER.map((size) => [size, 0]));
+  const configuredSizes = [...shirtSizeOptions];
+  const additionalSizes = [...new Set(
+    list
+      .map((entry) => String(entry.shirtSize || "").trim().toUpperCase())
+      .filter(Boolean)
+      .filter((size) => !configuredSizes.includes(size))
+  )].sort((first, second) => first.localeCompare(second, "pt-BR", { sensitivity: "base" }));
+  const orderedSizes = [...configuredSizes, ...additionalSizes];
+  const counts = new Map(orderedSizes.map((size) => [size, 0]));
 
   list.forEach((entry) => {
     const shirtSize = String(entry.shirtSize || "").trim().toUpperCase();
@@ -645,7 +695,7 @@ function getShirtSizeSummary(list) {
     }
   });
 
-  return SHIRT_SIZE_ORDER.map((size) => ({
+  return orderedSizes.map((size) => ({
     size,
     count: counts.get(size) || 0
   }));
@@ -829,6 +879,7 @@ function containsEntry(list, expectedEntry) {
 function resetFormAfterSubmit() {
   form.reset();
   renderDistanceOptions();
+  renderShirtSizeOptions();
   fullNameInput.focus();
 }
 
