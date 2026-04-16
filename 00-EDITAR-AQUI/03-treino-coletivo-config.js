@@ -27,7 +27,7 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Identificador unico da sessao.
     // Sugestao de formato: treino-coletivo-AAAA-MM-DD-HHMM
-    id: "treino-coletivo-cassino-2026-04-16-1830",
+    id: "treino-coletivo-2026-04-19-0730",
 
     // Titulo exibido na pagina e usado no resumo enviado ao Telegram.
     title: "Cassino - Ciclovia",
@@ -37,11 +37,11 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Data e horario do treino no formato ISO com fuso.
     // Exemplo: 2026-04-22T18:30:00-03:00
-    startsAtIso: "2026-04-16T18:30:00-03:00",
+    startsAtIso: "2026-04-19T07:30:00-03:00",
 
     // Prazo final para decidir se o treino vai acontecer.
     // Se nao atingir o minimo ate este horario, a pagina mostra treino cancelado.
-    decisionDeadlineIso: "2026-04-16T16:00:00-03:00",
+    decisionDeadlineIso: "2026-04-18T20:00:00-03:00",
 
     // Local que aparecera na pagina e na mensagem do Telegram.
     location: "Frente ao CADU",
@@ -51,9 +51,9 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Deixe automatic para usar a regra normal do minimo de atletas.
     // Troque para cancelled quando precisar cancelar manualmente por clima ou outro motivo.
-    statusMode: "cancelled",
+    statusMode: "automatic",
 
     // Motivo opcional para aparecer no site e no Telegram quando statusMode estiver como cancelled.
-    statusReason: "EM FASE DE TESTES"
+    statusReason: ""
   }
 };
