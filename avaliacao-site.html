@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avalia&ccedil;&atilde;o do Site</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <div id="status-box" class="status-box status-box-hidden" role="status" aria-live="polite" aria-atomic="true">
+      <div class="status-box-panel">
+        <span id="status-spinner" class="status-spinner" aria-hidden="true"></span>
+        <div class="status-box-copy">
+          <p id="status-box-title" class="status-box-title">Pronto para enviar</p>
+          <p id="status-box-text" class="status-box-text">Sua avalia&ccedil;&atilde;o ser&aacute; enviada para a planilha da assessoria.</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="top-nav" aria-label="Navega&ccedil;&atilde;o principal">
+      <a href="index.html" class="nav-link">P&aacute;gina inicial</a>
+      <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
+      <a href="momento-rp.html" class="nav-link">Momento RP</a>
+      <a href="ranking-tempos-rp.html" class="nav-link">Ranking Performance</a>
+      <a href="calendario-provas.html" class="nav-link">Calend&aacute;rio de Provas</a>
+      <a href="treino-coletivo.html" class="nav-link">Treino Coletivo</a>
+      <a href="calculadora-vdot.html" class="nav-link">Calculadora VDOT</a>
+      <a href="treinadores.html" class="nav-link">Treinadores</a>
+      <a href="avaliacao-site.html" class="nav-link">Avalia&ccedil;&atilde;o do Site</a>
+    </nav>
+
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">"Os desafios nos definem."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel feedback-hero">
+      <p class="eyebrow">Area 11</p>
+      <h1>Avalia&ccedil;&atilde;o do Site</h1>
+      <p class="hero-text">
+        Queremos ouvir sua experi&ecirc;ncia com o portal. Deixe uma nota, conte o que achou e, se quiser, escreva uma sugest&atilde;o para as pr&oacute;ximas melhorias.
+      </p>
+
+      <div class="hero-highlight feedback-hero-highlight">
+        <span class="highlight-label">Simples e r&aacute;pido</span>
+        <p>O nome &eacute; opcional. O mais importante aqui &eacute; a sua opini&atilde;o.</p>
+      </div>
+    </section>
+
+    <section class="panel feedback-form-panel">
+      <div class="feedback-form-shell">
+        <div class="overview-header">
+          <div>
+            <p class="eyebrow">Formul&aacute;rio</p>
+            <h2>Envie sua avalia&ccedil;&atilde;o</h2>
+          </div>
+          <span id="feedback-form-status" class="count-badge">Pronto para receber</span>
+        </div>
+
+        <form id="site-feedback-form" novalidate>
+          <label class="field">
+            <span>Nome do atleta (opcional)</span>
+            <input id="site-feedback-athlete-name" type="text" placeholder="Se quiser, informe seu nome" list="site-feedback-athlete-suggestions" autocomplete="off">
+            <datalist id="site-feedback-athlete-suggestions"></datalist>
+          </label>
+
+          <div class="ranking-filter-block">
+            <p class="ranking-filter-label">Qual nota voc&ecirc; daria para o portal?</p>
+            <div id="site-feedback-rating-options" class="feedback-rating-grid" role="group" aria-label="Nota geral do portal"></div>
+          </div>
+
+          <label class="field">
+            <span>Como foi sua experi&ecirc;ncia?</span>
+            <textarea id="site-feedback-comment" placeholder="Conte o que achou do portal, se foi f&aacute;cil de usar e o que mais gostou." required></textarea>
+          </label>
+
+          <label class="field">
+            <span>Sugest&atilde;o de melhoria (opcional)</span>
+            <textarea id="site-feedback-suggestion" placeholder="Se quiser, deixe aqui uma ideia de melhoria ou uma nova funcionalidade."></textarea>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="primary-button">Enviar avalia&ccedil;&atilde;o</button>
+          </div>
+
+          <p id="site-feedback-form-message" class="form-message" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260416-1"></script>
+  <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260416-1"></script>
+  <script src="avaliacao-site.js?v=20260416-2"></script>
+</body>
+</html>
