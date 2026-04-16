@@ -41,7 +41,7 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Prazo final para decidir se o treino vai acontecer.
     // Se nao atingir o minimo ate este horario, a pagina mostra treino cancelado.
-    decisionDeadlineIso: "2026-04-16T12:30:00-03:00",
+    decisionDeadlineIso: "2026-04-16T11:30:00-03:00",
 
     // Local que aparecera na pagina e na mensagem do Telegram.
     location: "Frente ao CADU",
