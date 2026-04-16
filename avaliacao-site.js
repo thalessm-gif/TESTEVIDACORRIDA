@@ -178,10 +178,10 @@ async function handleFeedbackSubmit(event) {
     resetSelectedScores();
     renderFeedbackQuestions();
     setFeedbackFormStatus("Avalia\u00e7\u00e3o enviada");
-    showFeedbackMessage("Avalia\u00e7\u00e3o enviada com sucesso. Obrigado pela opini\u00e3o.");
+    showFeedbackMessage("Obrigado por nos ajudar a melhorar nosso servi\u00e7o. \"Os desafios nos definem!\"");
     showStatus({
-      title: "Dados enviados com sucesso",
-      text: "Sua avalia\u00e7\u00e3o j\u00e1 foi registrada na planilha.",
+      title: "Obrigado por nos ajudar a melhorar nosso servi\u00e7o.",
+      text: "\"Os desafios nos definem!\"",
       tone: "success",
       hideAfterMs: 4000
     });
