@@ -88,7 +88,7 @@ function initializeFidelityPage() {
 async function loadFidelityFromSheet() {
   if (!FIDELITY_SHEET_URL) {
     setFidelitySheetStatus("Cole o link da planilha");
-    renderFidelityEmptyState("Conecte a planilha em consulta-sheet-config.js para visualizar os planos de fidelizacao.");
+    renderFidelityEmptyState("Conecte a planilha em 00-EDITAR-AQUI/04-planilhas-consulta.js para visualizar os planos de fidelizacao.");
     return;
   }
 
@@ -115,7 +115,7 @@ async function loadFidelityFromSheet() {
     fidelityPlans = [];
     renderFidelityPlanButtons([]);
     renderFidelityEmptyState(
-      "Nao foi possivel carregar a planilha. Verifique consulta-sheet-config.js."
+      "Nao foi possivel carregar a planilha. Verifique 00-EDITAR-AQUI/04-planilhas-consulta.js."
     );
     setFidelitySheetStatus("Erro ao carregar");
   }

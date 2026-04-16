@@ -52,7 +52,7 @@ async function loadHighlightsFromSheet() {
     renderPerfectMessage(
       "Assim que voce conectar a planilha, esta area vai mostrar quem esteve em destaque em todas as semanas."
     );
-    renderErrorState("Conecte a planilha em consulta-sheet-config.js para visualizar os dados.");
+    renderErrorState("Conecte a planilha em 00-EDITAR-AQUI/04-planilhas-consulta.js para visualizar os dados.");
     return;
   }
 
@@ -86,7 +86,7 @@ async function loadHighlightsFromSheet() {
       "Nao foi possivel confirmar os atletas 100% ativos porque a leitura da planilha falhou."
     );
     renderErrorState(
-      "Nao foi possivel carregar a planilha. Verifique consulta-sheet-config.js."
+      "Nao foi possivel carregar a planilha. Verifique 00-EDITAR-AQUI/04-planilhas-consulta.js."
     );
   }
 }

@@ -1,6 +1,12 @@
+const RP_RANKING_SYSTEM_CONFIG = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
+const RP_RANKING_SHARED_GOOGLE_SCRIPT_URL = String(
+  ((RP_RANKING_SYSTEM_CONFIG.googleAppsScript || {}).url) ||
+  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+).trim();
+const RP_RANKING_FEATURE_CONFIG = RP_RANKING_SYSTEM_CONFIG.rankingPerformance || {};
 const RP_RANKING_STORAGE_KEY = "momento-rp-entries";
-const RP_RANKING_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec";
-const RP_RANKING_LIST_ACTION = "rp-list";
+const RP_RANKING_GOOGLE_SCRIPT_URL = RP_RANKING_SHARED_GOOGLE_SCRIPT_URL;
+const RP_RANKING_LIST_ACTION = String(RP_RANKING_FEATURE_CONFIG.listAction || "rp-list").trim();
 const RP_FIRST_RACE_LABEL = "Primeira prova";
 const RP_CATEGORY_ORDER = [
   "18 a 29 anos",

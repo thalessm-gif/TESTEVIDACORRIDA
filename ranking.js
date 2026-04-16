@@ -100,7 +100,7 @@ function initializeRankingPage() {
 async function loadRankingFromSheet() {
   if (!RANKING_SHEET_URL) {
     setSheetStatus("Cole o link da planilha");
-    renderEmptyState("Conecte a planilha em consulta-sheet-config.js para visualizar o ranking do circuito.");
+    renderEmptyState("Conecte a planilha em 00-EDITAR-AQUI/04-planilhas-consulta.js para visualizar o ranking do circuito.");
     return;
   }
 
@@ -125,7 +125,7 @@ async function loadRankingFromSheet() {
     renderDistanceButtons([]);
     renderCategoryButtons([]);
     renderEmptyState(
-      "Nao foi possivel carregar a planilha. Verifique consulta-sheet-config.js."
+      "Nao foi possivel carregar a planilha. Verifique 00-EDITAR-AQUI/04-planilhas-consulta.js."
     );
     setSheetStatus("Erro ao carregar");
   }

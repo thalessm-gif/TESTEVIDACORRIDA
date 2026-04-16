@@ -48,7 +48,7 @@ function initializeReferralPage() {
 async function loadReferralRankingFromSheet() {
   if (!REFERRAL_SHEET_URL) {
     setReferralSheetStatus("Cole o link da planilha");
-    renderReferralEmptyState("Conecte a planilha em consulta-sheet-config.js para visualizar a Indicacao Amiga.");
+    renderReferralEmptyState("Conecte a planilha em 00-EDITAR-AQUI/04-planilhas-consulta.js para visualizar a Indicacao Amiga.");
     return;
   }
 
@@ -69,7 +69,7 @@ async function loadReferralRankingFromSheet() {
     console.error("Erro ao carregar Indicacao Amiga:", error);
     referralEntries = [];
     renderReferralEmptyState(
-      "Nao foi possivel carregar a planilha. Verifique consulta-sheet-config.js."
+      "Nao foi possivel carregar a planilha. Verifique 00-EDITAR-AQUI/04-planilhas-consulta.js."
     );
     setReferralSheetStatus("Erro ao carregar");
   }

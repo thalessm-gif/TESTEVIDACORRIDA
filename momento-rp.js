@@ -1,8 +1,14 @@
+const RP_SYSTEM_CONFIG = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
+const RP_SHARED_GOOGLE_SCRIPT_URL = String(
+  ((RP_SYSTEM_CONFIG.googleAppsScript || {}).url) ||
+  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+).trim();
+const RP_FEATURE_CONFIG = RP_SYSTEM_CONFIG.momentoRp || {};
 const RP_STORAGE_KEY = "momento-rp-entries";
-const RP_GOOGLE_SHEETS_ONLY_MODE = true;
-const RP_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec";
-const RP_RESOURCE = "rp";
-const RP_LIST_ACTION = "rp-list";
+const RP_GOOGLE_SHEETS_ONLY_MODE = RP_FEATURE_CONFIG.googleSheetsOnlyMode !== false;
+const RP_GOOGLE_SCRIPT_URL = RP_SHARED_GOOGLE_SCRIPT_URL;
+const RP_RESOURCE = String(RP_FEATURE_CONFIG.resource || "rp").trim();
+const RP_LIST_ACTION = String(RP_FEATURE_CONFIG.listAction || "rp-list").trim();
 const RP_FIRST_RACE_LABEL = "Primeira prova";
 const RP_DISTANCES = [
   { value: "3km", label: "3 km", storedValue: "3 km" },

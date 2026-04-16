@@ -1,13 +1,17 @@
+const KIT_SYSTEM_CONFIG = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
+const KIT_SHARED_GOOGLE_SCRIPT_URL = String(
+  ((KIT_SYSTEM_CONFIG.googleAppsScript || {}).url) ||
+  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+).trim();
+const KIT_FEATURE_CONFIG = KIT_SYSTEM_CONFIG.kitWithdrawal || {};
 const DEFAULT_DISTANCE_OPTIONS = ["3km", "5km", "10km", "21km"];
 const DEFAULT_SHIRT_SIZE_OPTIONS = ["PP", "P", "M", "G", "GG"];
 const STORAGE_KEY = "kit-withdrawal-entries";
 const LEGACY_STORAGE_KEYS = ["kit-withdrawal-entries", "kitWithdrawalEntries"];
 const DB_NAME = "kit-withdrawal-db";
 const STORE_NAME = "entries";
-const GOOGLE_SHEETS_ONLY_MODE = true;
-
-// Para persistencia real entre acessos e aparelhos, publique o Apps Script e cole a URL abaixo.
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec";
+const GOOGLE_SHEETS_ONLY_MODE = KIT_FEATURE_CONFIG.googleSheetsOnlyMode !== false;
+const GOOGLE_SCRIPT_URL = KIT_SHARED_GOOGLE_SCRIPT_URL;
 
 const form = document.getElementById("kit-form");
 const fullNameInput = document.getElementById("fullName");

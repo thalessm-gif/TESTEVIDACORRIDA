@@ -44,7 +44,7 @@ function renderRaceList(entries) {
   if (!entries.length) {
     raceListElement.innerHTML = `
       <article class="calendar-empty-card">
-        <p class="empty-state">Nenhuma prova cadastrada ainda. Atualize o arquivo <strong>calendar-data.js</strong> para alimentar esta agenda.</p>
+        <p class="empty-state">Nenhuma prova cadastrada ainda. Atualize o arquivo <strong>00-EDITAR-AQUI/05-calendario-provas.js</strong> para alimentar esta agenda.</p>
       </article>
     `;
     return;
