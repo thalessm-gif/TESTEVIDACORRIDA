@@ -1312,10 +1312,11 @@ button:disabled {
   line-height: 1.7;
 }
 
-.collective-name-pill-list {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.collective-name-list {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
 }
 
 .collective-form-panel h2,
@@ -1323,16 +1324,15 @@ button:disabled {
   margin-bottom: 16px;
 }
 
-.collective-name-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 42px;
-  padding: 10px 16px;
-  border: 1px solid rgba(126, 232, 183, 0.22);
-  border-radius: 999px;
-  background: rgba(126, 232, 183, 0.12);
+.collective-name-list-item {
   color: #ebfff4;
-  font-weight: 700;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.collective-name-empty {
+  list-style: none;
+  margin-left: -22px;
 }
 
 .rp-time-part {

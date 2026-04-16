@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260415-2">
+  <link rel="stylesheet" href="styles.css?v=20260416-3">
 </head>
 <body>
   <main class="page">
@@ -15,18 +15,18 @@
       <div class="status-box-panel">
         <span id="status-spinner" class="status-spinner" aria-hidden="true"></span>
         <div class="status-box-copy">
-          <p id="status-box-title" class="status-box-title">Carregando informações...</p>
-          <p id="status-box-text" class="status-box-text">Aguarde enquanto buscamos as confirmações do treino coletivo.</p>
+          <p id="status-box-title" class="status-box-title">Carregando informa&ccedil;&otilde;es...</p>
+          <p id="status-box-text" class="status-box-text">Aguarde enquanto buscamos as confirma&ccedil;&otilde;es do treino coletivo.</p>
         </div>
       </div>
     </div>
 
-    <nav class="top-nav" aria-label="Navegação principal">
-      <a href="index.html" class="nav-link">Página inicial</a>
+    <nav class="top-nav" aria-label="Navega&ccedil;&atilde;o principal">
+      <a href="index.html" class="nav-link">P&aacute;gina inicial</a>
       <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
       <a href="momento-rp.html" class="nav-link">Momento RP</a>
       <a href="ranking-tempos-rp.html" class="nav-link">Ranking Performance</a>
-      <a href="calendario-provas.html" class="nav-link">Calendário de Provas</a>
+      <a href="calendario-provas.html" class="nav-link">Calend&aacute;rio de Provas</a>
       <a href="calculadora-vdot.html" class="nav-link">Calculadora VDOT</a>
       <a href="treino-coletivo.html" class="nav-link">Treino Coletivo</a>
       <a href="treinadores.html" class="nav-link">Treinadores</a>
@@ -46,12 +46,12 @@
       <p class="eyebrow">Treino coletivo</p>
       <h1 id="collective-page-title">Treino Coletivo</h1>
       <p id="collective-page-description" class="hero-text">
-        Confirme seu nome e acompanhe rapidamente se a turma atingiu o mínimo necessário.
+        Confirme seu nome e acompanhe rapidamente se a turma atingiu o m&iacute;nimo necess&aacute;rio.
       </p>
 
       <div id="collective-status-banner" class="collective-status-banner collective-status-banner-pending">
-        <p class="collective-status-kicker">Situação da turma</p>
-        <h2 id="collective-status-title">Carregando confirmações...</h2>
+        <p class="collective-status-kicker">Situa&ccedil;&atilde;o do Treino</p>
+        <h2 id="collective-status-title">Carregando confirma&ccedil;&otilde;es...</h2>
         <p id="collective-status-text" class="collective-status-text">
           Aguarde enquanto buscamos os nomes mais recentes para decidir se o treino continua confirmado.
         </p>
@@ -67,24 +67,24 @@
         <article class="collective-session-card">
           <span class="collective-session-label">Local</span>
           <strong id="collective-session-location">-</strong>
-          <p></p>
+          <p>Em frente ao trapiche.</p>
         </article>
 
         <article class="collective-session-card">
-          <span class="collective-session-label">Horário</span>
+          <span class="collective-session-label">Hor&aacute;rio</span>
           <strong id="collective-session-time">-</strong>
-          <p>Chegue com alguns minutos de antecedência.</p>
+          <p>Chegue com alguns minutos de anteced&ecirc;ncia.</p>
         </article>
       </div>
 
       <div class="collective-callout-grid">
         <article class="collective-callout-card collective-callout-card-deadline">
-          <span class="collective-session-label">Confirmação até</span>
+          <span class="collective-session-label">Confirma&ccedil;&atilde;o at&eacute;</span>
           <strong id="collective-session-deadline">-</strong>
         </article>
 
         <article class="collective-callout-card">
-          <span class="collective-session-label">Mínimo</span>
+          <span class="collective-session-label">M&iacute;nimo</span>
           <strong id="collective-session-minimum">-</strong>
         </article>
       </div>
@@ -92,7 +92,7 @@
 
     <section class="collective-confirmation-layout">
       <div class="panel form-panel collective-form-panel">
-        <h2>Confirmar presença</h2>
+        <h2>Confirmar presen&ccedil;a</h2>
 
         <form id="collective-form" novalidate>
           <label class="field">
@@ -102,7 +102,7 @@
           </label>
 
           <div class="actions">
-            <button id="collective-submit-button" type="submit" class="primary-button">Confirmar presença</button>
+            <button id="collective-submit-button" type="submit" class="primary-button">Confirmar presen&ccedil;a</button>
           </div>
 
           <p id="collective-form-message" class="form-message" aria-live="polite"></p>
@@ -118,9 +118,9 @@
           <span id="collective-total-count" class="count-badge">0 confirmados</span>
         </div>
 
-        <div id="collective-name-pill-list" class="collective-name-pill-list" aria-live="polite">
-          <p class="empty-state">Nenhuma confirmação registrada ainda.</p>
-        </div>
+        <ul id="collective-name-list" class="collective-name-list" aria-live="polite">
+          <li class="empty-state collective-name-empty">Nenhuma confirma&ccedil;&atilde;o registrada ainda.</li>
+        </ul>
       </section>
     </section>
   </main>
@@ -128,6 +128,6 @@
   <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260416-1"></script>
   <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260416-1"></script>
   <script src="00-EDITAR-AQUI/03-treino-coletivo-config.js?v=20260416-1"></script>
-  <script src="treino-coletivo.js?v=20260415-2"></script>
+  <script src="treino-coletivo.js?v=20260416-3"></script>
 </body>
 </html>

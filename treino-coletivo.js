@@ -25,7 +25,7 @@ const collectiveStatusBanner = document.getElementById("collective-status-banner
 const collectiveStatusTitle = document.getElementById("collective-status-title");
 const collectiveStatusText = document.getElementById("collective-status-text");
 const collectiveTotalCount = document.getElementById("collective-total-count");
-const collectiveNamePillList = document.getElementById("collective-name-pill-list");
+const collectiveNameList = document.getElementById("collective-name-list");
 const statusBox = document.getElementById("status-box");
 const statusBoxTitle = document.getElementById("status-box-title");
 const statusBoxText = document.getElementById("status-box-text");
@@ -52,7 +52,7 @@ if (
   collectiveStatusTitle &&
   collectiveStatusText &&
   collectiveTotalCount &&
-  collectiveNamePillList
+  collectiveNameList
 ) {
   initializeCollectiveTrainingPage();
 }
@@ -268,7 +268,7 @@ function renderCollectiveUnavailableState(message) {
   collectiveStatusText.textContent =
     message || "Quando um novo treino for liberado, o card volta para a primeira posição da home automaticamente.";
   collectiveTotalCount.textContent = "0 confirmados";
-  collectiveNamePillList.innerHTML = `<p class="empty-state">Nenhum treino coletivo aberto no momento.</p>`;
+  collectiveNameList.innerHTML = `<li class="empty-state collective-name-empty">Nenhum treino coletivo aberto no momento.</li>`;
   setCollectiveFormDisabled(true);
   collectiveSubmitButton.textContent = "Treino indisponível";
   showCollectiveMessage("Ative o treino no arquivo de configuração para liberar novas confirmações.", true);
@@ -283,12 +283,12 @@ function renderCollectiveStatus(state) {
 
 function renderCollectiveList(state) {
   if (!collectiveEntries.length) {
-    collectiveNamePillList.innerHTML = `<p class="empty-state">${state.emptyMessage}</p>`;
+    collectiveNameList.innerHTML = `<li class="empty-state collective-name-empty">${escapeHtml(state.emptyMessage)}</li>`;
     return;
   }
 
-  collectiveNamePillList.innerHTML = collectiveEntries
-    .map((entry) => `<span class="collective-name-pill">${escapeHtml(entry.fullName)}</span>`)
+  collectiveNameList.innerHTML = collectiveEntries
+    .map((entry) => `<li class="collective-name-list-item">${escapeHtml(entry.fullName)}</li>`)
     .join("");
 }
 
@@ -346,7 +346,7 @@ function getCollectiveTrainingState() {
   if (participantCount >= minimumParticipants) {
     return {
       bannerClass: "collective-status-banner-ready",
-      title: "MÍNIMO ATINGIDO",
+      title: "TREINO COLETIVO CONFIRMADO",
       text: `A turma já bateu o mínimo de ${minimumParticipants} atleta${minimumParticipants === 1 ? "" : "s"}. As confirmações continuam abertas até ${deadlineLabel}.`,
       emptyMessage: "Nenhuma confirmação registrada."
     };
