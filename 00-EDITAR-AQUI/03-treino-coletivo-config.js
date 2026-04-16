@@ -27,7 +27,7 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Identificador unico da sessao.
     // Sugestao de formato: treino-coletivo-AAAA-MM-DD-HHMM
-    id: "treino-coletivo-2026-04-16-1830",
+    id: "treino-coletivo-cassino-2026-04-16-1830",
 
     // Titulo exibido na pagina e usado no resumo enviado ao Telegram.
     title: "Cassino - Ciclovia",
@@ -41,7 +41,7 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Prazo final para decidir se o treino vai acontecer.
     // Se nao atingir o minimo ate este horario, a pagina mostra treino cancelado.
-    decisionDeadlineIso: "2026-04-16T13:15:00-03:00",
+    decisionDeadlineIso: "2026-04-16T13:45:00-03:00",
 
     // Local que aparecera na pagina e na mensagem do Telegram.
     location: "Frente ao CADU",
