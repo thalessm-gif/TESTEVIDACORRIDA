@@ -6,22 +6,48 @@ const FEEDBACK_SHARED_GOOGLE_SCRIPT_URL = String(
 const FEEDBACK_FEATURE_CONFIG = FEEDBACK_SYSTEM_CONFIG.siteFeedback || {};
 const FEEDBACK_GOOGLE_SCRIPT_URL = FEEDBACK_SHARED_GOOGLE_SCRIPT_URL;
 const FEEDBACK_RESOURCE = String(FEEDBACK_FEATURE_CONFIG.resource || "siteFeedback").trim();
-const FEEDBACK_RATING_OPTIONS = [
-  { value: 1, label: "Precisa melhorar" },
-  { value: 2, label: "Regular" },
-  { value: 3, label: "Bom" },
-  { value: 4, label: "Muito bom" },
-  { value: 5, label: "Excelente" }
+const FEEDBACK_LIST_ACTION = String(FEEDBACK_FEATURE_CONFIG.listAction || "site-feedback-list").trim();
+const FEEDBACK_SCORE_OPTIONS = [
+  { value: 0, label: "0" },
+  { value: 1, label: "1" },
+  { value: 2, label: "2" },
+  { value: 3, label: "3" },
+  { value: 4, label: "4" },
+  { value: 5, label: "5" }
+];
+const FEEDBACK_QUESTIONS = [
+  {
+    key: "navigation",
+    shortLabel: "Navegacao",
+    prompt: "Como voc\u00ea avalia a facilidade de navega\u00e7\u00e3o e uso do site (principalmente no celular)?"
+  },
+  {
+    key: "clarity",
+    shortLabel: "Rotina",
+    prompt: "O quanto o site te ajuda na sua rotina como atleta (treinos, provas, informa\u00e7\u00f5es, etc.)?"
+  },
+  {
+    key: "speed",
+    shortLabel: "Equipe",
+    prompt: "O site representa bem a assessoria e transmite profissionalismo e sentimento de equipe?"
+  },
+  {
+    key: "usefulness",
+    shortLabel: "Contato",
+    prompt: "As informa\u00e7\u00f5es e formas de contato no site s\u00e3o claras e f\u00e1ceis de entender?"
+  }
 ];
 
 const feedbackFormElement = document.getElementById("site-feedback-form");
 const athleteNameElement = document.getElementById("site-feedback-athlete-name");
 const athleteSuggestionsElement = document.getElementById("site-feedback-athlete-suggestions");
-const commentElement = document.getElementById("site-feedback-comment");
+const questionListElement = document.getElementById("site-feedback-question-list");
 const suggestionElement = document.getElementById("site-feedback-suggestion");
-const ratingOptionsElement = document.getElementById("site-feedback-rating-options");
 const formMessageElement = document.getElementById("site-feedback-form-message");
 const feedbackFormStatusElement = document.getElementById("feedback-form-status");
+const feedbackTotalCountElement = document.getElementById("feedback-total-count");
+const feedbackAverageValueElement = document.getElementById("feedback-average-value");
+const feedbackAverageStarsFillElement = document.getElementById("feedback-average-stars-fill");
 const statusBox = document.getElementById("status-box");
 const statusBoxTitle = document.getElementById("status-box-title");
 const statusBoxText = document.getElementById("status-box-text");
@@ -29,17 +55,20 @@ const statusSpinner = document.getElementById("status-spinner");
 const preloadedAthleteNames = Array.isArray(window.KIT_ATHLETE_NAMES) ? window.KIT_ATHLETE_NAMES : [];
 const submitButton = feedbackFormElement ? feedbackFormElement.querySelector('button[type="submit"]') : null;
 
-let selectedRating = 0;
+const selectedScores = createEmptyScoreState();
+let feedbackEntries = [];
 let statusHideTimeoutId = null;
 
-renderRatingOptions();
+renderFeedbackQuestions();
 updateAthleteSuggestions();
-setFeedbackFormStatus("Pronto para receber");
+renderFeedbackSummary();
+setFeedbackFormStatus("Carregando resumo");
 attachFeedbackEventListeners();
+initializeFeedbackPage();
 
 function attachFeedbackEventListeners() {
-  if (ratingOptionsElement) {
-    ratingOptionsElement.addEventListener("click", handleRatingOptionClick);
+  if (questionListElement) {
+    questionListElement.addEventListener("click", handleScoreOptionClick);
   }
 
   if (feedbackFormElement) {
@@ -47,14 +76,44 @@ function attachFeedbackEventListeners() {
   }
 }
 
-function handleRatingOptionClick(event) {
-  const button = event.target.closest("[data-rating-value]");
+async function initializeFeedbackPage() {
+  showStatus({
+    title: "Carregando dados...",
+    text: "Aguarde enquanto buscamos o total de avalia\u00e7\u00f5es e a nota m\u00e9dia.",
+    busy: true
+  });
+
+  try {
+    feedbackEntries = await loadFeedbackEntriesFromGoogleSheets();
+    renderFeedbackSummary();
+    setFeedbackFormStatus("Pronto para receber");
+    hideStatus();
+  } catch (error) {
+    console.error("Erro ao carregar o resumo da avalia\u00e7\u00e3o do site:", error);
+    feedbackEntries = [];
+    renderFeedbackSummary();
+    setFeedbackFormStatus("Pronto para receber");
+    showStatus({
+      title: "N\u00e3o foi poss\u00edvel carregar o resumo",
+      text: "O formul\u00e1rio continua dispon\u00edvel. Se o Apps Script estiver publicado, novas avalia\u00e7\u00f5es ainda podem ser enviadas.",
+      tone: "error"
+    });
+  }
+}
+
+function handleScoreOptionClick(event) {
+  const button = event.target.closest("[data-question-key][data-score-value]");
   if (!button) {
     return;
   }
 
-  selectedRating = normalizeFeedbackRating(button.dataset.ratingValue);
-  renderRatingOptions();
+  const questionKey = String(button.dataset.questionKey || "");
+  if (!Object.prototype.hasOwnProperty.call(selectedScores, questionKey)) {
+    return;
+  }
+
+  selectedScores[questionKey] = normalizeFeedbackScore(button.dataset.scoreValue);
+  renderFeedbackQuestions();
 }
 
 async function handleFeedbackSubmit(event) {
@@ -65,29 +124,33 @@ async function handleFeedbackSubmit(event) {
   }
 
   const athleteName = normalizeText(athleteNameElement.value);
-  const comment = normalizeText(commentElement.value);
   const suggestion = normalizeText(suggestionElement.value);
+  const missingQuestion = FEEDBACK_QUESTIONS.find((question) => !selectedScores[question.key] && selectedScores[question.key] !== 0);
 
-  if (!selectedRating || !comment) {
-    showFeedbackMessage("Escolha uma nota e escreva sua avaliacao antes de enviar.", true);
+  if (missingQuestion) {
+    showFeedbackMessage("Responda \u00e0s quatro perguntas com notas de 0 a 5 antes de enviar.", true);
     return;
   }
 
+  const averageRating = calculateAverageRating(selectedScores);
   const payload = {
     resource: FEEDBACK_RESOURCE,
     id: createFeedbackEntryId(),
     athleteName,
-    rating: selectedRating,
-    comment,
+    navigation: selectedScores.navigation,
+    clarity: selectedScores.clarity,
+    speed: selectedScores.speed,
+    usefulness: selectedScores.usefulness,
+    averageRating,
     suggestion,
     createdAt: new Date().toISOString()
   };
 
   setFeedbackFormDisabled(true);
-  setFeedbackFormStatus("Enviando avaliacao");
+  setFeedbackFormStatus("Enviando avalia\u00e7\u00e3o");
   showStatus({
     title: "Enviando dados...",
-    text: "Aguarde enquanto registramos sua avaliacao.",
+    text: "Aguarde enquanto registramos sua avalia\u00e7\u00e3o.",
     busy: true
   });
 
@@ -106,31 +169,33 @@ async function handleFeedbackSubmit(event) {
 
     const data = await safeReadJson(response);
     if (data && data.ok === false) {
-      throw new Error(String(data.message || "O Apps Script rejeitou a avaliacao."));
+      throw new Error(String(data.message || "O Apps Script rejeitou a avalia\u00e7\u00e3o."));
     }
 
+    feedbackEntries = await loadFeedbackEntriesFromGoogleSheets();
+    renderFeedbackSummary();
     feedbackFormElement.reset();
-    selectedRating = 0;
-    renderRatingOptions();
-    setFeedbackFormStatus("Avaliacao enviada");
-    showFeedbackMessage("Avaliacao enviada com sucesso. Obrigado pela opiniao.");
+    resetSelectedScores();
+    renderFeedbackQuestions();
+    setFeedbackFormStatus("Avalia\u00e7\u00e3o enviada");
+    showFeedbackMessage("Avalia\u00e7\u00e3o enviada com sucesso. Obrigado pela opini\u00e3o.");
     showStatus({
       title: "Dados enviados com sucesso",
-      text: "Sua avaliacao ja foi registrada na planilha.",
+      text: "Sua avalia\u00e7\u00e3o j\u00e1 foi registrada na planilha.",
       tone: "success",
       hideAfterMs: 4000
     });
     athleteNameElement.focus();
   } catch (error) {
-    console.error("Erro ao enviar avaliacao do site:", error);
+    console.error("Erro ao enviar avalia\u00e7\u00e3o do site:", error);
     setFeedbackFormStatus("Falha no envio");
     showFeedbackMessage(
-      "Nao foi possivel enviar agora. Verifique se o Apps Script foi atualizado e publicado com a aba Avaliacoes.",
+      "N\u00e3o foi poss\u00edvel enviar agora. Verifique se o Apps Script foi atualizado e publicado com a aba Avalia\u00e7oes.",
       true
     );
     showStatus({
       title: "Falha ao enviar dados",
-      text: String(error && error.message ? error.message : "Nao foi possivel concluir o envio agora."),
+      text: String(error && error.message ? error.message : "N\u00e3o foi poss\u00edvel concluir o envio agora."),
       tone: "error"
     });
   } finally {
@@ -138,29 +203,77 @@ async function handleFeedbackSubmit(event) {
   }
 }
 
-function renderRatingOptions() {
-  if (!ratingOptionsElement) {
+function renderFeedbackQuestions() {
+  if (!questionListElement) {
     return;
   }
 
-  ratingOptionsElement.innerHTML = FEEDBACK_RATING_OPTIONS
-    .map((option) => {
-      const isActive = option.value === selectedRating;
-      const activeClass = isActive ? " toggle-button-active" : "";
+  questionListElement.innerHTML = FEEDBACK_QUESTIONS
+    .map((question, index) => `
+      <article class="feedback-question-card">
+        <div class="feedback-question-header">
+          <span class="feedback-question-index">Pergunta ${index + 1}</span>
+          <p class="feedback-question-title">${escapeHtml(question.prompt)}</p>
+        </div>
+        <div class="feedback-score-grid" role="group" aria-label="${escapeHtmlAttribute(question.prompt)}">
+          ${FEEDBACK_SCORE_OPTIONS
+            .map((option) => {
+              const isActive = selectedScores[question.key] === option.value;
+              const activeClass = isActive ? " toggle-button-active" : "";
 
-      return `
-        <button
-          type="button"
-          class="toggle-button feedback-rating-button${activeClass}"
-          data-rating-value="${option.value}"
-          aria-pressed="${isActive ? "true" : "false"}"
-        >
-          <span class="feedback-rating-button-stars">${buildFeedbackStarsHtml(option.value)}</span>
-          <span class="feedback-rating-button-caption">${escapeHtml(option.label)}</span>
-        </button>
-      `;
-    })
+              return `
+                <button
+                  type="button"
+                  class="toggle-button feedback-score-button${activeClass}"
+                  data-question-key="${escapeHtmlAttribute(question.key)}"
+                  data-score-value="${option.value}"
+                  aria-pressed="${isActive ? "true" : "false"}"
+                >
+                  ${option.label}
+                </button>
+              `;
+            })
+            .join("")}
+        </div>
+        <p class="feedback-question-scale">0 = muito ruim | 5 = excelente</p>
+      </article>
+    `)
     .join("");
+}
+
+function renderFeedbackSummary() {
+  const totalEntries = feedbackEntries.length;
+  const averageRating = totalEntries
+    ? feedbackEntries.reduce((sum, entry) => sum + getEntryAverageRating(entry), 0) / totalEntries
+    : 0;
+
+  if (feedbackTotalCountElement) {
+    feedbackTotalCountElement.textContent = String(totalEntries);
+  }
+
+  if (feedbackAverageValueElement) {
+    feedbackAverageValueElement.textContent = formatAverageValue(averageRating);
+  }
+
+  if (feedbackAverageStarsFillElement) {
+    feedbackAverageStarsFillElement.style.width = `${Math.max(0, Math.min(100, (averageRating / 5) * 100))}%`;
+  }
+}
+
+async function loadFeedbackEntriesFromGoogleSheets() {
+  const separator = FEEDBACK_GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
+  const response = await fetch(`${FEEDBACK_GOOGLE_SCRIPT_URL}${separator}action=${FEEDBACK_LIST_ACTION}&ts=${Date.now()}`);
+
+  if (!response.ok) {
+    throw new Error(`Resposta inesperada: ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (data && data.ok === false) {
+    throw new Error(String(data.message || "A consulta da avalia\u00e7\u00e3o do site foi rejeitada."));
+  }
+
+  return Array.isArray(data.entries) ? data.entries.map(normalizeFeedbackEntry).filter(Boolean) : [];
 }
 
 function updateAthleteSuggestions() {
@@ -186,10 +299,30 @@ function updateAthleteSuggestions() {
     .join("");
 }
 
+function normalizeFeedbackEntry(entry) {
+  if (!entry) {
+    return null;
+  }
+
+  const normalizedEntry = {
+    id: String(entry.id || ""),
+    athleteName: normalizeText(entry.athleteName),
+    navigation: normalizeFeedbackScore(entry.navigation),
+    clarity: normalizeFeedbackScore(entry.clarity),
+    speed: normalizeFeedbackScore(entry.speed),
+    usefulness: normalizeFeedbackScore(entry.usefulness),
+    averageRating: normalizeNumericAverage(entry.averageRating),
+    suggestion: normalizeText(entry.suggestion),
+    createdAt: normalizeText(entry.createdAt)
+  };
+
+  const hasAllScores = FEEDBACK_QUESTIONS.every((question) => normalizedEntry[question.key] >= 0);
+  return hasAllScores ? normalizedEntry : null;
+}
+
 function setFeedbackFormDisabled(disabled) {
   [
     athleteNameElement,
-    commentElement,
     suggestionElement,
     submitButton
   ].forEach((element) => {
@@ -198,8 +331,8 @@ function setFeedbackFormDisabled(disabled) {
     }
   });
 
-  if (ratingOptionsElement) {
-    ratingOptionsElement.querySelectorAll("button").forEach((button) => {
+  if (questionListElement) {
+    questionListElement.querySelectorAll("button").forEach((button) => {
       button.disabled = disabled;
     });
   }
@@ -277,6 +410,19 @@ async function safeReadJson(response) {
   }
 }
 
+function createEmptyScoreState() {
+  return FEEDBACK_QUESTIONS.reduce((state, question) => {
+    state[question.key] = null;
+    return state;
+  }, {});
+}
+
+function resetSelectedScores() {
+  FEEDBACK_QUESTIONS.forEach((question) => {
+    selectedScores[question.key] = null;
+  });
+}
+
 function createFeedbackEntryId() {
   if (window.crypto && typeof window.crypto.randomUUID === "function") {
     return window.crypto.randomUUID();
@@ -285,23 +431,41 @@ function createFeedbackEntryId() {
   return `feedback-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
-function buildFeedbackStarsHtml(rating) {
-  const safeRating = normalizeFeedbackRating(rating);
-  return "&#9733;".repeat(safeRating) + "&#9734;".repeat(5 - safeRating);
+function getEntryAverageRating(entry) {
+  if (typeof entry.averageRating === "number" && !Number.isNaN(entry.averageRating)) {
+    return entry.averageRating;
+  }
+
+  return calculateAverageRating(entry);
+}
+
+function calculateAverageRating(scoreState) {
+  const scores = FEEDBACK_QUESTIONS.map((question) => normalizeFeedbackScore(scoreState[question.key]));
+  const total = scores.reduce((sum, score) => sum + score, 0);
+  return Number((total / FEEDBACK_QUESTIONS.length).toFixed(1));
+}
+
+function formatAverageValue(value) {
+  return Number(value || 0).toFixed(1).replace(".", ",");
+}
+
+function normalizeFeedbackScore(value) {
+  const parsedValue = parseInt(String(value), 10);
+
+  if (Number.isNaN(parsedValue) || parsedValue < 0 || parsedValue > 5) {
+    return -1;
+  }
+
+  return parsedValue;
+}
+
+function normalizeNumericAverage(value) {
+  const parsedValue = Number(String(value || "").replace(",", "."));
+  return Number.isFinite(parsedValue) ? parsedValue : NaN;
 }
 
 function normalizeText(value) {
   return String(value || "").trim().replace(/\s+/g, " ");
-}
-
-function normalizeFeedbackRating(value) {
-  const parsedValue = parseInt(String(value || "").trim(), 10);
-
-  if (Number.isNaN(parsedValue) || parsedValue < 1 || parsedValue > 5) {
-    return 0;
-  }
-
-  return parsedValue;
 }
 
 function escapeHtml(value) {

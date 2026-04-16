@@ -15,8 +15,8 @@
       <div class="status-box-panel">
         <span id="status-spinner" class="status-spinner" aria-hidden="true"></span>
         <div class="status-box-copy">
-          <p id="status-box-title" class="status-box-title">Pronto para enviar</p>
-          <p id="status-box-text" class="status-box-text">Sua avalia&ccedil;&atilde;o ser&aacute; enviada para a planilha da assessoria.</p>
+          <p id="status-box-title" class="status-box-title">Carregando dados...</p>
+          <p id="status-box-text" class="status-box-text">Aguarde enquanto buscamos o total de avalia&ccedil;&otilde;es e a nota m&eacute;dia.</p>
         </div>
       </div>
     </div>
@@ -44,16 +44,34 @@
     </section>
 
     <section class="panel feedback-hero">
-      <p class="eyebrow">Area 11</p>
+      <p class="eyebrow">&Aacute;rea 11</p>
       <h1>Avalia&ccedil;&atilde;o do Site</h1>
       <p class="hero-text">
-        Queremos ouvir sua experi&ecirc;ncia com o portal. Deixe uma nota, conte o que achou e, se quiser, escreva uma sugest&atilde;o para as pr&oacute;ximas melhorias.
+        Queremos ouvir sua experi&ecirc;ncia com o portal. Responda quatro perguntas com notas de 0 a 5 e, se quiser, deixe uma sugest&atilde;o no final.
       </p>
 
       <div class="hero-highlight feedback-hero-highlight">
         <span class="highlight-label">Simples e r&aacute;pido</span>
         <p>O nome &eacute; opcional. O mais importante aqui &eacute; a sua opini&atilde;o.</p>
       </div>
+    </section>
+
+    <section class="panel feedback-summary-panel">
+      <article class="feedback-summary-bar">
+        <div class="feedback-summary-inline">
+          <span class="feedback-summary-inline-label">Avalia&ccedil;&otilde;es</span>
+          <strong class="feedback-summary-inline-value">(<span id="feedback-total-count">0</span>)</strong>
+        </div>
+
+        <div class="feedback-summary-inline">
+          <span class="feedback-summary-inline-label">Nota</span>
+          <strong class="feedback-summary-inline-value">(<span id="feedback-average-value">0,0</span>)</strong>
+          <div class="feedback-average-stars" aria-hidden="true">
+            <span class="feedback-average-stars-track">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            <span id="feedback-average-stars-fill" class="feedback-average-stars-fill">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          </div>
+        </div>
+      </article>
     </section>
 
     <section class="panel feedback-form-panel">
@@ -63,7 +81,7 @@
             <p class="eyebrow">Formul&aacute;rio</p>
             <h2>Envie sua avalia&ccedil;&atilde;o</h2>
           </div>
-          <span id="feedback-form-status" class="count-badge">Pronto para receber</span>
+          <span id="feedback-form-status" class="count-badge">Carregando resumo</span>
         </div>
 
         <form id="site-feedback-form" novalidate>
@@ -73,15 +91,7 @@
             <datalist id="site-feedback-athlete-suggestions"></datalist>
           </label>
 
-          <div class="ranking-filter-block">
-            <p class="ranking-filter-label">Qual nota voc&ecirc; daria para o portal?</p>
-            <div id="site-feedback-rating-options" class="feedback-rating-grid" role="group" aria-label="Nota geral do portal"></div>
-          </div>
-
-          <label class="field">
-            <span>Como foi sua experi&ecirc;ncia?</span>
-            <textarea id="site-feedback-comment" placeholder="Conte o que achou do portal, se foi f&aacute;cil de usar e o que mais gostou." required></textarea>
-          </label>
+          <div id="site-feedback-question-list" class="feedback-question-list"></div>
 
           <label class="field">
             <span>Sugest&atilde;o de melhoria (opcional)</span>
@@ -100,6 +110,6 @@
 
   <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260416-1"></script>
   <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260416-1"></script>
-  <script src="avaliacao-site.js?v=20260416-2"></script>
+  <script src="avaliacao-site.js?v=20260416-4"></script>
 </body>
 </html>
