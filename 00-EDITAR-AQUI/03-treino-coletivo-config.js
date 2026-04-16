@@ -41,12 +41,19 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Prazo final para decidir se o treino vai acontecer.
     // Se nao atingir o minimo ate este horario, a pagina mostra treino cancelado.
-    decisionDeadlineIso: "2026-04-16T13:45:00-03:00",
+    decisionDeadlineIso: "2026-04-16T16:00:00-03:00",
 
     // Local que aparecera na pagina e na mensagem do Telegram.
     location: "Frente ao CADU",
 
     // Quantidade minima de confirmacoes para o treino ser considerado confirmado.
-    minimumParticipants: 5
+    minimumParticipants: 5,
+
+    // Deixe automatic para usar a regra normal do minimo de atletas.
+    // Troque para cancelled quando precisar cancelar manualmente por clima ou outro motivo.
+    statusMode: "cancelled",
+
+    // Motivo opcional para aparecer no site e no Telegram quando statusMode estiver como cancelled.
+    statusReason: "Condições Climáticas"
   }
 };

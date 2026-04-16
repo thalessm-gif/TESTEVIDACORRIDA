@@ -792,6 +792,8 @@ function Load-CollectiveConfigModel {
     DecisionDeadline = ConvertTo-DateTimeValue -Value (Get-RegexString -Text $content -Pattern 'decisionDeadlineIso:\s*"((?:\\.|[^"\\])*)"' -Default "")
     Location = Get-RegexString -Text $content -Pattern 'location:\s*"((?:\\.|[^"\\])*)"' -Default ""
     MinimumParticipants = Get-RegexInt -Text $content -Pattern 'minimumParticipants:\s*([0-9]+)' -Default 5
+    ManualCancellation = (Get-RegexString -Text $content -Pattern 'statusMode:\s*"((?:\\.|[^"\\])*)"' -Default "automatic") -eq "cancelled"
+    CancellationReason = Get-RegexString -Text $content -Pattern 'statusReason:\s*"((?:\\.|[^"\\])*)"' -Default ""
   }
 }
 
@@ -851,7 +853,14 @@ window.COLLECTIVE_TRAINING_CONFIG = {
     location: "$(Escape-JsString -Value $Model.Location)",
 
     // Quantidade minima de confirmacoes para o treino ser considerado confirmado.
-    minimumParticipants: $($Model.MinimumParticipants)
+    minimumParticipants: $($Model.MinimumParticipants),
+
+    // Deixe automatic para usar a regra normal do minimo de atletas.
+    // Troque para cancelled quando precisar cancelar manualmente por clima ou outro motivo.
+    statusMode: "$(if ($Model.ManualCancellation) { 'cancelled' } else { 'automatic' })",
+
+    // Motivo opcional para aparecer no site e no Telegram quando statusMode estiver como cancelled.
+    statusReason: "$(Escape-JsString -Value $(if ($Model.ManualCancellation) { $Model.CancellationReason } else { '' }))"
   }
 };
 "@
@@ -1625,7 +1634,7 @@ function Build-CollectiveTab {
   $intro.Text = "Edicao do treino coletivo atual. Aqui voce liga ou desliga a pagina e preenche os dados da sessao que vai aparecer no site."
   $panel.Controls.Add($intro)
 
-  $group = New-SectionGroup -Title "Sessao atual" -Left 12 -Top 52 -Width 1080 -Height 360
+  $group = New-SectionGroup -Title "Sessao atual" -Left 12 -Top 52 -Width 1080 -Height 470
   $enabledCheck = Add-LabeledCheckBox -Parent $group -Text "Exibir treino coletivo na home e liberar a pagina" -Left 16 -Top 28 -Width 420
   $sessionIdBox = Add-LabeledTextBox -Parent $group -Label "ID da sessao" -Left 16 -Top 62 -Width 340 -HelpText "Sugestao: treino-coletivo-AAAA-MM-DD-HHMM"
   $generateIdButton = New-ActionButton -Text "Gerar ID" -Width 110
@@ -1638,6 +1647,8 @@ function Build-CollectiveTab {
   $startPicker = Add-LabeledDateTimePicker -Parent $group -Label "Data e horario do treino" -Left 16 -Top 290 -Width 220
   $deadlinePicker = Add-LabeledDateTimePicker -Parent $group -Label "Confirmacao ate" -Left 260 -Top 290 -Width 220
   $minimumNumeric = Add-LabeledNumericUpDown -Parent $group -Label "Minimo de atletas" -Left 504 -Top 290 -Width 140 -Minimum 1 -Maximum 200
+  $manualCancellationCheck = Add-LabeledCheckBox -Parent $group -Text "Cancelar manualmente este treino" -Left 16 -Top 362 -Width 340
+  $cancellationReasonBox = Add-LabeledTextBox -Parent $group -Label "Motivo do cancelamento" -Left 16 -Top 392 -Width 1024 -Multiline -Height 52 -HelpText "Use para clima, seguranca ou qualquer outro motivo. Este texto aparece no site e no Telegram."
 
   $systemNote = New-Object System.Windows.Forms.Label
   $systemNote.Left = 680
@@ -1653,6 +1664,13 @@ function Build-CollectiveTab {
   $reloadButton = New-ActionButton -Text "Recarregar"
   Add-TabFooterButtons -Parent $tabPage -Buttons @($saveButton, $reloadButton) | Out-Null
 
+  $toggleManualCancellationUi = {
+    $cancellationReasonBox.Enabled = $manualCancellationCheck.Checked
+    if (-not $manualCancellationCheck.Checked) {
+      $cancellationReasonBox.Text = ""
+    }
+  }.GetNewClosure()
+
   $loadControls = {
     $state.Loading = $true
     $state.Model = Load-CollectiveConfigModel
@@ -1664,6 +1682,9 @@ function Build-CollectiveTab {
     $startPicker.Value = $state.Model.StartsAt
     $deadlinePicker.Value = $state.Model.DecisionDeadline
     $minimumNumeric.Value = [decimal]$state.Model.MinimumParticipants
+    $manualCancellationCheck.Checked = $state.Model.ManualCancellation
+    $cancellationReasonBox.Text = $state.Model.CancellationReason
+    & $toggleManualCancellationUi
     $state.Loading = $false
     Set-TabDirty -State $state -Dirty $false
     Set-EditorStatus -Message "Configuracao do treino coletivo carregada."
@@ -1679,6 +1700,8 @@ function Build-CollectiveTab {
       $state.Model.StartsAt = $startPicker.Value
       $state.Model.DecisionDeadline = $deadlinePicker.Value
       $state.Model.MinimumParticipants = [int]$minimumNumeric.Value
+      $state.Model.ManualCancellation = $manualCancellationCheck.Checked
+      $state.Model.CancellationReason = if ($manualCancellationCheck.Checked) { $cancellationReasonBox.Text.Trim() } else { "" }
 
       if ([string]::IsNullOrWhiteSpace($state.Model.SessionId)) {
         throw "Informe o ID da sessao."
@@ -1722,12 +1745,15 @@ function Build-CollectiveTab {
     $descriptionBox,
     $startPicker,
     $deadlinePicker,
-    $minimumNumeric
+    $minimumNumeric,
+    $manualCancellationCheck,
+    $cancellationReasonBox
   )
 
   $generateIdButton.Add_Click({
     $sessionIdBox.Text = ("treino-coletivo-{0}" -f $startPicker.Value.ToString("yyyy-MM-dd-HHmm"))
   }.GetNewClosure())
+  $manualCancellationCheck.Add_CheckedChanged({ & $toggleManualCancellationUi }.GetNewClosure())
 
   $saveButton.Add_Click({ [void](& $state.SaveAction) }.GetNewClosure())
   $reloadButton.Add_Click({ & $state.ReloadAction }.GetNewClosure())
