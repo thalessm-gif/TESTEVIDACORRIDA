@@ -10,7 +10,7 @@ const collectiveSharedConfig = collectiveSystemConfig.collectiveTraining || {};
 window.COLLECTIVE_TRAINING_CONFIG = {
   // Coloque true para exibir o card na home e liberar a pagina do treino coletivo.
   // Coloque false quando nao houver treino aberto.
-  enabled: false,
+  enabled: true,
 
   // A URL principal do Apps Script fica em 01-sistema-config.js.
   googleScriptUrl: collectiveSharedGoogleScriptUrl,
@@ -54,6 +54,6 @@ window.COLLECTIVE_TRAINING_CONFIG = {
     statusMode: "cancelled",
 
     // Motivo opcional para aparecer no site e no Telegram quando statusMode estiver como cancelled.
-    statusReason: "Condições Climáticas"
+    statusReason: "EM FASE DE TESTES"
   }
 };
