@@ -369,8 +369,19 @@ async function loadCollectiveEntriesFromGoogleSheets(options = {}) {
 
   try {
     const separator = COLLECTIVE_GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
+    const sessionPayload = buildCollectiveSessionPayload();
+    const queryParts = [
+      `action=${encodeURIComponent(COLLECTIVE_LIST_ACTION)}`,
+      `sessionId=${encodeURIComponent(getCollectiveSessionId())}`,
+      `sessionTitle=${encodeURIComponent(sessionPayload.title || "")}`,
+      `startsAtIso=${encodeURIComponent(sessionPayload.startsAtIso || "")}`,
+      `decisionDeadlineIso=${encodeURIComponent(sessionPayload.decisionDeadlineIso || "")}`,
+      `location=${encodeURIComponent(sessionPayload.location || "")}`,
+      `minimumParticipants=${encodeURIComponent(String(sessionPayload.minimumParticipants || ""))}`,
+      `ts=${Date.now()}`
+    ];
     const response = await fetch(
-      `${COLLECTIVE_GOOGLE_SCRIPT_URL}${separator}action=${encodeURIComponent(COLLECTIVE_LIST_ACTION)}&sessionId=${encodeURIComponent(getCollectiveSessionId())}&ts=${Date.now()}`
+      `${COLLECTIVE_GOOGLE_SCRIPT_URL}${separator}${queryParts.join("&")}`
     );
 
     if (!response.ok) {
