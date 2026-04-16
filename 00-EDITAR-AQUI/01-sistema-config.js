@@ -29,5 +29,13 @@ window.VIDA_CORRIDA_SYSTEM_CONFIG = Object.freeze({
     googleSheetsOnlyMode: true,
     listAction: "collective-training-list",
     resource: "collectiveTraining"
+  }),
+
+  siteFeedback: Object.freeze({
+    // true = usa somente as avaliacoes online da planilha
+    // false = permite funcionamento local ate o Apps Script ser publicado
+    googleSheetsOnlyMode: false,
+    listAction: "site-feedback-list",
+    resource: "siteFeedback"
   })
 });

@@ -10,7 +10,7 @@ const collectiveSharedConfig = collectiveSystemConfig.collectiveTraining || {};
 window.COLLECTIVE_TRAINING_CONFIG = {
   // Coloque true para exibir o card na home e liberar a pagina do treino coletivo.
   // Coloque false quando nao houver treino aberto.
-  enabled: true,
+  enabled: false,
 
   // A URL principal do Apps Script fica em 01-sistema-config.js.
   googleScriptUrl: collectiveSharedGoogleScriptUrl,
