@@ -31,6 +31,14 @@ window.VIDA_CORRIDA_SYSTEM_CONFIG = Object.freeze({
     resource: "collectiveTraining"
   }),
 
+  raceCalendar: Object.freeze({
+    // true = usa somente os dados online da planilha
+    // false = permite manter a agenda sem os totais
+    googleSheetsOnlyMode: true,
+    listAction: "calendar-race-interest-summary-list",
+    resource: "calendarRaceInterest"
+  }),
+
   siteFeedback: Object.freeze({
     // true = usa somente as avaliacoes online da planilha
     // false = permite funcionamento local ate o Apps Script ser publicado
