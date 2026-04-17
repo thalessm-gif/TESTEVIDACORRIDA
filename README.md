@@ -17,6 +17,7 @@ Arquivos principais:
 - `05-calendario-provas.js`: provas do calendario
 - `06-lista-atletas.js`: nomes usados nas sugestoes
 - `07-avatares.js`: mapa de fotos dos atletas
+- `08-versao-publicacao.json`: token unico de publicacao/cache aplicado pelo editor nas paginas HTML
 - `LEIA-ME-PRIMEIRO.md`: guia rapido
 
 Regra pratica:
@@ -76,6 +77,16 @@ Regra pratica:
 1. Abra `00-EDITAR-AQUI/07-avatares.js`
 2. Ajuste os campos `byId`, `byEmail` ou `byName`
 3. Os arquivos de imagem continuam em `assets/avatars/`
+
+### Atualizar o token de publicacao
+
+1. Abra `00-EDITAR-AQUI/ABRIR-EDITOR-DO-SITE.cmd`
+2. Entre na aba `Publicacao`
+3. Clique em `Usar data e hora atual`
+4. Clique em `Salvar arquivo`
+5. Publique/atualize o site
+
+Use esse passo sempre que mexer em HTML, CSS ou JS do site. Se a mudanca for so na planilha ou no Apps Script, normalmente nao precisa trocar o token.
 
 ## Apps Script
 
