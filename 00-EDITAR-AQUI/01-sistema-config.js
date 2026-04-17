@@ -47,6 +47,18 @@ window.VIDA_CORRIDA_SYSTEM_CONFIG = Object.freeze({
     ])
   }),
 
+  athleteGuide: Object.freeze({
+    // Cole aqui o link do grupo do Strava da assessoria.
+    stravaGroupUrl: "https://www.strava.com/clubs/573095",
+
+    // Caminho do PDF publicado no site ou link externo.
+    // Exemplo local: assets/guia-atleta/cartilha-assessoria.pdf
+    handbookUrl: "assets/guia-atleta/cartilha-vc.pdf",
+
+    // Opcional: link para WhatsApp, Treinus ou formulario de feedback.
+    feedbackUrl: ""
+  }),
+
   siteFeedback: Object.freeze({
     // true = usa somente as avaliacoes online da planilha
     // false = permite funcionamento local ate o Apps Script ser publicado

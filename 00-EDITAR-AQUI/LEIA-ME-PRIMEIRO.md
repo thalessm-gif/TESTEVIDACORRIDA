@@ -13,7 +13,7 @@ O editor cria backups automaticos na pasta `_backups`.
 ## Ordem mais comum de uso
 
 1. `01-sistema-config.js`
-Use para trocar a URL principal do Apps Script e os modos online/local.
+Use para trocar a URL principal do Apps Script, os modos online/local e os links do Guia do Atleta.
 
 2. `02-acesso-site.js`
 Use para trancar ou reabrir a area de retirada de kits.
@@ -32,6 +32,18 @@ Use para manter a lista de nomes usada nas sugestoes do site. No editor, essa ab
 
 7. `07-avatares.js`
 Use para ligar nomes/fotos dos atletas.
+
+8. `08-versao-publicacao.json`
+Use junto da aba `Publicacao` do editor para trocar o token de cache/publicacao das paginas HTML.
+
+## Antes de publicar o site
+
+1. Se voce mexeu em HTML, CSS ou JS do site, abra a aba `Publicacao` no editor
+2. Clique em `Usar data e hora atual`
+3. Clique em `Salvar arquivo`
+4. Depois publique/atualize o site normalmente
+
+Se a mudanca foi so na planilha ou no Apps Script, esse passo normalmente nao e necessario.
 
 ## Regra pratica
 
