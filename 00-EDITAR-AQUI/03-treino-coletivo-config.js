@@ -30,7 +30,7 @@ window.COLLECTIVE_TRAINING_CONFIG = {
     id: "treino-coletivo-2026-04-19-0730",
 
     // Titulo exibido na pagina e usado no resumo enviado ao Telegram.
-    title: "Cassino - Ciclovia",
+    title: "Em fase de Testes",
 
     // Texto curto de apoio exibido abaixo do titulo da pagina.
     description: "Treinar é bom, mas treinar em grupo é melhor ainda.",
@@ -44,7 +44,7 @@ window.COLLECTIVE_TRAINING_CONFIG = {
     decisionDeadlineIso: "2026-04-18T20:00:00-03:00",
 
     // Local que aparecera na pagina e na mensagem do Telegram.
-    location: "Frente ao CADU",
+    location: "Testes",
 
     // Quantidade minima de confirmacoes para o treino ser considerado confirmado.
     minimumParticipants: 5,
