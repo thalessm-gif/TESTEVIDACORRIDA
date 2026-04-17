@@ -36,7 +36,15 @@ window.VIDA_CORRIDA_SYSTEM_CONFIG = Object.freeze({
     // false = permite manter a agenda sem os totais
     googleSheetsOnlyMode: true,
     listAction: "calendar-race-interest-summary-list",
-    resource: "calendarRaceInterest"
+    resource: "calendarRaceInterest",
+    trainers: Object.freeze([
+      "Paulo Paz",
+      "Jonathan Saraiva",
+      "Renan das Neves",
+      "Michele Schivittez Terra",
+      "Vitor Fick Camponogara",
+      "Gian Piazza"
+    ])
   }),
 
   siteFeedback: Object.freeze({
