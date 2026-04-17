@@ -10,7 +10,7 @@ Se quiser editar sem abrir os arquivos manualmente, use [ABRIR-EDITOR-DO-SITE.cm
 
 Arquivos principais:
 
-- `01-sistema-config.js`: URL principal do Apps Script e modos online/local
+- `01-sistema-config.js`: URL principal do Apps Script, modos online/local e links do Guia do Atleta
 - `02-acesso-site.js`: trancar ou liberar a retirada de kits
 - `03-treino-coletivo-config.js`: abrir/fechar treino coletivo, data, horario, local e minimo
 - `04-planilhas-consulta.js`: planilha das paginas de consulta
@@ -40,6 +40,13 @@ Regra pratica:
 1. Abra `00-EDITAR-AQUI/01-sistema-config.js`
 2. Atualize `googleAppsScript.url`
 3. Salve e publique/atualize o site
+
+### Atualizar links do Guia do Atleta
+
+1. Abra `00-EDITAR-AQUI/01-sistema-config.js`
+2. Preencha `athleteGuide.stravaGroupUrl`, `athleteGuide.handbookUrl` e, se quiser, `athleteGuide.feedbackUrl`
+3. Se o PDF ficar dentro do projeto, coloque o arquivo em `assets/guia-atleta/`
+4. Salve e publique/atualize o site
 
 ### Abrir ou fechar treino coletivo
 
