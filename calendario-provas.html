@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260417-001100">
+  <link rel="stylesheet" href="styles.css?v=20260417-085800">
 </head>
 <body>
   <main class="page">
@@ -88,9 +88,9 @@
       <h2 id="calendar-interest-modal-title">Atualize sua situa&ccedil;&atilde;o na prova</h2>
       <p id="calendar-interest-modal-race" class="calendar-interest-modal-race">Selecione uma prova para continuar.</p>
 
-      <div class="calendar-interest-summary-panel">
+        <div class="calendar-interest-summary-panel">
         <p class="calendar-interest-summary-copy">
-          Escolha se voc&ecirc; ainda tem interesse ou se j&aacute; garantiu a inscri&ccedil;&atilde;o. O card da prova mostra a contagem automaticamente para toda a equipe.
+          Escolha se voc&ecirc; ainda tem interesse ou se j&aacute; garantiu a inscri&ccedil;&atilde;o. Depois informe nome, dist&acirc;ncia e o treinador(a) respons&aacute;vel para registrar a resposta corretamente.
         </p>
         <div id="calendar-interest-modal-chips" class="calendar-interest-chip-list"></div>
       </div>
@@ -140,6 +140,13 @@
           <datalist id="calendar-interest-distance-suggestions"></datalist>
         </label>
 
+        <label class="field">
+          <span>Treinador(a)</span>
+          <select id="calendar-interest-trainer" required>
+            <option value="">Selecione o treinador(a)</option>
+          </select>
+        </label>
+
         <div class="actions">
           <button id="calendar-interest-submit" type="submit" class="primary-button">Salvar resposta</button>
         </div>
@@ -149,9 +156,9 @@
     </div>
   </div>
 
-  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260417-001100"></script>
-  <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260417-001100"></script>
-  <script src="00-EDITAR-AQUI/05-calendario-provas.js?v=20260417-001100"></script>
-  <script src="calendar.js?v=20260417-001100"></script>
+  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260417-085800"></script>
+  <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260417-085800"></script>
+  <script src="00-EDITAR-AQUI/05-calendario-provas.js?v=20260417-085800"></script>
+  <script src="calendar.js?v=20260417-085800"></script>
 </body>
 </html>

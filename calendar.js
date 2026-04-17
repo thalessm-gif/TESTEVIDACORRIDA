@@ -18,6 +18,18 @@ const CALENDAR_INTEREST_RESOURCE = String(
 const CALENDAR_SUGGESTED_NAMES = Array.isArray(window.KIT_ATHLETE_NAMES)
   ? window.KIT_ATHLETE_NAMES
   : [];
+const DEFAULT_CALENDAR_TRAINERS = [
+  "Paulo Paz",
+  "Jonathan Saraiva",
+  "Renan das Neves",
+  "Michele Schivittez Terra",
+  "Vitor Fick Camponogara",
+  "Gian Piazza"
+];
+const CALENDAR_TRAINERS =
+  Array.isArray(calendarFeatureConfig.trainers) && calendarFeatureConfig.trainers.length
+    ? calendarFeatureConfig.trainers
+    : DEFAULT_CALENDAR_TRAINERS;
 
 const statusElement = document.getElementById("calendar-status");
 const raceListElement = document.getElementById("calendar-race-list");
@@ -32,6 +44,7 @@ const calendarInterestRaceLabel = document.getElementById("calendar-interest-mod
 const calendarInterestModalChips = document.getElementById("calendar-interest-modal-chips");
 const calendarInterestAthleteNameInput = document.getElementById("calendar-interest-athlete-name");
 const calendarInterestDistanceInput = document.getElementById("calendar-interest-distance");
+const calendarInterestTrainerSelect = document.getElementById("calendar-interest-trainer");
 const calendarInterestAthleteSuggestions = document.getElementById("calendar-interest-athlete-suggestions");
 const calendarInterestDistanceSuggestions = document.getElementById("calendar-interest-distance-suggestions");
 const calendarInterestFormMessage = document.getElementById("calendar-interest-form-message");
@@ -55,6 +68,7 @@ if (raceListElement && statusElement) {
 async function initializeCalendarPage() {
   calendarEntries = normalizeEntries(RACE_CALENDAR_ENTRIES);
   calendarRaceAliasMap = buildCalendarRaceAliasMap(calendarEntries);
+  updateCalendarTrainerOptions();
   updateAthleteSuggestions();
   attachCalendarEventListeners();
   renderRaceList(calendarEntries);
@@ -390,6 +404,9 @@ function openCalendarInterestModal(raceId, responseType) {
   updateCalendarModalSummary(entry.id);
 
   const preservedName = normalizeCalendarText(calendarInterestAthleteNameInput && calendarInterestAthleteNameInput.value);
+  const preservedTrainer = normalizeCalendarTrainerValue(
+    calendarInterestTrainerSelect && calendarInterestTrainerSelect.value
+  );
   calendarInterestForm.reset();
 
   if (calendarInterestAthleteNameInput) {
@@ -398,6 +415,10 @@ function openCalendarInterestModal(raceId, responseType) {
 
   if (calendarInterestDistanceInput) {
     calendarInterestDistanceInput.value = getDefaultDistanceValue(entry);
+  }
+
+  if (calendarInterestTrainerSelect) {
+    calendarInterestTrainerSelect.value = preservedTrainer;
   }
 
   calendarInterestRaceLabel.textContent = buildCalendarModalRaceLabel(entry);
@@ -463,6 +484,7 @@ async function handleCalendarInterestSubmit(event) {
 
   const fullName = normalizeCalendarText(calendarInterestAthleteNameInput && calendarInterestAthleteNameInput.value);
   const distance = normalizeCalendarText(calendarInterestDistanceInput && calendarInterestDistanceInput.value);
+  const trainerName = normalizeCalendarTrainerValue(calendarInterestTrainerSelect && calendarInterestTrainerSelect.value);
 
   if (!fullName) {
     showCalendarInterestMessage("Digite o nome do atleta.", true);
@@ -480,6 +502,14 @@ async function handleCalendarInterestSubmit(event) {
     return;
   }
 
+  if (!trainerName) {
+    showCalendarInterestMessage("Selecione o treinador(a) respons\u00e1vel.", true);
+    if (calendarInterestTrainerSelect) {
+      calendarInterestTrainerSelect.focus();
+    }
+    return;
+  }
+
   setCalendarInterestFormDisabled(true);
   showStatus({
     title: "Salvando resposta...",
@@ -493,6 +523,7 @@ async function handleCalendarInterestSubmit(event) {
       responseType: calendarSelectedResponseType,
       fullName,
       distance,
+      trainerName,
       race: {
         id: race.id,
         legacyIds: race.legacyIds,
@@ -717,6 +748,22 @@ function updateAthleteSuggestions() {
     .join("");
 }
 
+function updateCalendarTrainerOptions() {
+  if (!calendarInterestTrainerSelect) {
+    return;
+  }
+
+  const trainerOptions = getCalendarTrainerOptions();
+  const placeholderLabel = trainerOptions.length
+    ? "Selecione o treinador(a)"
+    : "Nenhum treinador(a) cadastrado";
+
+  calendarInterestTrainerSelect.innerHTML = [
+    `<option value="">${escapeHtml(placeholderLabel)}</option>`,
+    ...trainerOptions.map((trainer) => `<option value="${escapeHtmlAttribute(trainer)}">${escapeHtml(trainer)}</option>`)
+  ].join("");
+}
+
 function updateCalendarDistanceSuggestions(entry) {
   if (!calendarInterestDistanceSuggestions) {
     return;
@@ -734,6 +781,10 @@ function setCalendarInterestFormDisabled(disabled) {
 
   if (calendarInterestDistanceInput) {
     calendarInterestDistanceInput.disabled = disabled;
+  }
+
+  if (calendarInterestTrainerSelect) {
+    calendarInterestTrainerSelect.disabled = disabled;
   }
 
   if (calendarInterestSubmitButton) {
@@ -789,6 +840,23 @@ function getDefaultDistanceValue(entry) {
   }
 
   return entry.distances.length === 1 ? entry.distances[0] : "";
+}
+
+function getCalendarTrainerOptions() {
+  return CALENDAR_TRAINERS
+    .map((trainer) => normalizeCalendarText(trainer))
+    .filter(Boolean)
+    .filter((trainer, index, list) => list.indexOf(trainer) === index);
+}
+
+function normalizeCalendarTrainerValue(value) {
+  const safeValue = normalizeCalendarText(value);
+
+  if (!safeValue) {
+    return "";
+  }
+
+  return getCalendarTrainerOptions().includes(safeValue) ? safeValue : "";
 }
 
 function buildCalendarModalRaceLabel(entry) {
