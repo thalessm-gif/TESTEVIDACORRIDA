@@ -7,16 +7,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260417-000300">
+  <link rel="stylesheet" href="styles.css?v=20260417-001100">
 </head>
 <body>
   <main class="page">
-    <nav class="top-nav" aria-label="NavegaÃ§Ã£o principal">
-      <a href="index.html" class="nav-link">PÃ¡gina inicial</a>
+    <nav class="top-nav" aria-label="Navegação principal">
+      <a href="index.html" class="nav-link">Página inicial</a>
       <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
       <a href="momento-rp.html" class="nav-link">Momento RP</a>
       <a href="ranking-tempos-rp.html" class="nav-link">Ranking Performance</a>
-      <a href="calendario-provas.html" class="nav-link">CalendÃ¡rio de Provas</a>
+      <a href="calendario-provas.html" class="nav-link">Calendário de Provas</a>
       <a href="treinadores.html" class="nav-link">Treinadores</a>
       <a href="calculadora-vdot.html" class="nav-link">Calculadora VDOT</a>
     </nav>
@@ -32,10 +32,10 @@
     </section>
 
     <section class="panel vdot-hero">
-      <p class="eyebrow">Ãrea 10</p>
+      <p class="eyebrow">Área 10</p>
       <h1>Calculadora VDOT</h1>
       <p class="hero-text">
-        Use um tempo recente de prova para estimar o seu VDOT, visualizar ritmos de treino e comparar equivalÃªncias para outras distÃ¢ncias.
+        Use um tempo recente de prova para estimar o seu VDOT, visualizar ritmos de treino e comparar equivalências para outras distâncias.
       </p>
     </section>
 
@@ -45,13 +45,13 @@
           <p class="eyebrow">Entrada</p>
           <h2>Informe uma prova recente</h2>
         </div>
-        <span class="count-badge">Atualize apÃ³s cada nova prova</span>
+        <span class="count-badge">Atualize após cada nova prova</span>
       </div>
 
       <form id="vdot-form" novalidate>
         <div class="rp-form-grid vdot-form-grid">
           <label class="field">
-            <span>DistÃ¢ncia da prova</span>
+            <span>Distância da prova</span>
             <select id="vdot-race-distance" required></select>
           </label>
 
@@ -64,7 +64,7 @@
               <span class="rp-time-separator" aria-hidden="true">:</span>
               <input id="vdot-seconds" class="rp-time-part" type="text" inputmode="numeric" maxlength="2" placeholder="SS" aria-label="Segundos da prova" required>
             </div>
-            <small class="field-help">Exemplo: 10 km em 48:00 gera uma primeira referÃªncia bem Ãºtil.</small>
+            <small class="field-help">Exemplo: 10 km em 48:00 gera uma primeira referência bem útil.</small>
           </label>
         </div>
 
@@ -81,9 +81,9 @@
       <div class="overview-header">
         <div>
           <p class="eyebrow">Resumo</p>
-          <h2>Leitura rÃ¡pida do resultado</h2>
+          <h2>Leitura rápida do resultado</h2>
         </div>
-        <span id="vdot-status" class="count-badge">Aguardando cÃ¡lculo</span>
+        <span id="vdot-status" class="count-badge">Aguardando cálculo</span>
       </div>
 
       <div id="vdot-summary-grid" class="rp-ranking-summary-grid">
@@ -92,7 +92,7 @@
           <span class="rp-ranking-summary-value">--</span>
         </article>
         <article class="rp-ranking-summary-card">
-          <span class="rp-ranking-summary-label">Pace mÃ©dio</span>
+          <span class="rp-ranking-summary-label">Pace médio</span>
           <span class="rp-ranking-summary-value">--</span>
         </article>
         <article class="rp-ranking-summary-card">
@@ -102,7 +102,7 @@
       </div>
 
       <p id="vdot-summary-note" class="rp-ranking-source-note">
-        Os ritmos mostrados aqui servem como referÃªncia de treino. Calor, altimetria, fadiga e fase da preparaÃ§Ã£o podem pedir ajustes no dia.
+        Os ritmos mostrados aqui servem como referência de treino. Calor, altimetria, fadiga e fase da preparação podem pedir ajustes no dia.
       </p>
     </section>
 
@@ -124,13 +124,13 @@
     <section class="panel table-panel vdot-equivalent-panel">
       <div class="overview-header">
         <div>
-          <p class="eyebrow">EquivalÃªncias</p>
+          <p class="eyebrow">Equivalências</p>
           <h2>Tempos estimados para outras provas</h2>
         </div>
       </div>
 
       <p class="rp-ranking-source-note">
-        As previsÃµes de 1 km, 800 m, 400 m e 200 m servem como referÃªncia rÃ¡pida e tendem a ser menos precisas do que as distÃ¢ncias mais longas.
+        As previsões de 1 km, 800 m, 400 m e 200 m servem como referência rápida e tendem a ser menos precisas do que as distâncias mais longas.
       </p>
 
       <div class="table-wrapper ranking-table-wrapper">
@@ -139,12 +139,12 @@
             <tr>
               <th>Prova</th>
               <th>Tempo equivalente</th>
-              <th>Pace mÃ©dio</th>
+              <th>Pace médio</th>
             </tr>
           </thead>
           <tbody id="vdot-equivalent-table-body">
             <tr>
-              <td colspan="3">Preencha uma prova para ver as equivalÃªncias.</td>
+              <td colspan="3">Preencha uma prova para ver as equivalências.</td>
             </tr>
           </tbody>
         </table>
@@ -152,7 +152,7 @@
 
       <div id="vdot-equivalent-card-list" class="ranking-card-list">
         <article class="ranking-athlete-card">
-          <p class="ranking-card-empty">Preencha uma prova para ver as equivalÃªncias.</p>
+          <p class="ranking-card-empty">Preencha uma prova para ver as equivalências.</p>
         </article>
       </div>
     </section>
@@ -167,29 +167,29 @@
 
       <div class="vdot-info-grid">
         <article class="vdot-info-card">
-          <h3>O que Ã© VDOT?</h3>
+          <h3>O que é VDOT?</h3>
           <p>
-            VDOT Ã© um indicador de performance criado para transformar um tempo de prova em uma referÃªncia prÃ¡tica de condicionamento atual.
+            VDOT é um indicador de performance criado para transformar um tempo de prova em uma referência prática de condicionamento atual.
           </p>
         </article>
 
         <article class="vdot-info-card">
           <h3>Quando vale recalcular?</h3>
           <p>
-            Sempre que vocÃª fizer uma prova forte, um teste controlado ou perceber uma mudanÃ§a clara no nÃ­vel de treino. O nÃºmero precisa acompanhar o momento atual.
+            Sempre que você fizer uma prova forte, um teste controlado ou perceber uma mudança clara no nível de treino. O número precisa acompanhar o momento atual.
           </p>
         </article>
 
         <article class="vdot-info-card">
           <h3>Como usar no treino?</h3>
           <p>
-            Use os ritmos como norte, nÃ£o como algema. Em dia quente, cansado ou com muito sobe e desce, o esforÃ§o percebido continua mandando.
+            Use os ritmos como norte, não como algema. Em dia quente, cansado ou com muito sobe e desce, o esforço percebido continua mandando.
           </p>
         </article>
       </div>
     </section>
   </main>
 
-  <script src="vdot-calculator.js?v=20260417-000300"></script>
+  <script src="vdot-calculator.js?v=20260417-001100"></script>
 </body>
 </html>
