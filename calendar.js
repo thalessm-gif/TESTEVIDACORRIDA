@@ -42,6 +42,7 @@ const calendarInterestTypeButtons = Array.from(
 
 let calendarEntries = [];
 let calendarRaceSummaryById = new Map();
+let calendarRaceAliasMap = new Map();
 let calendarSelectedRaceId = "";
 let calendarSelectedResponseType = "interested";
 let statusHideTimeoutId = null;
@@ -53,6 +54,7 @@ if (raceListElement && statusElement) {
 
 async function initializeCalendarPage() {
   calendarEntries = normalizeEntries(RACE_CALENDAR_ENTRIES);
+  calendarRaceAliasMap = buildCalendarRaceAliasMap(calendarEntries);
   updateAthleteSuggestions();
   attachCalendarEventListeners();
   renderRaceList(calendarEntries);
@@ -135,20 +137,34 @@ function normalizeEntries(entries) {
     .filter(Boolean)
     .map((entry, index) => {
       const normalizedDate = normalizeCalendarDateValue(entry.date);
+      const normalizedTitle = normalizeCalendarText(entry.title);
+      const normalizedLocation = normalizeCalendarText(entry.location);
+      const generatedId = buildGeneratedCalendarRaceId(
+        {
+          date: normalizedDate,
+          title: normalizedTitle,
+          location: normalizedLocation
+        },
+        index
+      );
+      const entryId = buildCalendarRaceId(entry, index, generatedId);
+      const normalizedEndDate = normalizeCalendarEndDateValue(normalizedDate, entry.endDate);
 
       return {
-        id: buildCalendarRaceId(entry, index),
-        title: normalizeCalendarText(entry.title),
+        id: entryId,
+        legacyIds: normalizeCalendarLegacyIds(entry.legacyIds, generatedId, entryId),
+        title: normalizedTitle,
         date: normalizedDate,
+        endDate: normalizedEndDate,
         time: normalizeCalendarTime(entry.time),
-        location: normalizeCalendarText(entry.location),
+        location: normalizedLocation,
         distances: normalizeCalendarDistances(entry.distances),
         circuito: normalizeCalendarText(entry.circuito).toLowerCase(),
         signupUrl: normalizeCalendarUrl(entry.signupUrl),
         signupLabel: normalizeCalendarText(entry.signupLabel),
         notes: normalizeCalendarText(entry.notes),
         isCircuit: ["sim", "true", "1", "yes"].includes(normalizeCalendarText(entry.circuito).toLowerCase()),
-        isFinished: isCalendarEventFinished(normalizedDate)
+        isFinished: isCalendarEventFinished(normalizedDate, normalizedEndDate)
       };
     })
     .filter((entry) => entry.title)
@@ -275,7 +291,7 @@ function renderRaceCard(entry) {
       <div class="calendar-race-summary">
         <div class="calendar-race-meta-item">
           <span class="calendar-race-meta-label">Data</span>
-          <strong>${escapeHtml(formatDate(entry.date))}</strong>
+          <strong>${escapeHtml(formatDate(entry.date, entry.endDate))}</strong>
         </div>
 
         <div class="calendar-race-meta-item">
@@ -479,6 +495,7 @@ async function handleCalendarInterestSubmit(event) {
       distance,
       race: {
         id: race.id,
+        legacyIds: race.legacyIds,
         title: race.title,
         date: race.date,
         time: race.time,
@@ -629,7 +646,16 @@ function applyCalendarSummary(entries) {
       return;
     }
 
-    calendarRaceSummaryById.set(entry.raceId, entry);
+    const canonicalRaceId = resolveCalendarRaceId(entry.raceId);
+    const existingSummary = calendarRaceSummaryById.get(canonicalRaceId) || {
+      raceId: canonicalRaceId,
+      interestedCount: 0,
+      registeredCount: 0
+    };
+
+    existingSummary.interestedCount += normalizeCount(entry.interestedCount);
+    existingSummary.registeredCount += normalizeCount(entry.registeredCount);
+    calendarRaceSummaryById.set(canonicalRaceId, existingSummary);
   });
 
   if (calendarSelectedRaceId) {
@@ -753,7 +779,8 @@ function updateCalendarStatus() {
 }
 
 function getCalendarEntryById(raceId) {
-  return calendarEntries.find((entry) => entry.id === raceId) || null;
+  const resolvedRaceId = resolveCalendarRaceId(raceId);
+  return calendarEntries.find((entry) => entry.id === resolvedRaceId) || null;
 }
 
 function getDefaultDistanceValue(entry) {
@@ -767,7 +794,7 @@ function getDefaultDistanceValue(entry) {
 function buildCalendarModalRaceLabel(entry) {
   return [
     entry.title,
-    formatDate(entry.date),
+    formatDate(entry.date, entry.endDate),
     entry.time || "Hor\u00e1rio a confirmar",
     entry.location || "Local a confirmar"
   ]
@@ -779,13 +806,22 @@ function isCalendarGoogleScriptConfigured() {
   return Boolean(CALENDAR_GOOGLE_SCRIPT_URL);
 }
 
-function formatDate(value) {
-  const parsedDate = parseCalendarDate(value);
-  if (!parsedDate) {
+function formatDate(value, endValue = "") {
+  const parsedStartDate = parseCalendarDate(value);
+  if (!parsedStartDate) {
     return "Data a confirmar";
   }
 
-  return parsedDate.toLocaleDateString("pt-BR", {
+  const parsedEndDate = parseCalendarDate(endValue);
+  if (!parsedEndDate || parsedEndDate.getTime() === parsedStartDate.getTime()) {
+    return formatSingleCalendarDate(parsedStartDate);
+  }
+
+  return `${formatSingleCalendarDate(parsedStartDate)} a ${formatSingleCalendarDate(parsedEndDate)}`;
+}
+
+function formatSingleCalendarDate(value) {
+  return value.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric"
@@ -847,8 +883,8 @@ function parseCalendarDate(value) {
   return parsedDate;
 }
 
-function isCalendarEventFinished(value) {
-  const eventTime = parseDateValue(value);
+function isCalendarEventFinished(value, endValue = "") {
+  const eventTime = parseDateValue(endValue || value);
   if (!Number.isFinite(eventTime) || eventTime === Number.MAX_SAFE_INTEGER) {
     return false;
   }
@@ -858,12 +894,16 @@ function isCalendarEventFinished(value) {
   return eventTime < todayStart;
 }
 
-function buildCalendarRaceId(entry, index) {
+function buildCalendarRaceId(entry, index, generatedId = "") {
   const explicitId = normalizeCalendarText(entry && entry.id);
   if (explicitId) {
     return explicitId;
   }
 
+  return generatedId || `race-${index + 1}`;
+}
+
+function buildGeneratedCalendarRaceId(entry, index) {
   const parts = [
     normalizeCalendarDateValue(entry && entry.date),
     normalizeCalendarText(entry && entry.title),
@@ -877,6 +917,63 @@ function buildCalendarRaceId(entry, index) {
     .join("-");
 
   return generatedId || `race-${index + 1}`;
+}
+
+function normalizeCalendarEndDateValue(startValue, endValue) {
+  const normalizedEndValue = normalizeCalendarDateValue(endValue);
+  const parsedStartDate = parseCalendarDate(startValue);
+  const parsedEndDate = parseCalendarDate(normalizedEndValue);
+
+  if (!parsedEndDate) {
+    return "";
+  }
+
+  if (parsedStartDate && parsedEndDate.getTime() < parsedStartDate.getTime()) {
+    return startValue || "";
+  }
+
+  return normalizedEndValue;
+}
+
+function normalizeCalendarLegacyIds(value, generatedId, currentId) {
+  const rawValues = [];
+
+  if (generatedId) {
+    rawValues.push(generatedId);
+  }
+
+  if (Array.isArray(value)) {
+    rawValues.push(...value);
+  } else if (value) {
+    rawValues.push(value);
+  }
+
+  return rawValues
+    .map((entry) => normalizeCalendarText(entry))
+    .filter(Boolean)
+    .filter((entry, index, list) => list.indexOf(entry) === index)
+    .filter((entry) => entry !== currentId);
+}
+
+function buildCalendarRaceAliasMap(entries) {
+  const aliasMap = new Map();
+
+  entries.forEach((entry) => {
+    aliasMap.set(entry.id, entry.id);
+
+    (entry.legacyIds || []).forEach((aliasId) => {
+      if (aliasId && !aliasMap.has(aliasId)) {
+        aliasMap.set(aliasId, entry.id);
+      }
+    });
+  });
+
+  return aliasMap;
+}
+
+function resolveCalendarRaceId(raceId) {
+  const normalizedRaceId = normalizeCalendarText(raceId);
+  return calendarRaceAliasMap.get(normalizedRaceId) || normalizedRaceId;
 }
 
 function normalizeCalendarDateValue(value) {
