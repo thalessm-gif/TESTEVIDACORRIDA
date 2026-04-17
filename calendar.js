@@ -64,7 +64,7 @@ async function initializeCalendarPage() {
 
   if (!isCalendarGoogleScriptConfigured()) {
     showStatus({
-      title: "Participacao offline",
+      title: "Participa\u00e7\u00e3o offline",
       text: "Configure o Apps Script para salvar interessados e inscritos por prova.",
       tone: "error",
       hideAfterMs: 4500
@@ -88,7 +88,7 @@ async function initializeCalendarPage() {
     console.error("Erro ao carregar o resumo das provas:", error);
     showStatus({
       title: "Falha ao carregar respostas",
-      text: "Nao foi possivel atualizar os totais agora. O calendario continua disponivel.",
+      text: "N\u00e3o foi poss\u00edvel atualizar os totais agora. O calend\u00e1rio continua dispon\u00edvel.",
       tone: "error",
       hideAfterMs: 5000
     });
@@ -246,7 +246,7 @@ function renderRaceCard(entry) {
           data-calendar-response="registered"
           data-race-id="${escapeHtmlAttribute(entry.id)}"
         >
-          Ja me inscrevi
+          J\u00e1 me inscrevi
         </button>
       `;
 
@@ -279,21 +279,21 @@ function renderRaceCard(entry) {
         </div>
 
         <div class="calendar-race-meta-item">
-          <span class="calendar-race-meta-label">Horario</span>
+          <span class="calendar-race-meta-label">Hor\u00e1rio</span>
           <strong>${escapeHtml(entry.time || "A confirmar")}</strong>
         </div>
 
         <div class="calendar-race-meta-item calendar-race-meta-item-distances">
-          <span class="calendar-race-meta-label">Distancias</span>
+          <span class="calendar-race-meta-label">Dist\u00e2ncias</span>
           <div class="calendar-distance-list">
             ${entry.distances.length
               ? entry.distances.map((distance) => `<span class="calendar-distance-chip">${escapeHtml(distance)}</span>`).join("")
-              : '<span class="calendar-distance-chip">Em definicao</span>'}
+              : '<span class="calendar-distance-chip">Em defini\u00e7\u00e3o</span>'}
           </div>
         </div>
 
         <div class="calendar-race-meta-item">
-          <span class="calendar-race-meta-label">Participacao</span>
+          <span class="calendar-race-meta-label">Participa\u00e7\u00e3o</span>
           <div class="calendar-race-chip-list">
             ${buildCalendarInterestChipsMarkup(summary)}
           </div>
@@ -316,7 +316,7 @@ function buildCalendarSignupMarkup(entry) {
   }
 
   if (entry.signupUrl) {
-    return `<a href="${escapeHtmlAttribute(entry.signupUrl)}" class="calendar-race-link" target="_blank" rel="noopener noreferrer">${escapeHtml(entry.signupLabel || "Link inscricao")}</a>`;
+    return `<a href="${escapeHtmlAttribute(entry.signupUrl)}" class="calendar-race-link" target="_blank" rel="noopener noreferrer">${escapeHtml(entry.signupLabel || "Link inscri\u00e7\u00e3o")}</a>`;
   }
 
   return `<span class="calendar-race-link calendar-race-link-disabled" aria-disabled="true">${escapeHtml(entry.signupLabel || "Link em breve")}</span>`;
@@ -457,7 +457,7 @@ async function handleCalendarInterestSubmit(event) {
   }
 
   if (!distance) {
-    showCalendarInterestMessage("Informe a distancia da prova.", true);
+    showCalendarInterestMessage("Informe a dist\u00e2ncia da prova.", true);
     if (calendarInterestDistanceInput) {
       calendarInterestDistanceInput.focus();
     }
@@ -514,7 +514,7 @@ async function handleCalendarInterestSubmit(event) {
     });
   } catch (error) {
     console.error("Erro ao salvar a resposta da prova:", error);
-    showCalendarInterestMessage("Nao foi possivel salvar agora. Tente novamente em instantes.", true);
+    showCalendarInterestMessage("N\u00e3o foi poss\u00edvel salvar agora. Tente novamente em instantes.", true);
     showStatus({
       title: "Falha ao salvar",
       text: "Tivemos um problema ao registrar a resposta desta prova.",
@@ -768,7 +768,7 @@ function buildCalendarModalRaceLabel(entry) {
   return [
     entry.title,
     formatDate(entry.date),
-    entry.time || "Horario a confirmar",
+    entry.time || "Hor\u00e1rio a confirmar",
     entry.location || "Local a confirmar"
   ]
     .filter(Boolean)
