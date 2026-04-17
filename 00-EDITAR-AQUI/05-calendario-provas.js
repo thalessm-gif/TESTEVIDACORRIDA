@@ -86,6 +86,20 @@ window.RACE_CALENDAR_ENTRIES = [
         "notes":  ""
     },
     {
+        "title":  "4ª Corrida da Infantaria",
+        "date":  "2026-05-24",
+        "time":  "09:00",
+        "location":  "Pelotas - RS",
+        "distances":  [
+                          "3KM",
+                          "10KM"
+                      ],
+        "circuito":  "",
+        "signupUrl":  "www.sesc-rs.com.br/esporte/corrida",
+        "signupLabel":  "Inscrições Abertas",
+        "notes":  ""
+    },
+    {
         "title":  "Dia do Desafio",
         "date":  "2026-05-26",
         "time":  "",
@@ -110,8 +124,39 @@ window.RACE_CALENDAR_ENTRIES = [
                           "42KM"
                       ],
         "circuito":  "",
-        "signupUrl":  "",
+        "signupUrl":  "https://maratonadeportoalegre.com.br/",
         "signupLabel":  "Inscrições abertas",
+        "notes":  "As provas acontecem nos dias 30/05 e 31/05."
+    },
+    {
+        "title":  "Maratona do Rio",
+        "date":  "2026-06-07",
+        "time":  "05:30",
+        "location":  "Rio de Janeiro - RJ",
+        "distances":  [
+                          "5KM",
+                          "10KM",
+                          "21K",
+                          "42KM"
+                      ],
+        "circuito":  "",
+        "signupUrl":  "",
+        "signupLabel":  "",
+        "notes":  "5KM dia 04/06, 10KM dia 05/06, 21KM dia 06/06 e 42KM dia 07/06."
+    },
+    {
+        "title":  "1ª Corrida dos Bombeiros",
+        "date":  "2026-06-14",
+        "time":  "08:30",
+        "location":  "Pelotas - RS",
+        "distances":  [
+                          "3KM",
+                          "5KM",
+                          "10KM"
+                      ],
+        "circuito":  "",
+        "signupUrl":  "https://ecommerce.sesc-rs.com.br/ecommerce.paginaprodutoevento.aspx?3537,1%C2%AA-CORRIDA-DOS-BOMBEIROS-DE-PELOTAS",
+        "signupLabel":  "Inscrições Abertas",
         "notes":  ""
     },
     {
@@ -142,6 +187,38 @@ window.RACE_CALENDAR_ENTRIES = [
         "circuito":  "sim",
         "signupUrl":  "",
         "signupLabel":  "",
+        "notes":  ""
+    },
+    {
+        "title":  "New Balance 42k",
+        "date":  "2026-07-12",
+        "time":  "",
+        "location":  "Porto Alegre - RS",
+        "distances":  [
+                          "5KM",
+                          "10KM",
+                          "21KM",
+                          "42KM"
+                      ],
+        "circuito":  "",
+        "signupUrl":  "",
+        "signupLabel":  "Inscrições Encerradas",
+        "notes":  ""
+    },
+    {
+        "title":  "2ª MARATONA DE CAPÃO DA CANOA",
+        "date":  "2026-08-02",
+        "time":  "06:00",
+        "location":  "Capão da Canoa - RS",
+        "distances":  [
+                          "5KM",
+                          "10KM",
+                          "21KM",
+                          "42KM"
+                      ],
+        "circuito":  "",
+        "signupUrl":  "https://app.sprinta.com.br/e/2-maratona-de-capao-da-canoa_1e69",
+        "signupLabel":  "Inscrições Abertas",
         "notes":  ""
     },
     {
@@ -185,7 +262,22 @@ window.RACE_CALENDAR_ENTRIES = [
         "circuito":  "",
         "signupUrl":  "https://maratonadefloripa.com.br/#tickets",
         "signupLabel":  "Inscrições Abertas",
-        "notes":  "As provas ocorrem nos dias 29/08/26 e 30/08/26."
+        "notes":  "As provas ocorrem nos dias 29/08 e 30/08."
+    },
+    {
+        "title":  "8ª Sunset Run",
+        "date":  "2026-08-30",
+        "time":  "16:30",
+        "location":  "Pelotas - RS",
+        "distances":  [
+                          "3KM",
+                          "5KM",
+                          "10KM"
+                      ],
+        "circuito":  "",
+        "signupUrl":  "https://cronometraeventos.com.br/provas.php?codID=265",
+        "signupLabel":  "Inscrições Abertas",
+        "notes":  ""
     },
     {
         "title":  "Corrida Panapana",
@@ -243,7 +335,7 @@ window.RACE_CALENDAR_ENTRIES = [
         "circuito":  "",
         "signupUrl":  "https://vemcorrer.com/evento/345-maratona-internacional-de-pomerode-2026?utm_source=ig\u0026utm_medium=social\u0026utm_content=link_in_bio\u0026fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGntTXRVA8z---1gf_oK-Eu9lfURBGyg-v6c5u-oE_6VfUPjbL1vFJBFy6BAiM_aem_bpjJD2Fh_kPqZAdvYYRdeg",
         "signupLabel":  "Inscrições Abertas",
-        "notes":  "As provas acontecem nos dias 17/10/2026 e 18/10/2026"
+        "notes":  "As provas acontecem nos dias 17/10 e 18/10."
     },
     {
         "title":  "Corrida do Batom",

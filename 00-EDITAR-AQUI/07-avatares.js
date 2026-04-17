@@ -77,6 +77,8 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Rafael Sá":  "rafael-sa.jpg",
                    "Raquel Leandro Mano":  "raquel-leandro.jpg",
                    "Renata Salvador Louzada":  "renata_louzada.jpg",
+                   "Renato Larus":  "renato-larus.jpg",
+                   "Rita de Cássia Teixeira":  "rita-teixeira.jpg",
                    "Sergio Carrasco":  "sergio_carrasco.jpg",
                    "Siegrid Ane Creutzberg":  "siegrid-ane.jpg",
                    "Simone Castro De Oliveira":  "simone_castro.jpg",
