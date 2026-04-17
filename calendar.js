@@ -11,7 +11,10 @@ function initializeCalendarPage() {
   const entries = normalizeEntries(RACE_CALENDAR_ENTRIES);
 
   renderRaceList(entries);
-  statusElement.textContent = entries.length ? "Agenda atualizada" : "Pronto para cadastrar";
+
+  if (statusElement) {
+    statusElement.textContent = entries.length ? "Agenda atualizada" : "Pronto para cadastrar";
+  }
 }
 
 function normalizeEntries(entries) {
@@ -30,7 +33,8 @@ function normalizeEntries(entries) {
       signupUrl: String(entry.signupUrl || "").trim(),
       signupLabel: String(entry.signupLabel || "").trim(),
       notes: String(entry.notes || "").trim(),
-      isCircuit: ["sim", "true", "1", "yes"].includes(String(entry.circuito || "").trim().toLowerCase())
+      isCircuit: ["sim", "true", "1", "yes"].includes(String(entry.circuito || "").trim().toLowerCase()),
+      isFinished: isCalendarEventFinished(String(entry.date || "").trim())
     }))
     .filter((entry) => entry.title)
     .sort((first, second) => {
@@ -41,6 +45,10 @@ function normalizeEntries(entries) {
 }
 
 function renderRaceList(entries) {
+  if (!raceListElement) {
+    return;
+  }
+
   if (!entries.length) {
     raceListElement.innerHTML = `
       <article class="calendar-empty-card">
@@ -93,15 +101,27 @@ function renderMonthSection(group) {
 
 function renderRaceCard(entry) {
   const signupAvailable = Boolean(entry.signupUrl);
-  const circuitBadge = entry.isCircuit
-    ? '<span class="calendar-race-badge">Circuito Riograndino</span>'
-    : "";
+  const badges = [];
+
+  if (entry.isCircuit) {
+    badges.push('<span class="calendar-race-badge">Circuito Riograndino</span>');
+  }
+
+  if (entry.isFinished) {
+    badges.push('<span class="calendar-race-badge calendar-race-badge-finished">Evento finalizado</span>');
+  }
+
+  const actionMarkup = entry.isFinished
+    ? '<span class="calendar-race-link calendar-race-link-disabled calendar-race-link-finished" aria-disabled="true">Evento finalizado</span>'
+    : signupAvailable
+      ? `<a href="${escapeHtmlAttribute(entry.signupUrl)}" class="calendar-race-link" target="_blank" rel="noopener noreferrer">${escapeHtml(entry.signupLabel || "Link Inscri\u00e7\u00e3o")}</a>`
+      : '<span class="calendar-race-link calendar-race-link-disabled" aria-disabled="true">Link em breve</span>';
 
   return `
-    <article class="calendar-race-card">
+    <article class="calendar-race-card${entry.isFinished ? " calendar-race-card-finished" : ""}">
       <div class="calendar-race-card-top">
         <div class="calendar-race-headline">
-          ${circuitBadge}
+          ${badges.join("")}
           <div class="calendar-race-title-row">
             <h3>${escapeHtml(entry.title)}</h3>
           </div>
@@ -116,16 +136,16 @@ function renderRaceCard(entry) {
         </div>
 
         <div class="calendar-race-meta-item">
-          <span class="calendar-race-meta-label">Horário</span>
+          <span class="calendar-race-meta-label">Hor\u00e1rio</span>
           <strong>${escapeHtml(entry.time || "A confirmar")}</strong>
         </div>
 
         <div class="calendar-race-meta-item calendar-race-meta-item-distances">
-          <span class="calendar-race-meta-label">Distâncias</span>
+          <span class="calendar-race-meta-label">Dist\u00e2ncias</span>
           <div class="calendar-distance-list">
             ${entry.distances.length
               ? entry.distances.map((distance) => `<span class="calendar-distance-chip">${escapeHtml(distance)}</span>`).join("")
-              : '<span class="calendar-distance-chip">Em definição</span>'}
+              : '<span class="calendar-distance-chip">Em defini\u00e7\u00e3o</span>'}
           </div>
         </div>
       </div>
@@ -133,24 +153,16 @@ function renderRaceCard(entry) {
       ${entry.notes ? `<p class="calendar-race-notes">${escapeHtml(entry.notes)}</p>` : ""}
 
       <div class="calendar-race-actions">
-        ${signupAvailable
-          ? `<a href="${escapeHtmlAttribute(entry.signupUrl)}" class="calendar-race-link" target="_blank" rel="noopener noreferrer">Link Inscrição</a>`
-          : `<span class="calendar-race-link calendar-race-link-disabled" aria-disabled="true">Link em breve</span>`}
+        ${actionMarkup}
       </div>
     </article>
   `;
 }
 
 function formatDate(value) {
-  const safeValue = String(value || "").trim();
-
-  if (!safeValue) {
+  const parsedDate = parseCalendarDate(value);
+  if (!parsedDate) {
     return "Data a confirmar";
-  }
-
-  const parsedDate = new Date(`${safeValue}T00:00:00`);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return safeValue;
   }
 
   return parsedDate.toLocaleDateString("pt-BR", {
@@ -172,10 +184,8 @@ function getMonthKey(value) {
 }
 
 function getMonthLabel(value) {
-  const safeValue = String(value || "").trim();
-  const parsedDate = new Date(`${safeValue}T00:00:00`);
-
-  if (Number.isNaN(parsedDate.getTime())) {
+  const parsedDate = parseCalendarDate(value);
+  if (!parsedDate) {
     return "Sem data";
   }
 
@@ -184,9 +194,48 @@ function getMonthLabel(value) {
 }
 
 function parseDateValue(value) {
+  const parsedDate = parseCalendarDate(value);
+  return parsedDate ? parsedDate.getTime() : Number.MAX_SAFE_INTEGER;
+}
+
+function parseCalendarDate(value) {
   const safeValue = String(value || "").trim();
-  const parsedDate = new Date(`${safeValue}T00:00:00`);
-  return Number.isNaN(parsedDate.getTime()) ? Number.MAX_SAFE_INTEGER : parsedDate.getTime();
+  const match = safeValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return null;
+  }
+
+  const parsedDate = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(parsedDate.getTime()) ||
+    parsedDate.getFullYear() !== year ||
+    parsedDate.getMonth() !== month - 1 ||
+    parsedDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
+function isCalendarEventFinished(value) {
+  const eventTime = parseDateValue(value);
+  if (!Number.isFinite(eventTime) || eventTime === Number.MAX_SAFE_INTEGER) {
+    return false;
+  }
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return eventTime < todayStart;
 }
 
 function escapeHtml(value) {
