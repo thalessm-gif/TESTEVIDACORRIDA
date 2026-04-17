@@ -234,7 +234,99 @@ function Format-CalendarKey {
     $Entry
   )
 
+  $stableId = Normalize-EditorText -Value ([string]$Entry.id)
+  if (-not [string]::IsNullOrWhiteSpace($stableId)) {
+    return $stableId
+  }
+
   return "{0}|{1}|{2}" -f $Entry.title, $Entry.date, $Entry.time
+}
+
+function ConvertTo-CalendarIdPart {
+  param(
+    [AllowNull()]
+    [string]$Value
+  )
+
+  $text = Normalize-EditorText -Value $Value
+  if ([string]::IsNullOrWhiteSpace($text)) {
+    return ""
+  }
+
+  $decomposed = $text.Normalize([System.Text.NormalizationForm]::FormD)
+  $builder = New-Object System.Text.StringBuilder
+
+  foreach ($char in $decomposed.ToCharArray()) {
+    if ([Globalization.CharUnicodeInfo]::GetUnicodeCategory($char) -ne [Globalization.UnicodeCategory]::NonSpacingMark) {
+      [void]$builder.Append($char)
+    }
+  }
+
+  $normalized = $builder.ToString().ToLowerInvariant()
+  return ([regex]::Replace($normalized, "[^a-z0-9]+", "-")).Trim("-")
+}
+
+function Get-CalendarGeneratedId {
+  param(
+    [Parameter(Mandatory = $true)]
+    $Entry
+  )
+
+  $parts = @(
+    ConvertTo-CalendarIdPart -Value ([string]$Entry.date),
+    ConvertTo-CalendarIdPart -Value ([string]$Entry.title),
+    ConvertTo-CalendarIdPart -Value ([string]$Entry.location)
+  ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+  return ($parts -join "-")
+}
+
+function Normalize-CalendarLegacyIds {
+  param(
+    [AllowNull()]
+    [object[]]$Ids,
+
+    [string]$CurrentId = ""
+  )
+
+  $seen = @{}
+  $normalizedCurrentId = Normalize-EditorText -Value $CurrentId
+  $result = New-Object System.Collections.Generic.List[string]
+
+  foreach ($item in @($Ids)) {
+    $candidate = Normalize-EditorText -Value ([string]$item)
+    if (
+      [string]::IsNullOrWhiteSpace($candidate) -or
+      $candidate -eq $normalizedCurrentId -or
+      $seen.ContainsKey($candidate)
+    ) {
+      continue
+    }
+
+    $seen[$candidate] = $true
+    [void]$result.Add($candidate)
+  }
+
+  return @($result.ToArray())
+}
+
+function Get-CalendarStableId {
+  param(
+    [Parameter(Mandatory = $true)]
+    $Entry
+  )
+
+  $existingId = Normalize-EditorText -Value ([string]$Entry.id)
+  if (-not [string]::IsNullOrWhiteSpace($existingId)) {
+    return $existingId
+  }
+
+  $generatedId = Get-CalendarGeneratedId -Entry $Entry
+  if (-not [string]::IsNullOrWhiteSpace($generatedId)) {
+    return $generatedId
+  }
+
+  return ""
 }
 
 function Sort-CalendarEntries {
@@ -956,9 +1048,12 @@ function Load-CalendarEntriesModel {
   if ($match.Success) {
     $rawEntries = ConvertFrom-RelaxedJson -JsonText $match.Groups[1].Value
     foreach ($entry in @($rawEntries)) {
+      $stableId = Get-CalendarStableId -Entry $entry
       $entries += [PSCustomObject]@{
+        id = $stableId
         title = [string]$entry.title
         date = [string]$entry.date
+        endDate = [string]$entry.endDate
         time = [string]$entry.time
         location = [string]$entry.location
         distances = @($entry.distances | ForEach-Object { [string]$_ })
@@ -966,6 +1061,7 @@ function Load-CalendarEntriesModel {
         signupUrl = [string]$entry.signupUrl
         signupLabel = [string]$entry.signupLabel
         notes = [string]$entry.notes
+        legacyIds = Normalize-CalendarLegacyIds -Ids @($entry.legacyIds | ForEach-Object { [string]$_ }) -CurrentId $stableId
       }
     }
   }
@@ -983,17 +1079,31 @@ function ConvertTo-CalendarContent {
 
   $items = @()
   foreach ($entry in $Model.Entries) {
-    $items += [ordered]@{
+    $stableId = Get-CalendarStableId -Entry $entry
+    $legacyIds = Normalize-CalendarLegacyIds -Ids @($entry.legacyIds) -CurrentId $stableId
+    $item = [ordered]@{
+      id = [string]$stableId
       title = [string]$entry.title
       date = [string]$entry.date
-      time = [string]$entry.time
-      location = [string]$entry.location
-      distances = @($entry.distances | ForEach-Object { [string]$_ })
-      circuito = [string]$entry.circuito
-      signupUrl = [string]$entry.signupUrl
-      signupLabel = [string]$entry.signupLabel
-      notes = [string]$entry.notes
     }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$entry.endDate)) {
+      $item.endDate = [string]$entry.endDate
+    }
+
+    $item.time = [string]$entry.time
+    $item.location = [string]$entry.location
+    $item.distances = @($entry.distances | ForEach-Object { [string]$_ })
+    $item.circuito = [string]$entry.circuito
+    $item.signupUrl = [string]$entry.signupUrl
+    $item.signupLabel = [string]$entry.signupLabel
+    $item.notes = [string]$entry.notes
+
+    if ($legacyIds.Count -gt 0) {
+      $item.legacyIds = @($legacyIds)
+    }
+
+    $items += $item
   }
 
   $json = ConvertTo-Json -InputObject @($items) -Depth 6
@@ -1108,6 +1218,208 @@ window.VIDA_CORRIDA_AVATAR_DATA = $json;
 "@
 }
 
+function Get-PublicationReferencePattern {
+  return '(?<prefix>(?:src|href)\s*=\s*["''])(?<asset>(?!https?:\/\/|\/\/|mailto:|#)[^"''?#>]+\.(?:js|css))(?:\?v=(?<token>[^"''#>]+))?(?<suffix>["''])'
+}
+
+function Get-PublicationManagedHtmlFiles {
+  return @(
+    Get-ChildItem -LiteralPath $script:projectDir -Filter *.html -File |
+      Sort-Object Name
+  )
+}
+
+function Get-PublicationReferenceScan {
+  $pattern = Get-PublicationReferencePattern
+  $references = New-Object System.Collections.Generic.List[object]
+
+  foreach ($file in Get-PublicationManagedHtmlFiles) {
+    $content = Read-EditorFile -Path $file.FullName
+    foreach ($match in [regex]::Matches($content, $pattern)) {
+      $references.Add([PSCustomObject]@{
+          HtmlFile = $file.Name
+          HtmlPath = $file.FullName
+          Asset = [string]$match.Groups["asset"].Value
+          Token = [string]$match.Groups["token"].Value
+        }) | Out-Null
+    }
+  }
+
+  return $references.ToArray()
+}
+
+function Get-PublicationSuggestedToken {
+  param(
+    [Parameter(Mandatory = $true)]
+    [object[]]$References
+  )
+
+  $tokenGroups = @(
+    $References |
+      ForEach-Object { [string]$_.Token } |
+      Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+      Group-Object |
+      Sort-Object -Property @(
+        @{ Expression = "Count"; Descending = $true },
+        @{ Expression = "Name"; Descending = $false }
+      )
+  )
+
+  if ($tokenGroups.Count -gt 0) {
+    return [string]$tokenGroups[0].Name
+  }
+
+  return Get-Date -Format "yyyyMMdd-HHmmss"
+}
+
+function Format-PublicationSummary {
+  param(
+    [Parameter(Mandatory = $true)]
+    [object[]]$References
+  )
+
+  if ($References.Count -eq 0) {
+    return @(
+      "Nenhuma referencia local de CSS ou JS foi encontrada nas paginas HTML da raiz do projeto.",
+      "",
+      "Quando houver links locais com src/href, esta aba passa a atualizar o token automaticamente."
+    ) -join "`r`n"
+  }
+
+  $fileLines = @(
+    $References |
+      Group-Object HtmlFile |
+      Sort-Object Name |
+      ForEach-Object { "- {0}: {1} referencia(s)" -f $_.Name, $_.Count }
+  )
+
+  $assetLines = @(
+    $References |
+      Group-Object Asset |
+      Sort-Object Name |
+      ForEach-Object { "- {0}" -f $_.Name }
+  )
+
+  $tokenLines = @(
+    $References |
+      ForEach-Object { [string]$_.Token } |
+      Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+      Group-Object |
+      Sort-Object Name |
+      ForEach-Object { "- {0}: {1} referencia(s)" -f $_.Name, $_.Count }
+  )
+
+  if ($tokenLines.Count -eq 0) {
+    $tokenLines = @("- Nenhum token aplicado ainda.")
+  }
+
+  return (@(
+      "Ao salvar esta aba, o editor atualiza automaticamente todas as referencias locais de CSS e JS nas paginas HTML do site.",
+      "",
+      "Paginas controladas:"
+    ) + $fileLines + @(
+      "",
+      "Arquivos locais controlados:"
+    ) + $assetLines + @(
+      "",
+      "Tokens encontrados agora:"
+    ) + $tokenLines) -join "`r`n"
+}
+
+function Test-PublicationToken {
+  param(
+    [AllowNull()]
+    [string]$Token
+  )
+
+  $safeToken = [string]$Token
+  if ([string]::IsNullOrWhiteSpace($safeToken)) {
+    return $false
+  }
+
+  return $safeToken -match '^[A-Za-z0-9._-]+$'
+}
+
+function Apply-PublicationTokenToHtmlFiles {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Token
+  )
+
+  $pattern = Get-PublicationReferencePattern
+  $changedFiles = New-Object System.Collections.Generic.List[string]
+  $matchedFiles = New-Object System.Collections.Generic.List[string]
+  $totalReferences = 0
+
+  foreach ($file in Get-PublicationManagedHtmlFiles) {
+    $content = Read-EditorFile -Path $file.FullName
+    $matches = [regex]::Matches($content, $pattern)
+
+    if ($matches.Count -eq 0) {
+      continue
+    }
+
+    $matchedFiles.Add($file.Name) | Out-Null
+    $totalReferences += $matches.Count
+
+    $updatedContent = [regex]::Replace($content, $pattern, {
+        param($match)
+
+        return "{0}{1}?v={2}{3}" -f `
+          $match.Groups["prefix"].Value, `
+          $match.Groups["asset"].Value, `
+          $Token, `
+          $match.Groups["suffix"].Value
+      })
+
+    if ($updatedContent -ne $content) {
+      Write-EditorFile -Path $file.FullName -Content $updatedContent
+      $changedFiles.Add($file.Name) | Out-Null
+    }
+  }
+
+  return [PSCustomObject]@{
+    MatchedFiles = $matchedFiles.ToArray()
+    ChangedFiles = $changedFiles.ToArray()
+    ReferenceCount = $totalReferences
+  }
+}
+
+function Load-PublicationVersionModel {
+  $path = ConvertTo-EditorPath -FileName "08-versao-publicacao.json"
+  $content = Read-EditorFile -Path $path
+  $references = Get-PublicationReferenceScan
+  $storedToken = ""
+
+  if (-not [string]::IsNullOrWhiteSpace($content)) {
+    try {
+      $parsed = ConvertFrom-Json -InputObject $content
+      $storedToken = [string]$parsed.token
+    } catch {
+      $storedToken = [string]$content.Trim()
+    }
+  }
+
+  if ([string]::IsNullOrWhiteSpace($storedToken)) {
+    $storedToken = Get-PublicationSuggestedToken -References $references
+  }
+
+  return [PSCustomObject]@{
+    Token = $storedToken
+  }
+}
+
+function ConvertTo-PublicationVersionContent {
+  param(
+    [Parameter(Mandatory = $true)]
+    $Model
+  )
+
+  return ConvertTo-Json -InputObject ([ordered]@{
+      token = [string]$Model.Token
+    }) -Depth 3
+}
+
 function Format-CalendarListItem {
   param(
     [Parameter(Mandatory = $true)]
@@ -1115,7 +1427,12 @@ function Format-CalendarListItem {
   )
 
   $timePart = if ([string]::IsNullOrWhiteSpace([string]$Entry.time)) { "sem horario" } else { [string]$Entry.time }
-  return "{0} {1} - {2}" -f $Entry.date, $timePart, $Entry.title
+  $datePart = [string]$Entry.date
+  if (-not [string]::IsNullOrWhiteSpace([string]$Entry.endDate)) {
+    $datePart = "{0} a {1}" -f $Entry.date, $Entry.endDate
+  }
+
+  return "{0} {1} - {2}" -f $datePart, $timePart, $Entry.title
 }
 
 function Format-AvatarListItem {
@@ -1497,6 +1814,139 @@ function Build-SystemTab {
     $collectiveResourceBox
   )
 
+  $saveButton.Add_Click({ [void](& $state.SaveAction) }.GetNewClosure())
+  $reloadButton.Add_Click({ & $state.ReloadAction }.GetNewClosure())
+  & $loadControls
+  return $tabPage
+}
+
+function Build-PublicationTab {
+  $tabPage = New-Object System.Windows.Forms.TabPage
+  $state = New-TabState -BaseTitle "Publicacao" -FileName "08-versao-publicacao.json" -TabPage $tabPage
+  Set-TabDirty -State $state -Dirty $false
+  $state.Model = Load-PublicationVersionModel
+
+  $panel = New-Object System.Windows.Forms.Panel
+  $panel.Dock = [System.Windows.Forms.DockStyle]::Fill
+  $panel.AutoScroll = $true
+  $tabPage.Controls.Add($panel)
+
+  $intro = New-Object System.Windows.Forms.Label
+  $intro.Left = 12
+  $intro.Top = 12
+  $intro.Width = 1080
+  $intro.Height = 44
+  $intro.Text = "Use esta aba sempre que concluir mudancas de front-end e for publicar o site. Ao salvar, o token fica registrado em 08-versao-publicacao.json e todas as referencias locais de CSS e JS nas paginas HTML recebem a nova versao automaticamente."
+  $panel.Controls.Add($intro)
+
+  $group1 = New-SectionGroup -Title "Token de publicacao" -Left 12 -Top 64 -Width 1080 -Height 150
+  $tokenBox = Add-LabeledTextBox -Parent $group1 -Label "Token unico usado nas paginas do site" -Left 16 -Top 28 -Width 260 -HelpText "Use apenas letras, numeros, ponto, underline ou hifen. Exemplo: 20260416-6"
+
+  $generateButton = New-ActionButton -Text "Usar data e hora atual" -Width 170
+  $generateButton.Left = 300
+  $generateButton.Top = 48
+  $group1.Controls.Add($generateButton)
+
+  $tokenHelp = New-Object System.Windows.Forms.Label
+  $tokenHelp.Left = 300
+  $tokenHelp.Top = 84
+  $tokenHelp.Width = 740
+  $tokenHelp.Height = 52
+  $tokenHelp.ForeColor = [System.Drawing.Color]::FromArgb(96, 96, 96)
+  $tokenHelp.Text = "Fluxo recomendado: terminou as mudancas visuais ou nos scripts do site, clique em 'Usar data e hora atual' e depois em 'Salvar arquivo'. Se mexeu apenas na planilha ou no Apps Script, normalmente nao precisa trocar o token."
+  $group1.Controls.Add($tokenHelp)
+  $panel.Controls.Add($group1)
+
+  $group2 = New-SectionGroup -Title "Paginas e arquivos atualizados automaticamente" -Left 12 -Top 228 -Width 1080 -Height 420
+  $summaryBox = New-Object System.Windows.Forms.TextBox
+  $summaryBox.Left = 16
+  $summaryBox.Top = 28
+  $summaryBox.Width = 1040
+  $summaryBox.Height = 370
+  $summaryBox.Multiline = $true
+  $summaryBox.ScrollBars = [System.Windows.Forms.ScrollBars]::Vertical
+  $summaryBox.ReadOnly = $true
+  $summaryBox.BackColor = [System.Drawing.Color]::White
+  $group2.Controls.Add($summaryBox)
+  $panel.Controls.Add($group2)
+
+  $saveButton = New-ActionButton -Text "Salvar arquivo" -Width 150
+  $reloadButton = New-ActionButton -Text "Recarregar" -Width 130
+  Add-TabFooterButtons -Parent $tabPage -Buttons @($saveButton, $reloadButton) | Out-Null
+
+  $refreshSummary = {
+    $references = Get-PublicationReferenceScan
+    $summaryBox.Text = Format-PublicationSummary -References $references
+  }.GetNewClosure()
+
+  $loadControls = {
+    $state.Loading = $true
+    $state.Model = Load-PublicationVersionModel
+    $tokenBox.Text = $state.Model.Token
+    & $refreshSummary
+    $state.Loading = $false
+    Set-TabDirty -State $state -Dirty $false
+    Set-EditorStatus -Message "Arquivo de publicacao carregado."
+  }.GetNewClosure()
+
+  $state.SaveAction = {
+    try {
+      $nextToken = $tokenBox.Text.Trim()
+      if (-not (Test-PublicationToken -Token $nextToken)) {
+        [System.Windows.Forms.MessageBox]::Show(
+          "Informe um token valido para publicacao.`n`nUse apenas letras, numeros, ponto, underline ou hifen.",
+          "Token invalido",
+          [System.Windows.Forms.MessageBoxButtons]::OK,
+          [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+        return $false
+      }
+
+      $state.Model.Token = $nextToken
+      $applyResult = Apply-PublicationTokenToHtmlFiles -Token $nextToken
+      Write-EditorFile -Path $state.Path -Content (ConvertTo-PublicationVersionContent -Model $state.Model)
+      Set-TabDirty -State $state -Dirty $false
+      & $refreshSummary
+
+      if ($applyResult.ChangedFiles.Count -gt 0) {
+        Set-EditorStatus -Message ("Token de publicacao salvo e aplicado em {0} pagina(s)." -f $applyResult.ChangedFiles.Count)
+      } else {
+        Set-EditorStatus -Message "Token de publicacao salvo. As paginas ja estavam com essa versao."
+      }
+
+      return $true
+    } catch {
+      [System.Windows.Forms.MessageBox]::Show(
+        "Nao foi possivel salvar o token de publicacao.`n`n$($_.Exception.Message)",
+        "Erro ao salvar",
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Error
+      ) | Out-Null
+      return $false
+    }
+  }.GetNewClosure()
+
+  $state.ReloadAction = {
+    if ($state.Dirty) {
+      $answer = [System.Windows.Forms.MessageBox]::Show(
+        "Existem alteracoes nao salvas. Deseja recarregar mesmo assim?",
+        "Recarregar arquivo",
+        [System.Windows.Forms.MessageBoxButtons]::YesNo,
+        [System.Windows.Forms.MessageBoxIcon]::Warning
+      )
+      if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) {
+        return
+      }
+    }
+    & $loadControls
+  }.GetNewClosure()
+
+  Register-DirtyEvents -State $state -Controls @($tokenBox)
+
+  $generateButton.Add_Click({
+    $tokenBox.Text = Get-Date -Format "yyyyMMdd-HHmmss"
+    Set-EditorStatus -Message "Novo token gerado. Salve a aba para aplicar nas paginas."
+  }.GetNewClosure())
   $saveButton.Add_Click({ [void](& $state.SaveAction) }.GetNewClosure())
   $reloadButton.Add_Click({ & $state.ReloadAction }.GetNewClosure())
   & $loadControls
@@ -1890,7 +2340,11 @@ function Build-CalendarTab {
   $entryDatePicker = Add-LabeledDateTimePicker -Parent $formPanel -Label "Data da prova" -Left 16 -Top 88 -Width 220
   $entryDatePicker.CustomFormat = "dd/MM/yyyy"
   $entryDatePicker.ShowUpDown = $false
-  $entryTimeBox = Add-LabeledTextBox -Parent $formPanel -Label "Horario" -Left 260 -Top 88 -Width 120 -HelpText "Use HH:mm ou deixe em branco."
+  $entryEndDatePicker = Add-LabeledDateTimePicker -Parent $formPanel -Label "Data final (opcional)" -Left 260 -Top 88 -Width 220
+  $entryEndDatePicker.CustomFormat = "dd/MM/yyyy"
+  $entryEndDatePicker.ShowUpDown = $false
+  $entryEndDatePicker.ShowCheckBox = $true
+  $entryTimeBox = Add-LabeledTextBox -Parent $formPanel -Label "Horario" -Left 500 -Top 88 -Width 136 -HelpText "Use HH:mm ou deixe em branco."
   $entryLocationBox = Add-LabeledTextBox -Parent $formPanel -Label "Local" -Left 16 -Top 160 -Width 620
   $entryDistancesBox = Add-LabeledTextBox -Parent $formPanel -Label "Distancias" -Left 16 -Top 232 -Width 620 -HelpText "Separe por virgula. Exemplo: 3KM, 5KM, 10KM"
   $entryCircuitCheck = Add-LabeledCheckBox -Parent $formPanel -Text "Essa prova faz parte do circuito" -Left 16 -Top 304 -Width 300
@@ -1911,6 +2365,8 @@ function Build-CalendarTab {
     $state.CurrentKey = ""
     $entryTitleBox.Text = ""
     $entryDatePicker.Value = Get-Date
+    $entryEndDatePicker.Value = $entryDatePicker.Value
+    $entryEndDatePicker.Checked = $false
     $entryTimeBox.Text = ""
     $entryLocationBox.Text = ""
     $entryDistancesBox.Text = ""
@@ -1951,6 +2407,13 @@ function Build-CalendarTab {
     $state.CurrentKey = Format-CalendarKey -Entry $entry
     $entryTitleBox.Text = $entry.title
     $entryDatePicker.Value = ConvertTo-DateTimeValue -Value $entry.date
+    if ([string]::IsNullOrWhiteSpace([string]$entry.endDate)) {
+      $entryEndDatePicker.Value = $entryDatePicker.Value
+      $entryEndDatePicker.Checked = $false
+    } else {
+      $entryEndDatePicker.Value = ConvertTo-DateTimeValue -Value $entry.endDate
+      $entryEndDatePicker.Checked = $true
+    }
     $entryTimeBox.Text = $entry.time
     $entryLocationBox.Text = $entry.location
     $entryDistancesBox.Text = ($entry.distances -join ", ")
@@ -1965,6 +2428,8 @@ function Build-CalendarTab {
     $title = $entryTitleBox.Text.Trim()
     $time = $entryTimeBox.Text.Trim()
     $location = $entryLocationBox.Text.Trim()
+    $startDateValue = $entryDatePicker.Value.Date
+    $endDateValue = ""
     $distances = @(
       ($entryDistancesBox.Text -split "[,`r`n]+" |
         ForEach-Object { $_.Trim() } |
@@ -1979,13 +2444,46 @@ function Build-CalendarTab {
       throw "Use o horario no formato HH:mm."
     }
 
+    if ($entryEndDatePicker.Checked) {
+      if ($entryEndDatePicker.Value.Date -lt $startDateValue) {
+        throw "A data final nao pode ser anterior a data inicial."
+      }
+
+      if ($entryEndDatePicker.Value.Date -gt $startDateValue) {
+        $endDateValue = $entryEndDatePicker.Value.ToString("yyyy-MM-dd")
+      }
+    }
+
     if ($distances.Count -eq 0) {
       throw "Informe pelo menos uma distancia."
     }
 
+    $existingEntry = $null
+    if ($listBox.SelectedIndex -ge 0 -and $listBox.SelectedIndex -lt $state.Model.Entries.Count) {
+      $existingEntry = $state.Model.Entries[$listBox.SelectedIndex]
+    }
+
+    $stableId = if ($null -ne $existingEntry) {
+      Get-CalendarStableId -Entry $existingEntry
+    } else {
+      Get-CalendarStableId -Entry ([PSCustomObject]@{
+          title = $title
+          date = $startDateValue.ToString("yyyy-MM-dd")
+          location = $location
+        })
+    }
+
+    $legacyIds = if ($null -ne $existingEntry) {
+      Normalize-CalendarLegacyIds -Ids @($existingEntry.legacyIds) -CurrentId $stableId
+    } else {
+      @()
+    }
+
     return [PSCustomObject]@{
+      id = $stableId
       title = $title
-      date = $entryDatePicker.Value.ToString("yyyy-MM-dd")
+      date = $startDateValue.ToString("yyyy-MM-dd")
+      endDate = $endDateValue
       time = $time
       location = $location
       distances = $distances
@@ -1993,6 +2491,7 @@ function Build-CalendarTab {
       signupUrl = $entrySignupUrlBox.Text.Trim()
       signupLabel = $entrySignupLabelBox.Text.Trim()
       notes = $entryNotesBox.Text.Trim()
+      legacyIds = $legacyIds
     }
   }.GetNewClosure()
 
@@ -2695,6 +3194,7 @@ if ($SmokeTest) {
   [void](ConvertTo-CalendarContent -Model (Load-CalendarEntriesModel))
   [void](ConvertTo-AthleteNamesContent -Model (Load-AthleteNamesModel))
   [void](ConvertTo-AvatarEntriesContent -Model (Load-AvatarEntriesModel))
+  [void](ConvertTo-PublicationVersionContent -Model (Load-PublicationVersionModel))
   "OK"
   return
 }
@@ -2765,7 +3265,8 @@ foreach ($builder in @(
     ${function:Build-ConsultaTab},
     ${function:Build-CalendarTab},
     ${function:Build-AthletesTab},
-    ${function:Build-AvatarsTab}
+    ${function:Build-AvatarsTab},
+    ${function:Build-PublicationTab}
   )) {
   $tabPage = & $builder
   [void]$script:tabControl.TabPages.Add($tabPage)
