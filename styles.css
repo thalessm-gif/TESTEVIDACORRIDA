@@ -765,6 +765,10 @@ textarea {
   color: #ffd6bd;
 }
 
+.form-message-error {
+  color: #ffd0d0;
+}
+
 .overview-header {
   display: flex;
   justify-content: space-between;
@@ -1987,6 +1991,11 @@ textarea {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
 }
 
+.calendar-race-card-finished {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+}
+
 .calendar-race-card-top {
   margin-bottom: 16px;
 }
@@ -2041,6 +2050,12 @@ textarea {
   text-transform: uppercase;
 }
 
+.calendar-race-badge-finished {
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffe9c7;
+}
+
 .calendar-race-headline p {
   margin-bottom: 0;
   color: var(--muted);
@@ -2087,6 +2102,16 @@ textarea {
   margin-top: 18px;
 }
 
+.calendar-race-response-button {
+  flex: 1 1 180px;
+  box-shadow: none;
+}
+
+.calendar-race-response-button-strong {
+  background: rgba(255, 106, 0, 0.16);
+  color: #fff1e8;
+}
+
 .calendar-race-link {
   display: inline-flex;
   align-items: center;
@@ -2111,6 +2136,124 @@ textarea {
   color: #fff0e7;
   box-shadow: none;
   cursor: default;
+}
+
+.calendar-race-link-finished {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffe9c7;
+}
+
+.calendar-race-chip-list,
+.calendar-interest-chip-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-interest-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.calendar-interest-chip strong {
+  color: #fff4eb;
+  font-size: 0.95rem;
+}
+
+.calendar-interest-chip-strong {
+  background: rgba(255, 106, 0, 0.16);
+  color: #fff1e7;
+}
+
+.calendar-interest-modal-open {
+  overflow: hidden;
+}
+
+.calendar-interest-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.calendar-interest-modal-hidden {
+  display: none;
+}
+
+.calendar-interest-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 10, 24, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.calendar-interest-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 680px);
+  padding: 28px;
+}
+
+.calendar-interest-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.calendar-interest-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.calendar-interest-modal-race {
+  margin-bottom: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.calendar-interest-summary-panel {
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.calendar-interest-summary-copy {
+  margin-bottom: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.calendar-interest-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.calendar-interest-type-button {
+  justify-content: center;
 }
 
 .ranking-controls-panel {
@@ -3079,6 +3222,10 @@ tbody tr:hover {
     width: 100%;
     border-radius: 28px;
   }
+
+  .calendar-interest-dialog {
+    width: min(100%, 620px);
+  }
 }
 
 @media (max-width: 560px) {
@@ -3167,6 +3314,18 @@ tbody tr:hover {
   .feedback-summary-bar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .calendar-interest-modal {
+    padding: 14px;
+  }
+
+  .calendar-interest-dialog {
+    padding: 22px 18px;
+  }
+
+  .calendar-interest-type-grid {
+    grid-template-columns: 1fr;
   }
 
   .ranking-table-wrapper {

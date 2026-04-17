@@ -3,23 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendário de Provas</title>
+  <title>Calend&aacute;rio de Provas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260416-230200">
+  <link rel="stylesheet" href="styles.css?v=20260416-235900">
 </head>
 <body>
   <main class="page">
-    <nav class="top-nav" aria-label="Navegação principal">
-      <a href="index.html" class="nav-link">Página inicial</a>
+    <div id="status-box" class="status-box status-box-hidden" role="status" aria-live="polite" aria-atomic="true">
+      <div class="status-box-panel">
+        <span id="status-spinner" class="status-spinner" aria-hidden="true"></span>
+        <div class="status-box-copy">
+          <p id="status-box-title" class="status-box-title">Carregando dados...</p>
+          <p id="status-box-text" class="status-box-text">Aguarde enquanto buscamos o interesse dos atletas nas provas.</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="top-nav" aria-label="Navega&ccedil;&atilde;o principal">
+      <a href="index.html" class="nav-link">P&aacute;gina inicial</a>
       <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
       <a href="destaques-semanais.html" class="nav-link">Destaques Semanais</a>
       <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
       <a href="ranking-tempos-rp.html" class="nav-link">Ranking Performance</a>
       <a href="momento-rp.html" class="nav-link">Momento RP</a>
-      <a href="indicacao-amiga.html" class="nav-link">Indica&#231;&#227;o Amiga</a>
-      <a href="planos-fidelizacao.html" class="nav-link">Planos de Fidelização</a>
+      <a href="indicacao-amiga.html" class="nav-link">Indica&ccedil;&atilde;o Amiga</a>
+      <a href="planos-fidelizacao.html" class="nav-link">Planos de Fideliza&ccedil;&atilde;o</a>
       <a href="treinadores.html" class="nav-link">Treinadores</a>
     </nav>
 
@@ -34,10 +44,10 @@
     </section>
 
     <section class="panel calendar-hero">
-      <p class="eyebrow">Área 4</p>
-      <h1>Calendário de Provas</h1>
+      <p class="eyebrow">&Aacute;rea 4</p>
+      <h1>Calend&aacute;rio de Provas</h1>
       <p class="hero-text">
-        Acompanhe as próximas provas da região.
+        Acompanhe as pr&oacute;ximas provas da regi&atilde;o e registre quem est&aacute; de olho em cada desafio.
       </p>
     </section>
 
@@ -45,18 +55,103 @@
       <div class="overview-header">
         <div>
           <p class="eyebrow">Agenda</p>
-          <h2>Próximas provas</h2>
+          <h2>Pr&oacute;ximas provas</h2>
         </div>
         <span id="calendar-status" class="count-badge">Atualizando agenda</span>
       </div>
 
       <div id="calendar-race-list" class="calendar-race-list" aria-live="polite">
-        <p class="empty-state">Carregando calendário...</p>
+        <p class="empty-state">Carregando calend&aacute;rio...</p>
       </div>
     </section>
   </main>
 
-  <script src="00-EDITAR-AQUI/05-calendario-provas.js?v=20260416-230200"></script>
-  <script src="calendar.js?v=20260416-230200"></script>
+  <div id="calendar-interest-modal" class="calendar-interest-modal calendar-interest-modal-hidden" aria-hidden="true">
+    <div class="calendar-interest-backdrop" data-calendar-modal-close="true"></div>
+
+    <div
+      class="calendar-interest-dialog panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="calendar-interest-modal-title"
+    >
+      <button
+        id="calendar-interest-close"
+        type="button"
+        class="calendar-interest-close"
+        aria-label="Fechar formul&aacute;rio"
+      >
+        &#10005;
+      </button>
+
+      <p class="eyebrow">Participa&ccedil;&atilde;o</p>
+      <h2 id="calendar-interest-modal-title">Atualize sua situa&ccedil;&atilde;o na prova</h2>
+      <p id="calendar-interest-modal-race" class="calendar-interest-modal-race">Selecione uma prova para continuar.</p>
+
+      <div class="calendar-interest-summary-panel">
+        <p class="calendar-interest-summary-copy">
+          Escolha se voc&ecirc; ainda tem interesse ou se j&aacute; garantiu a inscri&ccedil;&atilde;o. O card da prova mostra a contagem automaticamente para toda a equipe.
+        </p>
+        <div id="calendar-interest-modal-chips" class="calendar-interest-chip-list"></div>
+      </div>
+
+      <form id="calendar-interest-form" novalidate>
+        <div class="calendar-interest-type-grid" role="radiogroup" aria-label="Tipo de resposta">
+          <button
+            id="calendar-interest-type-interested"
+            type="button"
+            class="toggle-button calendar-interest-type-button"
+            data-calendar-response-type="interested"
+          >
+            Tenho interesse
+          </button>
+
+          <button
+            id="calendar-interest-type-registered"
+            type="button"
+            class="toggle-button calendar-interest-type-button"
+            data-calendar-response-type="registered"
+          >
+            J&aacute; me inscrevi
+          </button>
+        </div>
+
+        <label class="field">
+          <span>Nome do atleta</span>
+          <input
+            id="calendar-interest-athlete-name"
+            type="text"
+            placeholder="Digite o nome completo"
+            list="calendar-interest-athlete-suggestions"
+            autocomplete="off"
+          >
+          <datalist id="calendar-interest-athlete-suggestions"></datalist>
+        </label>
+
+        <label class="field">
+          <span>Dist&acirc;ncia</span>
+          <input
+            id="calendar-interest-distance"
+            type="text"
+            placeholder="Ex.: 5KM, 10KM, 21KM"
+            list="calendar-interest-distance-suggestions"
+            autocomplete="off"
+          >
+          <datalist id="calendar-interest-distance-suggestions"></datalist>
+        </label>
+
+        <div class="actions">
+          <button id="calendar-interest-submit" type="submit" class="primary-button">Salvar resposta</button>
+        </div>
+
+        <p id="calendar-interest-form-message" class="form-message" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260416-235900"></script>
+  <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260416-235900"></script>
+  <script src="00-EDITAR-AQUI/05-calendario-provas.js?v=20260416-235900"></script>
+  <script src="calendar.js?v=20260416-235900"></script>
 </body>
 </html>
