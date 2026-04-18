@@ -8,7 +8,7 @@ window.SITE_ACCESS_CONFIG = Object.freeze({
 
     // Para deixar a pagina aberta e bloquear apenas o envio: true
     // Para liberar o envio novamente: false
-    submitLocked: false,
+    submitLocked: true,
 
     homeNotice: "A retirada de kits esta temporariamente indisponível.",
     homeLinkText: "Fechado temporariamente",
