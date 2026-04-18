@@ -140,8 +140,7 @@ function parseFidelityCsv(csvContent) {
   const planColumn = findHeader(headers, ["plano"]);
   const startColumn = findHeader(headers, ["inicio", "data inicio", "inicio"]);
   const endColumn = findHeader(headers, ["termino", "termino do plano", "termino", "fim"]);
-  const usedColumn = findHeader(headers, ["desconto vc store utilizado", "desconto utilizado", "utilizado", "usado"]);
-  const balanceColumn = findHeader(headers, ["saldo", "saldo disponivel", "saldo disponivel"]);
+  const bonusColumn = findHeader(headers, ["saldo", "saldo disponivel", "saldo disponivel"]);
   const validityColumn = findHeader(headers, ["vigencia ate", "vigencia", "vigencia ate", "vigencia"]);
   const giftsColumn = findHeader(headers, ["brindes", "brinde", "status brindes", "entrega brindes"]);
 
@@ -159,8 +158,7 @@ function parseFidelityCsv(csvContent) {
       const plan = getCellValue(row, planColumn ? planColumn.index : -1);
       const startText = getCellValue(row, startColumn ? startColumn.index : -1);
       const endText = getCellValue(row, endColumn ? endColumn.index : -1);
-      const usedText = getCellValue(row, usedColumn ? usedColumn.index : -1);
-      const balanceText = getCellValue(row, balanceColumn ? balanceColumn.index : -1);
+      const bonusText = getCellValue(row, bonusColumn ? bonusColumn.index : -1);
       const validityText = getCellValue(row, validityColumn ? validityColumn.index : -1);
       const giftsText = getCellValue(row, giftsColumn ? giftsColumn.index : -1);
       const validityDate = parseBrazilianDate(validityText) || parseBrazilianDate(endText);
@@ -180,11 +178,9 @@ function parseFidelityCsv(csvContent) {
         plan,
         startText,
         endText,
-        usedText,
-        balanceText,
+        bonusText,
         validityText: validityText || endText,
-        usedValue: parseCurrencyValue(usedText),
-        balanceValue: parseCurrencyValue(balanceText),
+        bonusValue: parseCurrencyValue(bonusText),
         validityDate,
         status,
         giftsText: giftsText || (FIDELITY_GIFT_LABELS[giftsStatus] || FIDELITY_GIFT_LABELS.unknown),
@@ -210,7 +206,7 @@ function renderFidelityTable(entries) {
   if (!entries.length) {
     fidelityTableBodyElement.innerHTML = `
       <tr>
-        <td colspan="9">Nenhum atleta encontrado para o filtro atual.</td>
+        <td colspan="8">Nenhum atleta encontrado para o filtro atual.</td>
       </tr>
     `;
     return;
@@ -223,8 +219,7 @@ function renderFidelityTable(entries) {
         <td>${escapeHtml(entry.plan || "-")}</td>
         <td>${escapeHtml(entry.startText || "-")}</td>
         <td>${escapeHtml(entry.endText || "-")}</td>
-        <td>${escapeHtml(entry.usedText || formatCurrency(entry.usedValue))}</td>
-        <td>${escapeHtml(entry.balanceText || formatCurrency(entry.balanceValue))}</td>
+        <td>${escapeHtml(entry.bonusText || formatCurrency(entry.bonusValue))}</td>
         <td>${escapeHtml(entry.validityText || "-")}</td>
         <td>${renderGiftBadge(entry.giftsStatus, entry.giftsText)}</td>
         <td>${renderStatusBadge(entry.status)}</td>
@@ -254,8 +249,7 @@ function renderFidelityCards(entries) {
         <div class="fidelity-meta-grid">
           ${renderCardMetaItem("Inicio", entry.startText)}
           ${renderCardMetaItem("Termino", entry.endText)}
-          ${renderCardMetaItem("Utilizado", entry.usedText || formatCurrency(entry.usedValue))}
-          ${renderCardMetaItem("Saldo", entry.balanceText || formatCurrency(entry.balanceValue))}
+          ${renderCardMetaItem("B\u00f4nus", entry.bonusText || formatCurrency(entry.bonusValue))}
           ${renderCardMetaItem("Vigencia ate", entry.validityText)}
           ${renderCardMetaItem("Brindes", entry.giftsText, renderGiftBadge(entry.giftsStatus, entry.giftsText))}
         </div>
@@ -355,7 +349,7 @@ function renderFidelityEmptyState(message) {
 
   fidelityTableBodyElement.innerHTML = `
     <tr>
-      <td colspan="9">${escapeHtml(message)}</td>
+      <td colspan="8">${escapeHtml(message)}</td>
     </tr>
   `;
 
