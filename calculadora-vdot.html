@@ -106,6 +106,61 @@
       </p>
     </section>
 
+    <section class="panel vdot-adjustment-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Ajustes</p>
+          <h2>Filtros do dia</h2>
+        </div>
+        <span id="vdot-adjustment-impact" class="count-badge">Ritmos base</span>
+      </div>
+
+      <p class="rp-ranking-source-note">
+        Informe as condicoes estimadas do dia. O VDOT continua igual; os ajustes entram apenas nos ritmos sugeridos abaixo usando inclinacao, vento e correcao termica aproximada.
+      </p>
+
+      <div class="vdot-adjustment-grid">
+        <article class="vdot-filter-card">
+          <span class="vdot-filter-label">Vento</span>
+          <label class="field">
+            <span>Direcao</span>
+            <select id="vdot-wind-direction">
+              <option value="neutral">Neutro</option>
+              <option value="headwind">Contra</option>
+              <option value="tailwind">A favor</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Velocidade (km/h)</span>
+            <input id="vdot-wind-speed" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
+            <small class="field-help">Use 0 para manter a referencia sem efeito de vento.</small>
+          </label>
+        </article>
+
+        <article class="vdot-filter-card">
+          <span class="vdot-filter-label">Inclinação</span>
+          <label class="field">
+            <span>Inclinacao media (%)</span>
+            <input id="vdot-grade-percent" type="number" inputmode="decimal" step="0.1" placeholder="0">
+            <small class="field-help">Valor positivo para subida e negativo para descida.</small>
+          </label>
+        </article>
+
+        <article class="vdot-filter-card">
+          <span class="vdot-filter-label">Temperatura</span>
+          <label class="field">
+            <span>Temperatura (°C)</span>
+            <input id="vdot-temperature" type="number" inputmode="decimal" step="1" placeholder="18">
+            <small class="field-help">Aplicamos uma correcao aproximada para calor e frio forte.</small>
+          </label>
+        </article>
+      </div>
+
+      <p id="vdot-adjustment-note" class="vdot-adjustment-note">
+        Sem ajustes aplicados. Os ritmos abaixo mostram a referência base do seu VDOT.
+      </p>
+    </section>
+
     <section class="panel vdot-zones-panel">
       <div class="overview-header">
         <div>

@@ -1165,6 +1165,7 @@ textarea {
 .vdot-hero,
 .vdot-form-panel,
 .vdot-summary-panel,
+.vdot-adjustment-panel,
 .vdot-zones-panel,
 .vdot-equivalent-panel,
 .vdot-info-panel,
@@ -1569,6 +1570,53 @@ textarea {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+}
+
+.vdot-adjustment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.vdot-filter-card {
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.vdot-filter-card .field:last-child {
+  margin-bottom: 0;
+}
+
+.vdot-filter-label {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vdot-filter-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vdot-adjustment-note {
+  margin: 16px 0 0;
+  color: #fff3eb;
+  line-height: 1.6;
+}
+
+.vdot-zone-impact {
+  display: block;
+  margin-top: 10px;
+  color: #ffd8c2;
+  font-size: 0.92rem;
 }
 
 .vdot-info-card h3 {
@@ -3563,6 +3611,7 @@ tbody tr:hover {
   .rp-meta-grid,
   .collective-session-grid,
   .collective-callout-grid,
+  .vdot-adjustment-grid,
   .vdot-info-grid {
     grid-template-columns: 1fr;
   }
@@ -3655,6 +3704,7 @@ tbody tr:hover {
   .vdot-hero,
   .vdot-form-panel,
   .vdot-summary-panel,
+  .vdot-adjustment-panel,
   .vdot-zones-panel,
   .vdot-equivalent-panel,
   .vdot-info-panel,
