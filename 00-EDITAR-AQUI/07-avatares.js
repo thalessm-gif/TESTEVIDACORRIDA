@@ -32,6 +32,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Daiane Marins Landgraf":  "daiane-landgraf.jpg",
                    "Daise Da Fontoura Nicolette":  "daise_nicolette.jpg",
                    "Deise Paiva Ferreira":  "deise-paiva.jpg",
+                   "Diego Sosa":  "diego-sosa.jpg",
                    "Eduarda Constantino":  "eduarda_constantino.jpg",
                    "Elizabete Crexi Ortiz":  "elizabete_crexi.jpg",
                    "Emilly Lamotte":  "emilly_lamotte.jpg",
@@ -52,6 +53,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Janaina Garcia Mascarenhas":  "janaina_mascarenhas.jpg",
                    "Janaina Jaques De Souza":  "janaina_jaques.jpg",
                    "Joana Ribeiro":  "joana-ribeiro.jpg",
+                   "Jose Lucas Neves":  "jose-lucas.jpg",
                    "Josepher Veleda Caetano":  "josepher_veleda.jpg",
                    "Juliano Bartz Oswald":  "juliano-bartz.jpg",
                    "Julio Araujo":  "julio-araujo.jpg",
@@ -89,6 +91,7 @@ window.VIDA_CORRIDA_AVATAR_DATA = {
                    "Thiago Edom Nunes":  "thiago_edom.jpg",
                    "Thiago Milano Di Gesu":  "thiago_di_gesu.jpg",
                    "Tuana da Costa Heres":  "tuana-heres.jpg",
-                   "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpg"
+                   "Vanessa Sobrosa Souza":  "vanessa-sorboza.jpg",
+                   "Vania Rodalles":  "vania-rodalles.jpg"
                }
 };
