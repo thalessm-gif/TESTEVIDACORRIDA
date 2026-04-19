@@ -2,8 +2,7 @@
 // Use este arquivo para abrir, fechar e configurar o treino coletivo atual.
 const collectiveSystemConfig = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
 const collectiveSharedGoogleScriptUrl = String(
-  ((collectiveSystemConfig.googleAppsScript || {}).url) ||
-  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+  ((collectiveSystemConfig.googleAppsScript || {}).url) || ""
 ).trim();
 const collectiveSharedConfig = collectiveSystemConfig.collectiveTraining || {};
 
