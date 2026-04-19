@@ -1,7 +1,6 @@
 const FEEDBACK_SYSTEM_CONFIG = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
 const FEEDBACK_SHARED_GOOGLE_SCRIPT_URL = String(
-  ((FEEDBACK_SYSTEM_CONFIG.googleAppsScript || {}).url) ||
-  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+  ((FEEDBACK_SYSTEM_CONFIG.googleAppsScript || {}).url) || ""
 ).trim();
 const FEEDBACK_FEATURE_CONFIG = FEEDBACK_SYSTEM_CONFIG.siteFeedback || {};
 const FEEDBACK_GOOGLE_SCRIPT_URL = FEEDBACK_SHARED_GOOGLE_SCRIPT_URL;

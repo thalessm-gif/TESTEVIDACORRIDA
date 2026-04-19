@@ -4,9 +4,9 @@ Este projeto foi reorganizado para separar o que voce pode editar do que faz par
 
 ## Onde editar
 
-Use a pasta [00-EDITAR-AQUI](<C:\Users\thales.mirapalheta\Documents\New project 5\00-EDITAR-AQUI>) para as mudancas do dia a dia.
+Use a pasta [00-EDITAR-AQUI](00-EDITAR-AQUI/) para as mudancas do dia a dia.
 
-Se quiser editar sem abrir os arquivos manualmente, use [ABRIR-EDITOR-DO-SITE.cmd](<C:\Users\thales.mirapalheta\Documents\New project 5\00-EDITAR-AQUI\ABRIR-EDITOR-DO-SITE.cmd>). Ele abre uma janela do Windows com abas para cada arquivo editavel e cria backups automaticos em `_backups`.
+Se quiser editar sem abrir os arquivos manualmente, use [ABRIR-EDITOR-DO-SITE.cmd](00-EDITAR-AQUI/ABRIR-EDITOR-DO-SITE.cmd). Ele abre uma janela do Windows com abas para cada arquivo editavel e cria backups automaticos em `_backups`.
 
 Arquivos principais:
 
@@ -99,7 +99,7 @@ Use esse passo sempre que mexer em HTML, CSS ou JS do site. Se a mudanca for so 
 
 Se precisar atualizar o backend da planilha:
 
-1. Abra a pasta [google-apps-script](<C:\Users\thales.mirapalheta\Documents\New project 5\google-apps-script>)
+1. Abra a pasta [google-apps-script](google-apps-script/)
 2. Publique novamente o aplicativo da web no Apps Script
 3. Se a URL mudar, atualize `00-EDITAR-AQUI/01-sistema-config.js`
 

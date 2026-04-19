@@ -1,7 +1,6 @@
 const KIT_SYSTEM_CONFIG = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
 const KIT_SHARED_GOOGLE_SCRIPT_URL = String(
-  ((KIT_SYSTEM_CONFIG.googleAppsScript || {}).url) ||
-  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+  ((KIT_SYSTEM_CONFIG.googleAppsScript || {}).url) || ""
 ).trim();
 const KIT_FEATURE_CONFIG = KIT_SYSTEM_CONFIG.kitWithdrawal || {};
 const DEFAULT_DISTANCE_OPTIONS = ["3km", "5km", "10km", "21km"];

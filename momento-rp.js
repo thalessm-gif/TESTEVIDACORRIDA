@@ -1,7 +1,6 @@
 const RP_SYSTEM_CONFIG = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
 const RP_SHARED_GOOGLE_SCRIPT_URL = String(
-  ((RP_SYSTEM_CONFIG.googleAppsScript || {}).url) ||
-  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
+  ((RP_SYSTEM_CONFIG.googleAppsScript || {}).url) || ""
 ).trim();
 const RP_FEATURE_CONFIG = RP_SYSTEM_CONFIG.momentoRp || {};
 const RP_STORAGE_KEY = "momento-rp-entries";
