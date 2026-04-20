@@ -427,7 +427,7 @@ function openCalendarInterestModal(raceId, responseType) {
   document.body.classList.add("calendar-interest-modal-open");
 
   window.setTimeout(() => {
-    if (calendarInterestAthleteNameInput) {
+    if (calendarInterestAthleteNameInput && shouldAutoFocusCalendarInterestInput()) {
       calendarInterestAthleteNameInput.focus();
     }
   }, 20);
@@ -451,6 +451,14 @@ function closeCalendarInterestModal() {
 
 function isCalendarInterestModalOpen() {
   return Boolean(calendarInterestModal) && !calendarInterestModal.classList.contains("calendar-interest-modal-hidden");
+}
+
+function shouldAutoFocusCalendarInterestInput() {
+  if (!window.matchMedia) {
+    return true;
+  }
+
+  return window.matchMedia("(pointer: fine) and (min-width: 720px)").matches;
 }
 
 function setSelectedResponseType(value) {

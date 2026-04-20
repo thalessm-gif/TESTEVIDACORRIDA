@@ -2690,6 +2690,9 @@ textarea {
   display: grid;
   place-items: center;
   padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .calendar-interest-modal-hidden {
@@ -2707,7 +2710,14 @@ textarea {
   position: relative;
   z-index: 1;
   width: min(100%, 680px);
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 28px;
+  box-sizing: border-box;
+  scroll-padding-bottom: 96px;
 }
 
 .calendar-interest-close {
@@ -3843,11 +3853,14 @@ tbody tr:hover {
   }
 
   .calendar-interest-modal {
-    padding: 14px;
+    place-items: start center;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(18px, env(safe-area-inset-bottom));
   }
 
   .calendar-interest-dialog {
-    padding: 22px 18px;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 22px 18px 28px;
   }
 
   .calendar-interest-type-grid {
