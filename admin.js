@@ -4,6 +4,7 @@
     ((systemConfig.googleAppsScript || {}).url) || ""
   ).trim();
   const ADMIN_TOKEN_KEY = "vida-corrida-admin-token";
+  const ADMIN_TIME_ZONE_OFFSET = "-03:00";
 
   const loginForm = document.getElementById("admin-login-form");
   const passwordInput = document.getElementById("admin-password");
@@ -219,8 +220,8 @@
     fields.collectiveId.value = session.id || "";
     fields.collectiveTitle.value = session.title || "";
     fields.collectiveDescription.value = session.description || "";
-    fields.collectiveStartsAtIso.value = session.startsAtIso || "";
-    fields.collectiveDecisionDeadlineIso.value = session.decisionDeadlineIso || "";
+    fields.collectiveStartsAtIso.value = toDateTimeLocalValue(session.startsAtIso);
+    fields.collectiveDecisionDeadlineIso.value = toDateTimeLocalValue(session.decisionDeadlineIso);
     fields.collectiveLocation.value = session.location || "";
     fields.collectiveMinimumParticipants.value = session.minimumParticipants || 5;
     fields.collectiveStatusMode.value = session.statusMode === "cancelled" ? "cancelled" : "automatic";
@@ -232,7 +233,7 @@
   }
 
   function readForm() {
-    const startsAtIso = getFieldValue(fields.collectiveStartsAtIso);
+    const startsAtIso = toAdminIsoDateTime(fields.collectiveStartsAtIso);
 
     return {
       kitWithdrawal: {
@@ -248,7 +249,7 @@
           title: getFieldValue(fields.collectiveTitle),
           description: getFieldValue(fields.collectiveDescription),
           startsAtIso,
-          decisionDeadlineIso: getFieldValue(fields.collectiveDecisionDeadlineIso),
+          decisionDeadlineIso: toAdminIsoDateTime(fields.collectiveDecisionDeadlineIso),
           location: getFieldValue(fields.collectiveLocation),
           minimumParticipants: Number(fields.collectiveMinimumParticipants.value || 5),
           statusMode: getFieldValue(fields.collectiveStatusMode) === "cancelled" ? "cancelled" : "automatic",
@@ -273,6 +274,23 @@
     }
 
     return `treino-coletivo-${normalizedDate.slice(0, 4)}-${normalizedDate.slice(4, 6)}-${normalizedDate.slice(6, 8)}-${normalizedDate.slice(8, 12)}`;
+  }
+
+  function toDateTimeLocalValue(isoValue) {
+    const safeValue = String(isoValue || "").trim();
+    const match = safeValue.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+    return match ? match[1] : "";
+  }
+
+  function toAdminIsoDateTime(field) {
+    const safeValue = getFieldValue(field);
+    const match = safeValue.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::(\d{2}))?/);
+
+    if (!match) {
+      return safeValue;
+    }
+
+    return `${match[1]}T${match[2]}:${match[3] || "00"}${ADMIN_TIME_ZONE_OFFSET}`;
   }
 
   function getFieldValue(field) {
