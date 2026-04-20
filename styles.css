@@ -2820,6 +2820,15 @@ textarea {
   color: #fff1e8;
 }
 
+.calendar-race-records-button {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 4px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
 .calendar-race-link {
   display: inline-flex;
   align-items: center;
@@ -2955,6 +2964,29 @@ textarea {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.03);
+}
+
+.calendar-records-panel {
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.calendar-records-panel-hidden {
+  display: none;
+}
+
+.calendar-records-field {
+  margin-bottom: 8px;
+}
+
+.calendar-records-message {
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .calendar-interest-summary-copy {

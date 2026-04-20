@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260420-101500">
+  <link rel="stylesheet" href="styles.css?v=20260420-103000">
 </head>
 <body>
   <main class="page">
@@ -95,6 +95,16 @@
         <div id="calendar-interest-modal-chips" class="calendar-interest-chip-list"></div>
       </div>
 
+      <div id="calendar-records-panel" class="calendar-records-panel calendar-records-panel-hidden" aria-live="polite">
+        <label class="field calendar-records-field">
+          <span>Registro existente</span>
+          <select id="calendar-records-select">
+            <option value="">Carregando registros...</option>
+          </select>
+        </label>
+        <p id="calendar-records-message" class="calendar-records-message"></p>
+      </div>
+
       <form id="calendar-interest-form" novalidate>
         <div class="calendar-interest-type-grid" role="radiogroup" aria-label="Tipo de resposta">
           <button
@@ -159,7 +169,7 @@
   <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260419-223037"></script>
   <script src="00-EDITAR-AQUI/06-lista-atletas.js?v=20260419-223037"></script>
   <script src="00-EDITAR-AQUI/05-calendario-provas.js?v=20260419-223037"></script>
-  <script src="calendar.js?v=20260420-101500"></script>
+  <script src="calendar.js?v=20260420-103000"></script>
 </body>
 </html>
 

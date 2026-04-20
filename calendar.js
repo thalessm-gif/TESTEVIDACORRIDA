@@ -12,6 +12,9 @@ const CALENDAR_GOOGLE_SCRIPT_URL = String(
 const CALENDAR_INTEREST_LIST_ACTION = String(
   calendarFeatureConfig.listAction || "calendar-race-interest-summary-list"
 ).trim();
+const CALENDAR_INTEREST_ENTRIES_ACTION = String(
+  calendarFeatureConfig.entriesAction || "calendar-race-interest-entry-list"
+).trim();
 const CALENDAR_INTEREST_RESOURCE = String(
   calendarFeatureConfig.resource || "calendarRaceInterest"
 ).trim();
@@ -40,11 +43,15 @@ const statusSpinner = document.getElementById("status-spinner");
 const calendarInterestModal = document.getElementById("calendar-interest-modal");
 const calendarInterestCloseButton = document.getElementById("calendar-interest-close");
 const calendarInterestForm = document.getElementById("calendar-interest-form");
+const calendarInterestModalTitle = document.getElementById("calendar-interest-modal-title");
 const calendarInterestRaceLabel = document.getElementById("calendar-interest-modal-race");
 const calendarInterestModalChips = document.getElementById("calendar-interest-modal-chips");
 const calendarInterestAthleteNameInput = document.getElementById("calendar-interest-athlete-name");
 const calendarInterestDistanceInput = document.getElementById("calendar-interest-distance");
 const calendarInterestTrainerSelect = document.getElementById("calendar-interest-trainer");
+const calendarRecordsPanel = document.getElementById("calendar-records-panel");
+const calendarRecordsSelect = document.getElementById("calendar-records-select");
+const calendarRecordsMessage = document.getElementById("calendar-records-message");
 const calendarInterestAthleteSuggestions = document.getElementById("calendar-interest-athlete-suggestions");
 const calendarInterestDistanceSuggestions = document.getElementById("calendar-interest-distance-suggestions");
 const calendarInterestFormMessage = document.getElementById("calendar-interest-form-message");
@@ -58,6 +65,8 @@ let calendarRaceSummaryById = new Map();
 let calendarRaceAliasMap = new Map();
 let calendarSelectedRaceId = "";
 let calendarSelectedResponseType = "interested";
+let calendarRecordsMode = false;
+let calendarLoadedRaceRecords = [];
 let statusHideTimeoutId = null;
 let calendarLastFocusedElement = null;
 
@@ -116,6 +125,10 @@ function attachCalendarEventListeners() {
 
   if (calendarInterestForm) {
     calendarInterestForm.addEventListener("submit", handleCalendarInterestSubmit);
+  }
+
+  if (calendarRecordsSelect) {
+    calendarRecordsSelect.addEventListener("change", handleCalendarRecordSelectChange);
   }
 
   calendarInterestTypeButtons.forEach((button) => {
@@ -258,6 +271,17 @@ function renderMonthSection(group) {
 function renderRaceCard(entry) {
   const summary = getCalendarRaceSummary(entry.id);
   const signupMarkup = buildCalendarSignupMarkup(entry);
+  const recordsButtonMarkup = entry.isFinished
+    ? ""
+    : `
+        <button
+          type="button"
+          class="secondary-button calendar-race-records-button"
+          data-calendar-records="${escapeHtmlAttribute(entry.id)}"
+        >
+          Registros
+        </button>
+      `;
   const responseButtonsMarkup = entry.isFinished
     ? ""
     : `
@@ -327,6 +351,7 @@ function renderRaceCard(entry) {
           <div class="calendar-race-chip-list">
             ${buildCalendarInterestChipsMarkup(summary)}
           </div>
+          ${recordsButtonMarkup}
         </div>
       </div>
 
@@ -366,6 +391,20 @@ function buildCalendarInterestChipsMarkup(summary) {
 }
 
 function handleCalendarRaceListClick(event) {
+  const recordsButton = event.target.closest("[data-calendar-records]");
+  if (recordsButton) {
+    const raceId = String(recordsButton.dataset.calendarRecords || "").trim();
+    const entry = getCalendarEntryById(raceId);
+
+    if (!entry || entry.isFinished) {
+      return;
+    }
+
+    calendarLastFocusedElement = recordsButton;
+    openCalendarInterestModal(raceId, "registered", { recordsMode: true });
+    return;
+  }
+
   const actionButton = event.target.closest("[data-calendar-response]");
   if (!actionButton) {
     return;
@@ -387,7 +426,7 @@ function handleCalendarRaceListClick(event) {
   openCalendarInterestModal(raceId, responseType);
 }
 
-function openCalendarInterestModal(raceId, responseType) {
+function openCalendarInterestModal(raceId, responseType, options = {}) {
   if (!calendarInterestModal || !calendarInterestForm || !calendarInterestRaceLabel) {
     return;
   }
@@ -398,19 +437,25 @@ function openCalendarInterestModal(raceId, responseType) {
   }
 
   calendarSelectedRaceId = raceId;
+  calendarRecordsMode = options.recordsMode === true;
   clearCalendarInterestMessage();
+  resetCalendarRecordsPanel();
   setSelectedResponseType(responseType);
   updateCalendarDistanceSuggestions(entry);
   updateCalendarModalSummary(entry.id);
 
-  const preservedName = normalizeCalendarText(calendarInterestAthleteNameInput && calendarInterestAthleteNameInput.value);
-  const preservedTrainer = normalizeCalendarTrainerValue(
-    calendarInterestTrainerSelect && calendarInterestTrainerSelect.value
-  );
+  const shouldPreserveValues = !calendarRecordsMode;
+  const preservedName = shouldPreserveValues
+    ? normalizeCalendarText(calendarInterestAthleteNameInput && calendarInterestAthleteNameInput.value)
+    : "";
+  const preservedTrainer = shouldPreserveValues
+    ? normalizeCalendarTrainerValue(calendarInterestTrainerSelect && calendarInterestTrainerSelect.value)
+    : "";
   calendarInterestForm.reset();
 
   if (calendarInterestAthleteNameInput) {
     calendarInterestAthleteNameInput.value = preservedName;
+    calendarInterestAthleteNameInput.readOnly = calendarRecordsMode;
   }
 
   if (calendarInterestDistanceInput) {
@@ -418,7 +463,13 @@ function openCalendarInterestModal(raceId, responseType) {
   }
 
   if (calendarInterestTrainerSelect) {
-    calendarInterestTrainerSelect.value = preservedTrainer;
+    setCalendarTrainerSelectValue(preservedTrainer);
+  }
+
+  if (calendarInterestModalTitle) {
+    calendarInterestModalTitle.textContent = calendarRecordsMode
+      ? "Registros da prova"
+      : "Atualize sua situa\u00e7\u00e3o na prova";
   }
 
   calendarInterestRaceLabel.textContent = buildCalendarModalRaceLabel(entry);
@@ -426,8 +477,12 @@ function openCalendarInterestModal(raceId, responseType) {
   calendarInterestModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("calendar-interest-modal-open");
 
+  if (calendarRecordsMode) {
+    void loadCalendarRaceRecords(entry);
+  }
+
   window.setTimeout(() => {
-    if (calendarInterestAthleteNameInput && shouldAutoFocusCalendarInterestInput()) {
+    if (!calendarRecordsMode && calendarInterestAthleteNameInput && shouldAutoFocusCalendarInterestInput()) {
       calendarInterestAthleteNameInput.focus();
     }
   }, 20);
@@ -442,6 +497,11 @@ function closeCalendarInterestModal() {
   calendarInterestModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("calendar-interest-modal-open");
   calendarSelectedRaceId = "";
+  calendarRecordsMode = false;
+  if (calendarInterestAthleteNameInput) {
+    calendarInterestAthleteNameInput.readOnly = false;
+  }
+  resetCalendarRecordsPanel();
   clearCalendarInterestMessage();
 
   if (calendarLastFocusedElement && typeof calendarLastFocusedElement.focus === "function") {
@@ -459,6 +519,117 @@ function shouldAutoFocusCalendarInterestInput() {
   }
 
   return window.matchMedia("(pointer: fine) and (min-width: 720px)").matches;
+}
+
+function resetCalendarRecordsPanel() {
+  calendarLoadedRaceRecords = [];
+
+  if (calendarRecordsPanel) {
+    calendarRecordsPanel.classList.add("calendar-records-panel-hidden");
+  }
+
+  if (calendarRecordsSelect) {
+    calendarRecordsSelect.innerHTML = '<option value="">Carregando registros...</option>';
+    calendarRecordsSelect.disabled = true;
+  }
+
+  showCalendarRecordsMessage("");
+}
+
+async function loadCalendarRaceRecords(entry) {
+  if (!calendarRecordsPanel || !calendarRecordsSelect) {
+    return;
+  }
+
+  const expectedRaceId = entry.id;
+
+  calendarRecordsPanel.classList.remove("calendar-records-panel-hidden");
+  calendarLoadedRaceRecords = [];
+  calendarRecordsSelect.disabled = true;
+  calendarRecordsSelect.innerHTML = '<option value="">Carregando registros...</option>';
+  showCalendarRecordsMessage("Buscando registros desta prova...");
+
+  try {
+    const records = await fetchCalendarRaceRecords(entry, { throwOnError: true });
+    if (!calendarRecordsMode || calendarSelectedRaceId !== expectedRaceId) {
+      return;
+    }
+
+    calendarLoadedRaceRecords = records;
+
+    if (!records.length) {
+      calendarRecordsSelect.innerHTML = '<option value="">Nenhum registro encontrado</option>';
+      showCalendarRecordsMessage("Ainda nao ha registros para editar nesta prova.");
+      return;
+    }
+
+    calendarRecordsSelect.innerHTML = [
+      '<option value="">Selecione um registro</option>',
+      ...records.map((record) => (
+        `<option value="${escapeHtmlAttribute(record.id)}">${escapeHtml(buildCalendarRecordOptionLabel(record))}</option>`
+      ))
+    ].join("");
+    calendarRecordsSelect.disabled = false;
+    showCalendarRecordsMessage("Escolha um registro para carregar os dados no formulario.");
+  } catch (error) {
+    console.error("Erro ao carregar registros da prova:", error);
+    calendarRecordsSelect.innerHTML = '<option value="">Erro ao carregar registros</option>';
+    showCalendarRecordsMessage("Nao foi possivel carregar os registros agora.", true);
+  }
+}
+
+function handleCalendarRecordSelectChange() {
+  if (!calendarRecordsSelect) {
+    return;
+  }
+
+  const selectedRecordId = normalizeCalendarText(calendarRecordsSelect.value);
+  const selectedRecord = calendarLoadedRaceRecords.find((record) => record.id === selectedRecordId);
+
+  if (!selectedRecord) {
+    return;
+  }
+
+  fillCalendarInterestFormFromRecord(selectedRecord);
+}
+
+function fillCalendarInterestFormFromRecord(record) {
+  setSelectedResponseType(record.responseType);
+
+  if (calendarInterestAthleteNameInput) {
+    calendarInterestAthleteNameInput.value = record.fullName;
+  }
+
+  if (calendarInterestDistanceInput) {
+    calendarInterestDistanceInput.value = record.distance;
+    calendarInterestDistanceInput.focus();
+  }
+
+  setCalendarTrainerSelectValue(record.trainerName);
+  showCalendarRecordsMessage("Registro carregado. Ajuste a distancia e salve.");
+}
+
+function showCalendarRecordsMessage(message, isError = false) {
+  if (!calendarRecordsMessage) {
+    return;
+  }
+
+  calendarRecordsMessage.textContent = message;
+  calendarRecordsMessage.classList.toggle("form-message-error", isError);
+}
+
+function buildCalendarRecordOptionLabel(record) {
+  return [
+    record.fullName,
+    getCalendarResponseTypeLabel(record.responseType),
+    record.distance
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+function getCalendarResponseTypeLabel(responseType) {
+  return responseType === "registered" ? "inscrito" : "interessado";
 }
 
 function setSelectedResponseType(value) {
@@ -494,6 +665,12 @@ async function handleCalendarInterestSubmit(event) {
   const distance = normalizeCalendarText(calendarInterestDistanceInput && calendarInterestDistanceInput.value);
   const trainerName = normalizeCalendarTrainerValue(calendarInterestTrainerSelect && calendarInterestTrainerSelect.value);
 
+  if (calendarRecordsMode && calendarRecordsSelect && !normalizeCalendarText(calendarRecordsSelect.value)) {
+    showCalendarInterestMessage("Selecione um registro antes de salvar a edicao.", true);
+    calendarRecordsSelect.focus();
+    return;
+  }
+
   if (!fullName) {
     showCalendarInterestMessage("Digite o nome do atleta.", true);
     if (calendarInterestAthleteNameInput) {
@@ -517,6 +694,8 @@ async function handleCalendarInterestSubmit(event) {
     }
     return;
   }
+
+  const wasRecordsMode = calendarRecordsMode;
 
   setCalendarInterestFormDisabled(true);
   showStatus({
@@ -562,7 +741,9 @@ async function handleCalendarInterestSubmit(event) {
     showStatus({
       title: "Resposta registrada",
       text:
-        calendarSelectedResponseType === "registered"
+        wasRecordsMode
+          ? "O registro foi atualizado e uma nova mensagem foi enviada ao Telegram."
+          : calendarSelectedResponseType === "registered"
           ? "A prova foi atualizada com um novo inscrito."
           : "A prova foi atualizada com um novo interessado.",
       tone: "success",
@@ -607,6 +788,41 @@ async function fetchCalendarRaceSummary(options = {}) {
     return Array.isArray(data.entries) ? data.entries.map(normalizeCalendarSummaryEntry).filter(Boolean) : [];
   } catch (error) {
     console.error("Erro ao consultar o resumo das provas:", error);
+    if (throwOnError) {
+      throw error;
+    }
+    return [];
+  }
+}
+
+async function fetchCalendarRaceRecords(entry, options = {}) {
+  const { throwOnError = false } = options;
+
+  if (!isCalendarGoogleScriptConfigured() || !entry) {
+    return [];
+  }
+
+  try {
+    const separator = CALENDAR_GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
+    const raceIds = buildCalendarRaceRequestIds(entry);
+    const response = await fetch(
+      `${CALENDAR_GOOGLE_SCRIPT_URL}${separator}action=${encodeURIComponent(CALENDAR_INTEREST_ENTRIES_ACTION)}&raceId=${encodeURIComponent(entry.id)}&raceIds=${encodeURIComponent(raceIds.join(","))}&ts=${Date.now()}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Resposta inesperada: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data && data.ok === false) {
+      throw new Error(String(data.message || "A consulta dos registros foi rejeitada."));
+    }
+
+    return Array.isArray(data.entries)
+      ? data.entries.map(normalizeCalendarRecordEntry).filter(Boolean)
+      : [];
+  } catch (error) {
+    console.error("Erro ao consultar os registros da prova:", error);
     if (throwOnError) {
       throw error;
     }
@@ -719,6 +935,47 @@ function normalizeCalendarSummaryEntry(entry) {
   };
 }
 
+function normalizeCalendarRecordEntry(entry) {
+  if (!entry) {
+    return null;
+  }
+
+  const fullName = normalizeCalendarText(entry.fullName);
+  const distance = normalizeCalendarText(entry.distance);
+  const trainerName = normalizeCalendarText(entry.trainerName);
+  const responseType = normalizeCalendarResponseType(entry.responseType);
+  const raceId = resolveCalendarRaceId(entry.raceId);
+
+  if (!fullName || !distance || !trainerName || !responseType || !raceId) {
+    return null;
+  }
+
+  return {
+    id: normalizeCalendarText(entry.id) || `${raceId}-${slugifyCalendarText(fullName)}`,
+    raceId,
+    raceTitle: normalizeCalendarText(entry.raceTitle),
+    raceDate: normalizeCalendarDateValue(entry.raceDate),
+    raceTime: normalizeCalendarTime(entry.raceTime),
+    raceLocation: normalizeCalendarText(entry.raceLocation),
+    fullName,
+    distance,
+    responseType,
+    trainerName
+  };
+}
+
+function normalizeCalendarResponseType(value) {
+  return String(value || "").trim().toLowerCase() === "registered" ? "registered" : "interested";
+}
+
+function buildCalendarRaceRequestIds(entry) {
+  return [entry && entry.id]
+    .concat((entry && entry.legacyIds) || [])
+    .map((raceId) => normalizeCalendarText(raceId))
+    .filter(Boolean)
+    .filter((raceId, index, list) => list.indexOf(raceId) === index);
+}
+
 function normalizeCount(value) {
   const parsedValue = Number.parseInt(String(value || "").trim(), 10);
   return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : 0;
@@ -772,6 +1029,23 @@ function updateCalendarTrainerOptions() {
   ].join("");
 }
 
+function setCalendarTrainerSelectValue(value) {
+  if (!calendarInterestTrainerSelect) {
+    return;
+  }
+
+  const safeValue = normalizeCalendarText(value);
+
+  if (safeValue && !Array.from(calendarInterestTrainerSelect.options).some((option) => option.value === safeValue)) {
+    const option = document.createElement("option");
+    option.value = safeValue;
+    option.textContent = safeValue;
+    calendarInterestTrainerSelect.appendChild(option);
+  }
+
+  calendarInterestTrainerSelect.value = safeValue;
+}
+
 function updateCalendarDistanceSuggestions(entry) {
   if (!calendarInterestDistanceSuggestions) {
     return;
@@ -793,6 +1067,10 @@ function setCalendarInterestFormDisabled(disabled) {
 
   if (calendarInterestTrainerSelect) {
     calendarInterestTrainerSelect.disabled = disabled;
+  }
+
+  if (calendarRecordsSelect) {
+    calendarRecordsSelect.disabled = disabled || !calendarLoadedRaceRecords.length;
   }
 
   if (calendarInterestSubmitButton) {
@@ -862,6 +1140,13 @@ function normalizeCalendarTrainerValue(value) {
 
   if (!safeValue) {
     return "";
+  }
+
+  if (
+    calendarInterestTrainerSelect &&
+    Array.from(calendarInterestTrainerSelect.options).some((option) => option.value === safeValue)
+  ) {
+    return safeValue;
   }
 
   return getCalendarTrainerOptions().includes(safeValue) ? safeValue : "";
