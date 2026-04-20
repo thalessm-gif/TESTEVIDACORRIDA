@@ -574,7 +574,7 @@ async function loadCalendarRaceRecords(entry) {
   } catch (error) {
     console.error("Erro ao carregar registros da prova:", error);
     calendarRecordsSelect.innerHTML = '<option value="">Erro ao carregar registros</option>';
-    showCalendarRecordsMessage("Nao foi possivel carregar os registros agora.", true);
+    showCalendarRecordsMessage(getCalendarRecordsErrorMessage(error), true);
   }
 }
 
@@ -616,6 +616,16 @@ function showCalendarRecordsMessage(message, isError = false) {
 
   calendarRecordsMessage.textContent = message;
   calendarRecordsMessage.classList.toggle("form-message-error", isError);
+}
+
+function getCalendarRecordsErrorMessage(error) {
+  const message = String(error && error.message ? error.message : error || "");
+
+  if (isCalendarInvalidActionError(error)) {
+    return "Atualize e publique o Apps Script para liberar a lista de registros.";
+  }
+
+  return "Nao foi possivel carregar os registros agora.";
 }
 
 function buildCalendarRecordOptionLabel(record) {
@@ -802,25 +812,31 @@ async function fetchCalendarRaceRecords(entry, options = {}) {
     return [];
   }
 
+  const raceIds = buildCalendarRaceRequestIds(entry);
+
   try {
-    const separator = CALENDAR_GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
-    const raceIds = buildCalendarRaceRequestIds(entry);
-    const response = await fetch(
-      `${CALENDAR_GOOGLE_SCRIPT_URL}${separator}action=${encodeURIComponent(CALENDAR_INTEREST_ENTRIES_ACTION)}&raceId=${encodeURIComponent(entry.id)}&raceIds=${encodeURIComponent(raceIds.join(","))}&ts=${Date.now()}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Resposta inesperada: ${response.status}`);
+    try {
+      return await fetchCalendarRaceRecordsWithAction({
+        action: CALENDAR_INTEREST_ENTRIES_ACTION,
+        entry,
+        raceIds,
+        recordsKey: "entries"
+      });
+    } catch (error) {
+      if (!isCalendarInvalidActionError(error)) {
+        throw error;
+      }
     }
 
-    const data = await response.json();
-    if (data && data.ok === false) {
-      throw new Error(String(data.message || "A consulta dos registros foi rejeitada."));
-    }
-
-    return Array.isArray(data.entries)
-      ? data.entries.map(normalizeCalendarRecordEntry).filter(Boolean)
-      : [];
+    return await fetchCalendarRaceRecordsWithAction({
+      action: CALENDAR_INTEREST_LIST_ACTION,
+      entry,
+      raceIds,
+      recordsKey: "records",
+      extraParams: {
+        includeRecords: "true"
+      }
+    });
   } catch (error) {
     console.error("Erro ao consultar os registros da prova:", error);
     if (throwOnError) {
@@ -828,6 +844,40 @@ async function fetchCalendarRaceRecords(entry, options = {}) {
     }
     return [];
   }
+}
+
+async function fetchCalendarRaceRecordsWithAction(options) {
+  const params = new URLSearchParams({
+    action: options.action,
+    raceId: options.entry.id,
+    raceIds: options.raceIds.join(","),
+    ts: String(Date.now())
+  });
+
+  Object.entries(options.extraParams || {}).forEach(([key, value]) => {
+    params.set(key, value);
+  });
+
+  const separator = CALENDAR_GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?";
+  const response = await fetch(`${CALENDAR_GOOGLE_SCRIPT_URL}${separator}${params.toString()}`);
+
+  if (!response.ok) {
+    throw new Error(`Resposta inesperada: ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (data && data.ok === false) {
+    throw new Error(String(data.message || "A consulta dos registros foi rejeitada."));
+  }
+
+  return Array.isArray(data && data[options.recordsKey])
+    ? data[options.recordsKey].map(normalizeCalendarRecordEntry).filter(Boolean)
+    : [];
+}
+
+function isCalendarInvalidActionError(error) {
+  const message = String(error && error.message ? error.message : error || "");
+  return /acao invalida|a[cç][aã]o invalida/i.test(message);
 }
 
 async function refreshCalendarRaceSummary(options = {}) {
