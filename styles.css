@@ -2509,31 +2509,42 @@ textarea {
 
 .partner-card {
   display: grid;
-  grid-template-rows: 210px 1fr;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  padding: 22px;
   overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
+    var(--panel);
 }
 
 .partner-logo-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 118px;
+  height: 118px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
   background: #f8faf7;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.22);
 }
 
 .partner-logo {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .partner-card-body {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   align-content: start;
-  padding: 24px;
+  min-width: 0;
 }
 
 .partner-category {
@@ -4093,11 +4104,45 @@ tbody tr:hover {
   }
 
   .partner-card {
-    grid-template-rows: 180px 1fr;
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .partner-logo-panel {
+    width: 86px;
+    height: 86px;
+    padding: 7px;
   }
 
   .partner-card-body {
-    padding: 18px;
+    display: contents;
+  }
+
+  .partner-category {
+    grid-column: 2;
+    font-size: 0.72rem;
+  }
+
+  .partner-card h2,
+  .partner-slogan,
+  .partner-info-list {
+    grid-column: 2;
+  }
+
+  .partner-slogan {
+    font-size: 1rem;
+  }
+
+  .partner-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .partner-button {
+    width: 100%;
+    flex-basis: auto;
   }
 
   .trainer-detail-grid {
