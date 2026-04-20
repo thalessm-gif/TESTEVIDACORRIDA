@@ -87,7 +87,7 @@
       });
 
       if (!data.ok) {
-        throw new Error(data.message || "Nao foi possivel entrar.");
+        throw new Error(getAdminErrorMessage(data.message || "Nao foi possivel entrar."));
       }
 
       adminToken = String(data.token || "");
@@ -126,7 +126,7 @@
       });
 
       if (!data.ok) {
-        throw new Error(data.message || "Nao foi possivel salvar.");
+        throw new Error(getAdminErrorMessage(data.message || "Nao foi possivel salvar."));
       }
 
       fillForm(data.config || {});
@@ -158,7 +158,7 @@
       });
 
       if (!data.ok) {
-        throw new Error(data.message || "Nao foi possivel carregar.");
+        throw new Error(getAdminErrorMessage(data.message || "Nao foi possivel carregar."));
       }
 
       fillForm(data.config || {});
@@ -191,6 +191,16 @@
     }
 
     return await response.json();
+  }
+
+  function getAdminErrorMessage(message) {
+    const safeMessage = String(message || "").trim();
+
+    if (/Campos obrigatorios ausentes/i.test(safeMessage)) {
+      return "O Apps Script publicado ainda nao esta com o painel admin atualizado. Publique uma nova versao do Web App com Admin.gs e Code.gs atualizados.";
+    }
+
+    return safeMessage;
   }
 
   function fillForm(config) {
