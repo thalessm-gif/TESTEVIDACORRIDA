@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260419-223037">
+  <link rel="stylesheet" href="styles.css?v=20260420-152559">
 </head>
 <body>
   <main class="page admin-page">
@@ -29,6 +29,8 @@
       </p>
       <p id="admin-status" class="admin-status" aria-live="polite"></p>
     </section>
+
+    <div id="admin-toast" class="admin-toast admin-toast-hidden" role="status" aria-live="polite"></div>
 
     <section id="admin-login-panel" class="panel admin-login-panel">
       <form id="admin-login-form" class="admin-login-form">
@@ -71,46 +73,11 @@
               <span>Nome do Evento</span>
               <input id="admin-kit-event-name" type="text">
             </label>
-
-            <label class="field">
-              <span>Aviso no card da home</span>
-              <input id="admin-kit-home-notice" type="text">
-            </label>
-
-            <label class="field">
-              <span>Texto do botão/card fechado</span>
-              <input id="admin-kit-home-link-text" type="text">
-            </label>
-
-            <label class="field">
-              <span>Título da página fechada</span>
-              <input id="admin-kit-page-title" type="text">
-            </label>
-
-            <label class="field">
-              <span>Texto do botão de envio bloqueado</span>
-              <input id="admin-kit-submit-button-text" type="text">
-            </label>
           </div>
-
-          <label class="field">
-            <span>Mensagem da página fechada</span>
-            <textarea id="admin-kit-page-message" rows="3"></textarea>
-          </label>
 
           <label class="field">
             <span>Dica da Retirada de Kits</span>
             <textarea id="admin-kit-pickup-tip" rows="2"></textarea>
-          </label>
-
-          <label class="field">
-            <span>Mensagem de apoio</span>
-            <textarea id="admin-kit-page-support" rows="2"></textarea>
-          </label>
-
-          <label class="field">
-            <span>Mensagem quando o envio estiver bloqueado</span>
-            <textarea id="admin-kit-submit-message" rows="2"></textarea>
           </label>
         </section>
 
@@ -217,7 +184,7 @@
   </main>
 
   <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260419-223037"></script>
-  <script src="admin.js?v=20260420-081319"></script>
+  <script src="admin.js?v=20260420-152559"></script>
 </body>
 </html>
 

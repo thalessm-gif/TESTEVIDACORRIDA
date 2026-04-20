@@ -83,6 +83,36 @@
   color: #d8ffef;
 }
 
+.admin-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 80;
+  width: min(360px, calc(100vw - 32px));
+  padding: 16px 18px;
+  border: 1px solid rgba(65, 201, 141, 0.55);
+  border-radius: 14px;
+  background: rgba(8, 46, 35, 0.96);
+  color: #d8ffef;
+  font-weight: 700;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.admin-toast-error {
+  border-color: rgba(255, 117, 117, 0.5);
+  background: rgba(66, 18, 18, 0.96);
+  color: #ffd0d0;
+}
+
+.admin-toast-hidden {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
 .admin-actions-panel {
   margin-bottom: 0;
 }

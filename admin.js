@@ -12,6 +12,7 @@
   const configForm = document.getElementById("admin-config-form");
   const refreshButton = document.getElementById("admin-refresh-button");
   const statusElement = document.getElementById("admin-status");
+  const toastElement = document.getElementById("admin-toast");
   const loginPanel = document.getElementById("admin-login-panel");
   const configPanel = document.getElementById("admin-config-panel");
 
@@ -19,14 +20,7 @@
     kitLocked: document.getElementById("admin-kit-locked"),
     kitSubmitLocked: document.getElementById("admin-kit-submit-locked"),
     kitEventName: document.getElementById("admin-kit-event-name"),
-    kitHomeNotice: document.getElementById("admin-kit-home-notice"),
-    kitHomeLinkText: document.getElementById("admin-kit-home-link-text"),
-    kitPageTitle: document.getElementById("admin-kit-page-title"),
-    kitPageMessage: document.getElementById("admin-kit-page-message"),
-    kitPageSupport: document.getElementById("admin-kit-page-support"),
     kitPickupTip: document.getElementById("admin-kit-pickup-tip"),
-    kitSubmitButtonText: document.getElementById("admin-kit-submit-button-text"),
-    kitSubmitMessage: document.getElementById("admin-kit-submit-message"),
     collectiveEnabled: document.getElementById("admin-collective-enabled"),
     collectiveId: document.getElementById("admin-collective-id"),
     collectiveTitle: document.getElementById("admin-collective-title"),
@@ -43,6 +37,7 @@
   };
 
   let adminToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
+  let toastTimeoutId = null;
 
   if (!loginForm || !configForm || !statusElement) {
     return;
@@ -135,12 +130,14 @@
 
       fillForm(data.config || {});
       showStatus("Configuracoes salvas. As paginas publicas ja podem carregar os novos dados.", false, true);
+      showToast("Configuracoes salvas com sucesso.");
     } catch (error) {
       if (/sessao/i.test(error.message || "")) {
         handleLogout();
       }
 
       showStatus(error.message || "Nao foi possivel salvar.", true);
+      showToast(error.message || "Nao foi possivel salvar.", true);
     } finally {
       setConfigDisabled(false);
     }
@@ -216,14 +213,7 @@
     fields.kitLocked.checked = kit.locked === true;
     fields.kitSubmitLocked.checked = kit.submitLocked === true;
     fields.kitEventName.value = kit.eventName || "";
-    fields.kitHomeNotice.value = kit.homeNotice || "";
-    fields.kitHomeLinkText.value = kit.homeLinkText || "";
-    fields.kitPageTitle.value = kit.pageTitle || "";
-    fields.kitPageMessage.value = kit.pageMessage || "";
-    fields.kitPageSupport.value = kit.pageSupport || "";
     fields.kitPickupTip.value = kit.pickupTip || "";
-    fields.kitSubmitButtonText.value = kit.submitButtonText || "";
-    fields.kitSubmitMessage.value = kit.submitMessage || "";
 
     fields.collectiveEnabled.checked = collective.enabled === true;
     fields.collectiveId.value = session.id || "";
@@ -249,14 +239,7 @@
         locked: fields.kitLocked.checked,
         submitLocked: fields.kitSubmitLocked.checked,
         eventName: getFieldValue(fields.kitEventName),
-        homeNotice: getFieldValue(fields.kitHomeNotice),
-        homeLinkText: getFieldValue(fields.kitHomeLinkText),
-        pageTitle: getFieldValue(fields.kitPageTitle),
-        pageMessage: getFieldValue(fields.kitPageMessage),
-        pageSupport: getFieldValue(fields.kitPageSupport),
-        pickupTip: getFieldValue(fields.kitPickupTip),
-        submitButtonText: getFieldValue(fields.kitSubmitButtonText),
-        submitMessage: getFieldValue(fields.kitSubmitMessage)
+        pickupTip: getFieldValue(fields.kitPickupTip)
       },
       collectiveTraining: {
         enabled: fields.collectiveEnabled.checked,
@@ -320,6 +303,22 @@
     statusElement.textContent = message;
     statusElement.classList.toggle("admin-status-error", isError);
     statusElement.classList.toggle("admin-status-success", isSuccess && !isError);
+  }
+
+  function showToast(message, isError = false) {
+    if (!toastElement) {
+      return;
+    }
+
+    clearTimeout(toastTimeoutId);
+    toastElement.textContent = message;
+    toastElement.classList.toggle("admin-toast-error", isError);
+    toastElement.classList.toggle("admin-toast-success", !isError);
+    toastElement.classList.remove("admin-toast-hidden");
+
+    toastTimeoutId = setTimeout(() => {
+      toastElement.classList.add("admin-toast-hidden");
+    }, 4200);
   }
 
   function setLoginDisabled(disabled) {
