@@ -2476,29 +2476,15 @@ textarea {
 }
 
 .partners-hero-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.9fr);
-  gap: 24px;
-  align-items: center;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.partners-hero-markers {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.partners-hero-markers span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 8px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #f3fff9;
-  font-weight: 700;
+.partners-hero .hero-text {
+  max-width: 620px;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .partners-grid {
@@ -3883,10 +3869,6 @@ tbody tr:hover {
   .vdot-info-grid,
   .partners-grid {
     grid-template-columns: 1fr;
-  }
-
-  .partners-hero-markers {
-    justify-content: flex-start;
   }
 
   .calendar-race-summary {
