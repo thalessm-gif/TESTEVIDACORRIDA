@@ -113,6 +113,16 @@
   pointer-events: none;
 }
 
+.admin-date-time-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 10px;
+}
+
+.admin-date-time-fields input {
+  min-width: 0;
+}
+
 .admin-actions-panel {
   margin-bottom: 0;
 }
@@ -130,6 +140,15 @@ textarea {
   .admin-grid,
   .admin-toggle-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-date-time-fields {
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 8px;
+  }
+
+  .admin-date-time-fields input {
+    padding-inline: 12px;
   }
 }
 

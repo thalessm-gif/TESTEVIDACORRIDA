@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260420-152559">
+  <link rel="stylesheet" href="styles.css?v=20260420-163426">
 </head>
 <body>
   <main class="page admin-page">
@@ -107,12 +107,18 @@
 
             <label class="field">
               <span>Data e horário do treino</span>
-              <input id="admin-collective-starts-at" type="datetime-local" step="60">
+              <div class="admin-date-time-fields">
+                <input id="admin-collective-start-date" type="date" aria-label="Data do treino">
+                <input id="admin-collective-start-time" type="time" step="60" aria-label="Horário do treino">
+              </div>
             </label>
 
             <label class="field">
               <span>Prazo de decisão</span>
-              <input id="admin-collective-deadline" type="datetime-local" step="60">
+              <div class="admin-date-time-fields">
+                <input id="admin-collective-deadline-date" type="date" aria-label="Data do prazo de decisão">
+                <input id="admin-collective-deadline-time" type="time" step="60" aria-label="Horário do prazo de decisão">
+              </div>
             </label>
 
             <label class="field">
@@ -184,7 +190,7 @@
   </main>
 
   <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260419-223037"></script>
-  <script src="admin.js?v=20260420-162730"></script>
+  <script src="admin.js?v=20260420-163426"></script>
 </body>
 </html>
 

@@ -26,8 +26,10 @@
     collectiveId: document.getElementById("admin-collective-id"),
     collectiveTitle: document.getElementById("admin-collective-title"),
     collectiveDescription: document.getElementById("admin-collective-description"),
-    collectiveStartsAtIso: document.getElementById("admin-collective-starts-at"),
-    collectiveDecisionDeadlineIso: document.getElementById("admin-collective-deadline"),
+    collectiveStartDate: document.getElementById("admin-collective-start-date"),
+    collectiveStartTime: document.getElementById("admin-collective-start-time"),
+    collectiveDeadlineDate: document.getElementById("admin-collective-deadline-date"),
+    collectiveDeadlineTime: document.getElementById("admin-collective-deadline-time"),
     collectiveLocation: document.getElementById("admin-collective-location"),
     collectiveMinimumParticipants: document.getElementById("admin-collective-minimum"),
     collectiveStatusMode: document.getElementById("admin-collective-status-mode"),
@@ -220,8 +222,8 @@
     fields.collectiveId.value = session.id || "";
     fields.collectiveTitle.value = session.title || "";
     fields.collectiveDescription.value = session.description || "";
-    fields.collectiveStartsAtIso.value = toDateTimeLocalValue(session.startsAtIso);
-    fields.collectiveDecisionDeadlineIso.value = toDateTimeLocalValue(session.decisionDeadlineIso);
+    fillDateTimeFields(session.startsAtIso, fields.collectiveStartDate, fields.collectiveStartTime);
+    fillDateTimeFields(session.decisionDeadlineIso, fields.collectiveDeadlineDate, fields.collectiveDeadlineTime);
     fields.collectiveLocation.value = session.location || "";
     fields.collectiveMinimumParticipants.value = session.minimumParticipants || 5;
     fields.collectiveStatusMode.value = session.statusMode === "cancelled" ? "cancelled" : "automatic";
@@ -233,7 +235,7 @@
   }
 
   function readForm() {
-    const startsAtIso = toAdminIsoDateTime(fields.collectiveStartsAtIso);
+    const startsAtIso = toAdminIsoDateTime(fields.collectiveStartDate, fields.collectiveStartTime);
 
     return {
       kitWithdrawal: {
@@ -249,7 +251,7 @@
           title: getFieldValue(fields.collectiveTitle),
           description: getFieldValue(fields.collectiveDescription),
           startsAtIso,
-          decisionDeadlineIso: toAdminIsoDateTime(fields.collectiveDecisionDeadlineIso),
+          decisionDeadlineIso: toAdminIsoDateTime(fields.collectiveDeadlineDate, fields.collectiveDeadlineTime),
           location: getFieldValue(fields.collectiveLocation),
           minimumParticipants: Number(fields.collectiveMinimumParticipants.value || 5),
           statusMode: getFieldValue(fields.collectiveStatusMode) === "cancelled" ? "cancelled" : "automatic",
@@ -276,21 +278,37 @@
     return `treino-coletivo-${normalizedDate.slice(0, 4)}-${normalizedDate.slice(4, 6)}-${normalizedDate.slice(6, 8)}-${normalizedDate.slice(8, 12)}`;
   }
 
-  function toDateTimeLocalValue(isoValue) {
-    const safeValue = String(isoValue || "").trim();
-    const match = safeValue.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
-    return match ? match[1] : "";
-  }
+  function fillDateTimeFields(isoValue, dateField, timeField) {
+    const parts = toDateTimeParts(isoValue);
 
-  function toAdminIsoDateTime(field) {
-    const safeValue = getFieldValue(field);
-    const match = safeValue.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::(\d{2}))?/);
-
-    if (!match) {
-      return safeValue;
+    if (dateField) {
+      dateField.value = parts.date;
     }
 
-    return `${match[1]}T${match[2]}:${match[3] || "00"}${ADMIN_TIME_ZONE_OFFSET}`;
+    if (timeField) {
+      timeField.value = parts.time;
+    }
+  }
+
+  function toDateTimeParts(isoValue) {
+    const safeValue = String(isoValue || "").trim();
+    const match = safeValue.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+
+    return {
+      date: match ? match[1] : "",
+      time: match ? match[2] : ""
+    };
+  }
+
+  function toAdminIsoDateTime(dateField, timeField) {
+    const dateValue = getFieldValue(dateField);
+    const timeValue = getFieldValue(timeField);
+
+    if (!dateValue || !timeValue) {
+      return "";
+    }
+
+    return `${dateValue}T${timeValue}:00${ADMIN_TIME_ZONE_OFFSET}`;
   }
 
   function getFieldValue(field) {
