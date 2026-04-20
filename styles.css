@@ -410,6 +410,22 @@ body {
   color: #fff5eb;
 }
 
+.feature-card-partners {
+  border-color: rgba(123, 226, 184, 0.28);
+  background:
+    linear-gradient(135deg, rgba(12, 92, 78, 0.48), rgba(255, 106, 0, 0.14)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.feature-card-partners .feature-tag {
+  background: rgba(133, 233, 193, 0.16);
+  color: #e3fff4;
+}
+
+.feature-card-partners .feature-link {
+  color: #edfff8;
+}
+
 .feature-card-collective {
   border-color: rgba(126, 232, 183, 0.26);
   background:
@@ -2446,6 +2462,146 @@ textarea {
   font-weight: 700;
 }
 
+.partners-page {
+  padding-bottom: 64px;
+}
+
+.partners-hero {
+  margin-bottom: 24px;
+  padding: 32px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(12, 70, 78, 0.78), rgba(82, 44, 16, 0.42)),
+    linear-gradient(180deg, rgba(9, 27, 58, 0.96), rgba(4, 18, 38, 0.98));
+}
+
+.partners-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.9fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.partners-hero-markers {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.partners-hero-markers span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #f3fff9;
+  font-weight: 700;
+}
+
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.partner-card {
+  display: grid;
+  grid-template-rows: 210px 1fr;
+  overflow: hidden;
+}
+
+.partner-logo-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: #f8faf7;
+}
+
+.partner-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.partner-card-body {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 24px;
+}
+
+.partner-category {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.14);
+  color: #ffe3d0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.partner-card h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.2vw, 2rem);
+}
+
+.partner-slogan {
+  margin: 0;
+  color: #f3f7fb;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.partner-info-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.partner-info-list p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.partner-info-list span {
+  display: block;
+  margin-bottom: 3px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.partner-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.partner-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 180px;
+  min-height: 46px;
+  text-align: center;
+  text-decoration: none;
+}
+
 .calendar-race-list {
   display: grid;
   gap: 24px;
@@ -3698,6 +3854,7 @@ tbody tr:hover {
   .hero,
   .guide-grid,
   .guide-hero-layout,
+  .partners-hero-layout,
   .guide-pse-layout,
   .guide-feedback-layout,
   .collective-confirmation-layout,
@@ -3712,8 +3869,13 @@ tbody tr:hover {
   .collective-session-grid,
   .collective-callout-grid,
   .vdot-adjustment-grid,
-  .vdot-info-grid {
+  .vdot-info-grid,
+  .partners-grid {
     grid-template-columns: 1fr;
+  }
+
+  .partners-hero-markers {
+    justify-content: flex-start;
   }
 
   .calendar-race-summary {
@@ -3816,6 +3978,7 @@ tbody tr:hover {
   .feedback-form-panel,
   .feedback-list-panel,
   .guide-content-panel,
+  .partners-hero,
   .rp-hero,
   .rp-form-panel,
   .rp-history-panel,
@@ -3926,6 +4089,14 @@ tbody tr:hover {
   }
 
   .trainer-card {
+    padding: 18px;
+  }
+
+  .partner-card {
+    grid-template-rows: 180px 1fr;
+  }
+
+  .partner-card-body {
     padding: 18px;
   }
 
