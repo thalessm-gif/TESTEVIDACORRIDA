@@ -829,12 +829,14 @@ function Load-AccessConfigModel {
 
   return [PSCustomObject]@{
     Locked = Get-RegexBool -Text $block -Pattern 'locked:\s*(true|false)' -Default $false
-    SubmitLocked = Get-RegexBool -Text $block -Pattern 'submitLocked:\s*(true|false)' -Default $false
+    SubmitLocked = Get-RegexBool -Text $block -Pattern 'submitLocked:\s*(true|false)' -Default $true
+    EventName = Get-RegexString -Text $block -Pattern 'eventName:\s*"((?:\\.|[^"\\])*)"' -Default "PRIME HAUS RUNNING"
     HomeNotice = Get-RegexString -Text $block -Pattern 'homeNotice:\s*"((?:\\.|[^"\\])*)"' -Default ""
     HomeLinkText = Get-RegexString -Text $block -Pattern 'homeLinkText:\s*"((?:\\.|[^"\\])*)"' -Default ""
     PageTitle = Get-RegexString -Text $block -Pattern 'pageTitle:\s*"((?:\\.|[^"\\])*)"' -Default ""
     PageMessage = Get-RegexString -Text $block -Pattern 'pageMessage:\s*"((?:\\.|[^"\\])*)"' -Default ""
     PageSupport = Get-RegexString -Text $block -Pattern 'pageSupport:\s*"((?:\\.|[^"\\])*)"' -Default ""
+    PickupTip = Get-RegexString -Text $block -Pattern 'pickupTip:\s*"((?:\\.|[^"\\])*)"' -Default "Celebre sua conquista ao final."
     SubmitButtonText = Get-RegexString -Text $block -Pattern 'submitButtonText:\s*"((?:\\.|[^"\\])*)"' -Default ""
     SubmitMessage = Get-RegexString -Text $block -Pattern 'submitMessage:\s*"((?:\\.|[^"\\])*)"' -Default ""
   }
@@ -859,11 +861,13 @@ window.SITE_ACCESS_CONFIG = Object.freeze({
     // Para liberar o envio novamente: false
     submitLocked: $(ConvertTo-BoolLiteral -Value $Model.SubmitLocked),
 
+    eventName: "$(Escape-JsString -Value $Model.EventName)",
     homeNotice: "$(Escape-JsString -Value $Model.HomeNotice)",
     homeLinkText: "$(Escape-JsString -Value $Model.HomeLinkText)",
     pageTitle: "$(Escape-JsString -Value $Model.PageTitle)",
     pageMessage: "$(Escape-JsString -Value $Model.PageMessage)",
     pageSupport: "$(Escape-JsString -Value $Model.PageSupport)",
+    pickupTip: "$(Escape-JsString -Value $Model.PickupTip)",
     submitButtonText: "$(Escape-JsString -Value $Model.SubmitButtonText)",
     submitMessage: "$(Escape-JsString -Value $Model.SubmitMessage)"
   })
