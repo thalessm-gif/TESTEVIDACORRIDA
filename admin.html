@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin | Vida Corrida</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260419-221516">
+</head>
+<body>
+  <main class="page admin-page">
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">Painel administrativo</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel admin-hero">
+      <p class="eyebrow">Acesso restrito</p>
+      <h1>Configurações rápidas do site</h1>
+      <p class="hero-text">
+        Atualize retirada de kits, treino coletivo e links do guia sem mexer nos arquivos do projeto.
+      </p>
+      <p id="admin-status" class="admin-status" aria-live="polite"></p>
+    </section>
+
+    <section id="admin-login-panel" class="panel admin-login-panel">
+      <form id="admin-login-form" class="admin-login-form">
+        <label class="field">
+          <span>Senha do painel</span>
+          <input id="admin-password" type="password" autocomplete="current-password" required>
+        </label>
+
+        <div class="actions">
+          <button id="admin-login-button" type="submit" class="primary-button">Entrar</button>
+          <a href="index.html" class="secondary-button">Voltar ao site</a>
+        </div>
+      </form>
+    </section>
+
+    <section id="admin-config-panel" class="admin-config-panel" hidden>
+      <form id="admin-config-form">
+        <section class="panel admin-section">
+          <div class="overview-header">
+            <div>
+              <p class="eyebrow">Retirada de Kits</p>
+              <h2>Acesso e envio</h2>
+            </div>
+          </div>
+
+          <div class="admin-toggle-grid">
+            <label class="admin-toggle">
+              <input id="admin-kit-locked" type="checkbox">
+              <span>Fechar página de kits</span>
+            </label>
+
+            <label class="admin-toggle">
+              <input id="admin-kit-submit-locked" type="checkbox">
+              <span>Bloquear apenas o envio</span>
+            </label>
+          </div>
+
+          <div class="admin-grid">
+            <label class="field">
+              <span>Aviso no card da home</span>
+              <input id="admin-kit-home-notice" type="text">
+            </label>
+
+            <label class="field">
+              <span>Texto do botão/card fechado</span>
+              <input id="admin-kit-home-link-text" type="text">
+            </label>
+
+            <label class="field">
+              <span>Título da página fechada</span>
+              <input id="admin-kit-page-title" type="text">
+            </label>
+
+            <label class="field">
+              <span>Texto do botão de envio bloqueado</span>
+              <input id="admin-kit-submit-button-text" type="text">
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Mensagem da página fechada</span>
+            <textarea id="admin-kit-page-message" rows="3"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Mensagem de apoio</span>
+            <textarea id="admin-kit-page-support" rows="2"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Mensagem quando o envio estiver bloqueado</span>
+            <textarea id="admin-kit-submit-message" rows="2"></textarea>
+          </label>
+        </section>
+
+        <section class="panel admin-section">
+          <div class="overview-header">
+            <div>
+              <p class="eyebrow">Treino Coletivo</p>
+              <h2>Horário, local e mínimo</h2>
+            </div>
+          </div>
+
+          <label class="admin-toggle">
+            <input id="admin-collective-enabled" type="checkbox">
+            <span>Exibir treino coletivo no site</span>
+          </label>
+
+          <div class="admin-grid">
+            <label class="field">
+              <span>ID da sessão</span>
+              <input id="admin-collective-id" type="text" placeholder="treino-coletivo-AAAA-MM-DD-HHMM">
+            </label>
+
+            <label class="field">
+              <span>Título</span>
+              <input id="admin-collective-title" type="text">
+            </label>
+
+            <label class="field">
+              <span>Data e horário do treino</span>
+              <input id="admin-collective-starts-at" type="text" placeholder="2026-04-22T18:30:00-03:00">
+            </label>
+
+            <label class="field">
+              <span>Prazo de decisão</span>
+              <input id="admin-collective-deadline" type="text" placeholder="2026-04-22T16:00:00-03:00">
+            </label>
+
+            <label class="field">
+              <span>Local</span>
+              <input id="admin-collective-location" type="text">
+            </label>
+
+            <label class="field">
+              <span>Mínimo de atletas</span>
+              <input id="admin-collective-minimum" type="number" min="1" max="500" step="1">
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Descrição</span>
+            <textarea id="admin-collective-description" rows="3"></textarea>
+          </label>
+        </section>
+
+        <section class="panel admin-section">
+          <div class="overview-header">
+            <div>
+              <p class="eyebrow">Guia do Atleta</p>
+              <h2>Links úteis</h2>
+            </div>
+          </div>
+
+          <div class="admin-grid">
+            <label class="field">
+              <span>Grupo do Strava</span>
+              <input id="admin-guide-strava" type="url" placeholder="https://www.strava.com/clubs/...">
+            </label>
+
+            <label class="field">
+              <span>Cartilha/PDF</span>
+              <input id="admin-guide-handbook" type="text" placeholder="assets/guia-atleta/cartilha-vc.pdf">
+            </label>
+
+            <label class="field">
+              <span>Feedback</span>
+              <input id="admin-guide-feedback" type="url" placeholder="https://...">
+            </label>
+          </div>
+        </section>
+
+        <div class="panel admin-actions-panel">
+          <div class="actions admin-actions">
+            <button type="submit" class="primary-button">Salvar configurações</button>
+            <button id="admin-refresh-button" type="button" class="secondary-button">Recarregar</button>
+            <button id="admin-logout-button" type="button" class="secondary-button">Sair</button>
+            <a href="index.html" class="secondary-button">Voltar ao site</a>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260419-221516"></script>
+  <script src="admin.js?v=20260419-221516"></script>
+</body>
+</html>

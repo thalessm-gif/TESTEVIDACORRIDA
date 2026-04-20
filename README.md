@@ -35,6 +35,16 @@ Regra pratica:
 
 ## Tarefas comuns
 
+### Usar o painel administrativo
+
+1. Publique/atualize o Apps Script com os arquivos da pasta `google-apps-script`
+2. No Apps Script, abra `Configuracoes do projeto` > `Propriedades do script`
+3. Crie a propriedade `ADMIN_PASSWORD` com a senha do painel
+4. Abra `admin.html`
+5. Entre com a senha e edite retirada de kits, treino coletivo e links do Guia do Atleta
+
+As configuracoes salvas pelo painel ficam nas Propriedades do script e passam a ser carregadas pelas paginas publicas. Se a conexao falhar, o site usa os arquivos de `00-EDITAR-AQUI` como fallback.
+
 ### Trocar a URL do Apps Script
 
 1. Abra `00-EDITAR-AQUI/01-sistema-config.js`
