@@ -18,11 +18,13 @@
   const fields = {
     kitLocked: document.getElementById("admin-kit-locked"),
     kitSubmitLocked: document.getElementById("admin-kit-submit-locked"),
+    kitEventName: document.getElementById("admin-kit-event-name"),
     kitHomeNotice: document.getElementById("admin-kit-home-notice"),
     kitHomeLinkText: document.getElementById("admin-kit-home-link-text"),
     kitPageTitle: document.getElementById("admin-kit-page-title"),
     kitPageMessage: document.getElementById("admin-kit-page-message"),
     kitPageSupport: document.getElementById("admin-kit-page-support"),
+    kitPickupTip: document.getElementById("admin-kit-pickup-tip"),
     kitSubmitButtonText: document.getElementById("admin-kit-submit-button-text"),
     kitSubmitMessage: document.getElementById("admin-kit-submit-message"),
     collectiveEnabled: document.getElementById("admin-collective-enabled"),
@@ -33,6 +35,8 @@
     collectiveDecisionDeadlineIso: document.getElementById("admin-collective-deadline"),
     collectiveLocation: document.getElementById("admin-collective-location"),
     collectiveMinimumParticipants: document.getElementById("admin-collective-minimum"),
+    collectiveStatusMode: document.getElementById("admin-collective-status-mode"),
+    collectiveStatusReason: document.getElementById("admin-collective-status-reason"),
     guideStravaGroupUrl: document.getElementById("admin-guide-strava"),
     guideHandbookUrl: document.getElementById("admin-guide-handbook"),
     guideFeedbackUrl: document.getElementById("admin-guide-feedback")
@@ -211,11 +215,13 @@
 
     fields.kitLocked.checked = kit.locked === true;
     fields.kitSubmitLocked.checked = kit.submitLocked === true;
+    fields.kitEventName.value = kit.eventName || "";
     fields.kitHomeNotice.value = kit.homeNotice || "";
     fields.kitHomeLinkText.value = kit.homeLinkText || "";
     fields.kitPageTitle.value = kit.pageTitle || "";
     fields.kitPageMessage.value = kit.pageMessage || "";
     fields.kitPageSupport.value = kit.pageSupport || "";
+    fields.kitPickupTip.value = kit.pickupTip || "";
     fields.kitSubmitButtonText.value = kit.submitButtonText || "";
     fields.kitSubmitMessage.value = kit.submitMessage || "";
 
@@ -227,6 +233,8 @@
     fields.collectiveDecisionDeadlineIso.value = session.decisionDeadlineIso || "";
     fields.collectiveLocation.value = session.location || "";
     fields.collectiveMinimumParticipants.value = session.minimumParticipants || 5;
+    fields.collectiveStatusMode.value = session.statusMode === "cancelled" ? "cancelled" : "automatic";
+    fields.collectiveStatusReason.value = session.statusReason || "";
 
     fields.guideStravaGroupUrl.value = guide.stravaGroupUrl || "";
     fields.guideHandbookUrl.value = guide.handbookUrl || "";
@@ -240,11 +248,13 @@
       kitWithdrawal: {
         locked: fields.kitLocked.checked,
         submitLocked: fields.kitSubmitLocked.checked,
+        eventName: getFieldValue(fields.kitEventName),
         homeNotice: getFieldValue(fields.kitHomeNotice),
         homeLinkText: getFieldValue(fields.kitHomeLinkText),
         pageTitle: getFieldValue(fields.kitPageTitle),
         pageMessage: getFieldValue(fields.kitPageMessage),
         pageSupport: getFieldValue(fields.kitPageSupport),
+        pickupTip: getFieldValue(fields.kitPickupTip),
         submitButtonText: getFieldValue(fields.kitSubmitButtonText),
         submitMessage: getFieldValue(fields.kitSubmitMessage)
       },
@@ -257,7 +267,9 @@
           startsAtIso,
           decisionDeadlineIso: getFieldValue(fields.collectiveDecisionDeadlineIso),
           location: getFieldValue(fields.collectiveLocation),
-          minimumParticipants: Number(fields.collectiveMinimumParticipants.value || 5)
+          minimumParticipants: Number(fields.collectiveMinimumParticipants.value || 5),
+          statusMode: getFieldValue(fields.collectiveStatusMode) === "cancelled" ? "cancelled" : "automatic",
+          statusReason: getFieldValue(fields.collectiveStatusReason)
         }
       },
       athleteGuide: {
@@ -319,7 +331,7 @@
   }
 
   function setConfigDisabled(disabled) {
-    const elements = configForm.querySelectorAll("input, textarea, button");
+    const elements = configForm.querySelectorAll("input, select, textarea, button");
     elements.forEach((element) => {
       element.disabled = disabled;
     });

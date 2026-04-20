@@ -5,11 +5,13 @@
     return {
       locked: Boolean(source.locked),
       submitLocked: Boolean(source.submitLocked),
+      eventName: String(source.eventName || "PRIME HAUS RUNNING"),
       homeNotice: String(source.homeNotice || "A retirada de kits esta temporariamente indisponivel."),
       homeLinkText: String(source.homeLinkText || "Fechado temporariamente"),
       pageTitle: String(source.pageTitle || "Retirada de Kits temporariamente fechada"),
       pageMessage: String(source.pageMessage || "Esta area esta bloqueada no momento. Em breve ela sera reaberta para novos acessos."),
       pageSupport: String(source.pageSupport || "Se precisar de orientacao, fale com a equipe da assessoria."),
+      pickupTip: String(source.pickupTip || "Celebre sua conquista ao final."),
       submitButtonText: String(source.submitButtonText || "Envio indisponivel"),
       submitMessage: String(source.submitMessage || "O formulario continua visivel, mas o envio esta temporariamente bloqueado.")
     };
@@ -74,6 +76,19 @@
     }
   }
 
+  function applyRetiradaPageCopy(access) {
+    const eventNameElement = document.querySelector("[data-kit-event-name]");
+    const pickupTipElement = document.querySelector("[data-kit-pickup-tip]");
+
+    if (eventNameElement) {
+      eventNameElement.textContent = access.eventName;
+    }
+
+    if (pickupTipElement) {
+      pickupTipElement.textContent = access.pickupTip;
+    }
+  }
+
   const access = getKitWithdrawalAccess();
 
   window.getKitWithdrawalAccess = getKitWithdrawalAccess;
@@ -84,6 +99,7 @@
     return access.submitLocked;
   };
 
+  applyRetiradaPageCopy(access);
   applyHomeCardLock(access);
   applyRetiradaPageLock(access);
 }());

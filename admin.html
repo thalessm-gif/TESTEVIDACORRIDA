@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260419-223037">
+  <link rel="stylesheet" href="styles.css?v=20260420-081319">
 </head>
 <body>
   <main class="page admin-page">
@@ -68,6 +68,11 @@
 
           <div class="admin-grid">
             <label class="field">
+              <span>Nome do Evento</span>
+              <input id="admin-kit-event-name" type="text">
+            </label>
+
+            <label class="field">
               <span>Aviso no card da home</span>
               <input id="admin-kit-home-notice" type="text">
             </label>
@@ -94,6 +99,11 @@
           </label>
 
           <label class="field">
+            <span>Dica da Retirada de Kits</span>
+            <textarea id="admin-kit-pickup-tip" rows="2"></textarea>
+          </label>
+
+          <label class="field">
             <span>Mensagem de apoio</span>
             <textarea id="admin-kit-page-support" rows="2"></textarea>
           </label>
@@ -108,7 +118,7 @@
           <div class="overview-header">
             <div>
               <p class="eyebrow">Treino Coletivo</p>
-              <h2>Horário, local e mínimo</h2>
+              <h2>Horário, local e status</h2>
             </div>
           </div>
 
@@ -147,11 +157,24 @@
               <span>Mínimo de atletas</span>
               <input id="admin-collective-minimum" type="number" min="1" max="500" step="1">
             </label>
+
+            <label class="field">
+              <span>Status do treino</span>
+              <select id="admin-collective-status-mode">
+                <option value="automatic">Automático</option>
+                <option value="cancelled">Cancelado manualmente</option>
+              </select>
+            </label>
           </div>
 
           <label class="field">
             <span>Descrição</span>
             <textarea id="admin-collective-description" rows="3"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Motivo do cancelamento</span>
+            <textarea id="admin-collective-status-reason" rows="2"></textarea>
           </label>
         </section>
 
@@ -193,7 +216,8 @@
     </section>
   </main>
 
-  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260419-223037"></script>
-  <script src="admin.js?v=20260419-223037"></script>
+  <script src="00-EDITAR-AQUI/01-sistema-config.js?v=20260420-081319"></script>
+  <script src="admin.js?v=20260420-081319"></script>
 </body>
 </html>
+
