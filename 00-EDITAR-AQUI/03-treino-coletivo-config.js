@@ -2,7 +2,8 @@
 // Use este arquivo para abrir, fechar e configurar o treino coletivo atual.
 const collectiveSystemConfig = window.VIDA_CORRIDA_SYSTEM_CONFIG || {};
 const collectiveSharedGoogleScriptUrl = String(
-  ((collectiveSystemConfig.googleAppsScript || {}).url) || ""
+  ((collectiveSystemConfig.googleAppsScript || {}).url) ||
+  "https://script.google.com/macros/s/AKfycbwLuQlpLIMw2j0s4sc0Ytjwt3WAQEjqfM4Avgrwtr8baNuh1nXZLphqFbiz18BCMhHR/exec"
 ).trim();
 const collectiveSharedConfig = collectiveSystemConfig.collectiveTraining || {};
 
@@ -26,24 +27,24 @@ window.COLLECTIVE_TRAINING_CONFIG = {
 
     // Identificador unico da sessao.
     // Sugestao de formato: treino-coletivo-AAAA-MM-DD-HHMM
-    id: "treino-coletivo-2026-04-19-0730",
+    id: "treino-coletivo-2026-04-26-0730",
 
     // Titulo exibido na pagina e usado no resumo enviado ao Telegram.
-    title: "Em fase de Testes",
+    title: "TREINÃO TÉCNICO",
 
     // Texto curto de apoio exibido abaixo do titulo da pagina.
     description: "Treinar é bom, mas treinar em grupo é melhor ainda.",
 
     // Data e horario do treino no formato ISO com fuso.
     // Exemplo: 2026-04-22T18:30:00-03:00
-    startsAtIso: "2026-04-19T07:30:00-03:00",
+    startsAtIso: "2026-04-26T07:30:00-03:00",
 
     // Prazo final para decidir se o treino vai acontecer.
     // Se nao atingir o minimo ate este horario, a pagina mostra treino cancelado.
-    decisionDeadlineIso: "2026-04-18T20:00:00-03:00",
+    decisionDeadlineIso: "2026-04-25T22:00:00-03:00",
 
     // Local que aparecera na pagina e na mensagem do Telegram.
-    location: "Testes",
+    location: "CAMPO DO PRAIÃO",
 
     // Quantidade minima de confirmacoes para o treino ser considerado confirmado.
     minimumParticipants: 5,
